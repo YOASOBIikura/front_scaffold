@@ -9,7 +9,7 @@ const CustomTheme = {
     //   colorBgContainer: 'transparent',
     //   // colorBorder: '#FAE252',
     //   colorBorder: '#fae252',
-      colorText: '#FFFFFF',
+      // colorText: '#000000',
     //   controlOutline: 'transparent',
     //   controlHeightLG: 48,
     //   colorTextQuaternary: 'rgba(255, 255, 255, 0.5)',

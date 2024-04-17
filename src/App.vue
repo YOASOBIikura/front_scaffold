@@ -6,9 +6,6 @@
             <layout-header></layout-header>
             <router-view class="content"/>
             <layout-bottom></layout-bottom>
-            
-            
-            
         </a-config-provider>
     </div>
 </template>

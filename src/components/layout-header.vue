@@ -1,6 +1,8 @@
 <template>
     <div class="header">
-        <div>图片代替位置</div>
+        <div>
+            <img class="logo" src="@/assets/images/jVaultLogo.png"/>
+        </div>
         <div v-if="!isWalletConnect">
             <a-button 
                 shape="round" 
@@ -54,6 +56,9 @@ watch(() => axiosStore.isConnect,
     padding: 12px;
     justify-content: space-between;
     align-items: center;
+    .logo{
+        height: 30px;
+    }
     .account-btn{
         width: 60px;
         height: 32px;
