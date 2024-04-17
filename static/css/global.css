@@ -1,0 +1,23 @@
+:root {
+    /* 背景颜色 */
+    --bg-color-page: #FFFFFF; /* 基础背景颜色 */
+    --bg-color-secondarycontainer: #F0F0F0; /* 次要颜色背景 */
+
+
+    --bg-color-container-active: #000000; /* 主要容器背景active，次要页面层级背景active */
+
+
+
+    /* 分割线 */
+    --component-border: #F2F2F2; /* 分割线 */
+
+    /* 字体颜色 */
+    --text-color-primary: #000000; /* 基础字体颜色 */
+    --text-color-active: #FFFFFF; /* 字体颜色的active */
+    --text-color-success:  rgba(1, 167, 84, 0.85);/* 成功的字体颜色 */
+}
+
+body {
+    color: var(--text-color-primary);
+    background-color: var(--bg-color-page);
+}
