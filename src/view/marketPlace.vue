@@ -36,6 +36,15 @@
                     theme="black"
                 ></select-switch>
             </div>
+            <!-- 表格显示 -->
+            <!-- 所有订单 -->
+            <div>
+              <a-table
+                :dataSource="allListingData" 
+                :columns="allListColumns"
+              ></a-table>
+            </div>
+            <!-- 我的订单 -->
         </div>
     </div>
 </template>
@@ -146,6 +155,20 @@ const options = reactive([
 const selectChange = (index) => {
     console.log(index);
 }
+
+
+
+// 所有订单数据
+let allListColumns = [
+  { title: "Owner" ,dataIndex: "owner", key: "owner"},
+  { title: "Strike Price",dataIndex: "strikePrice",key: "strikePrice"},
+  { title: "Price", dataIndex: "price", key: "price"},
+  { title: "Deribit Price", dataIndex: "deribitPrice", key: "deribitPrice"},
+  { title: "Amount", dataIndex: "amount", key: "amount"},
+  { title: "Pay With", dataIndex: "payWith", key: "payWith"},
+  { title: "Accept", dataIndex: "accept", key: "accept"},
+  { title: "KYT", dataIndex: "KYT", key: "KYT"}
+];
 
 </script>
 
