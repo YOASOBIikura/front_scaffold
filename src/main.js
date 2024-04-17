@@ -3,7 +3,7 @@ import App from './App.vue'
 import { store } from '@/pinia'
 import router from "@/router/index"
 import {i18n} from "@/plugin/i18n/i18n"
-import '../static/css/global.css'
+import '@/assets/css/minireset.min.css'
 
 
 import Antd from 'ant-design-vue';
