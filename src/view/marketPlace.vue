@@ -155,7 +155,7 @@ const selectChange = (index) => {
     max-width: 400px;
 }
 .order-content{
-    padding: 32px;
+    padding: 16px 32px;
     .price-tips-content{
       padding: 0px 8px;
       background-color: rgba(1, 167, 84, 0.07);
