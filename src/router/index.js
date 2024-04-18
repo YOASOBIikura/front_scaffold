@@ -13,6 +13,11 @@ const routes = [{
   path: '/marketPlace',
   name: 'marketPlace',
   component: () => import('@/view/marketPlace.vue')
+},
+{
+  path:"/protfolio",
+  name:"protfolio",
+  component: () => import('@/view/protfolio.vue')
 }
 ]
 
