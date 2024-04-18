@@ -1,37 +1,30 @@
 <template>
   <div class="card">
       <div class="avatar">
-        <a-avatar :size="64" :src="photo_src.value" />
+        <a-avatar :size="64" :src="account.data.photo" />
       </div>
       <div class="info">
         <div class="name">
-          <p>{{name.value}}</p>
-          <img src="@/assets/icon/verify.png">
+          <p>{{account.data.name}}</p>
+          <img src="@/assets/images/certified.png">
         </div>
         <div class="address">
-          <p>{{address.value}}</p>
+          <p>{{account.data.address}}</p>
           <button v-on:click="copyAddress" class="copy_button">
-            <img src="@/assets/icon/copy.png">
+            <img src="@/assets/images/copy2.png">
           </button>
         </div>
       </div>
       <div class="link">
         <button v-on:click="linkJump">
-          <img src="@/assets/icon/link.png">
+          <img src="@/assets/images/arrow_right.png">
         </button>
       </div>
   </div>
 </template>
 
 <script setup>
-
-import {reactive, ref} from "vue";
-
-const name = reactive({value: "Joey268"})
-const address = reactive({value: "0x69...350d"})
-const photo_src = reactive({value: "https://s3-alpha-sig.figma.com/img/52ef/d102/7449c5a3687e8914750875679d508805?Expires=1714348800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=ffEp2TB3fWSHGkLnbdzjDgg3ZbK8XT1mo-N~5i2Ud~y9w3nxYDeWyfd7Yl0V9L6ZF3pK4CM-dUv7YBgUcmc49M06LGcADRYP24LkbDn51PaVUb3FL69YoZ8KDJWf3FiTf~7u1iKPJ3nPkmhyw8tAfxcyzbGIV5lvJof80qrGGbCQPI1cDgC7gh0M-kT8WD9JlUPxkAyhFIPSKoHrGkgGIEY~QqNKuV8lt6n-ZClANf4SaYlHqOS2MHe~l2WhukDQMHLNzkEA7yP5Sfc1FN2wO~LIPR4pfoyNuqunwc~BwwwkbYGqWSQ-QTVUsQi8D4oe7UUOamprKzd5KkZo1ZS9uA__"})
-
-
+const props = defineProps({account:{type: Object}})
 
 function copyAddress(){
   const account_address = address.value;

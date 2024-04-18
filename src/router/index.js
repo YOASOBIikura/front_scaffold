@@ -18,7 +18,22 @@ const routes = [{
   path:"/protfolio",
   name:"protfolio",
   component: () => import('@/view/protfolio.vue')
-}
+},
+  {
+    path:"/assets",
+    name: "assets",
+    component: () => import('@/view/assets.vue')
+  },
+  {
+    path:"/assetsNetworkFailed",
+    name: "assetsNetworkFailed",
+    component: () => import('@/view/assetsNetworkFailed.vue')
+  },
+  {
+    path:"/userProfile",
+    name: "userProfile",
+    component: () => import('@/view/userProfile.vue')
+  }
 ]
 
 const router = createRouter({
