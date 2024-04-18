@@ -20,7 +20,10 @@
     --text-color-active: #FFFFFF; /* 字体颜色的active */
     --text-color-second: #8E8E8E; /* 次要字体颜色 */
     --text-color-success:  rgba(1, 167, 84, 0.85);/* 成功的字体颜色 */
-
+    --text-color-error: #EA3C32; /* 失败的字体颜色 */
+    
+    --text-color-tabs-active:#000;/*tabs 激活颜色*/
+    --text-color-tabs-unActive:#8e8e8e;/*tabs未激活颜色*/
     
 }
 

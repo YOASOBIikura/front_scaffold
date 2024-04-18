@@ -15,9 +15,20 @@ const routes = [{
   component: () => import('@/view/marketPlace.vue')
 },
 {
+
   path: "/optionReview",
   name: "optionReview",
   component: () => import('@/view/optionReview.vue')
+},
+{
+  path: "/sellOption",
+  name: "sellOption",
+  component: () => import("@/view/sellOption.vue")
+},
+{
+  path:"/protfolio",
+  name:"protfolio",
+  component: () => import('@/view/protfolio.vue')
 }
 ]
 
