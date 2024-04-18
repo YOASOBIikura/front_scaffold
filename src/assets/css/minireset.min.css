@@ -18,7 +18,10 @@
     /* 字体颜色 */
     --text-color-primary: #000000; /* 基础字体颜色 */
     --text-color-active: #FFFFFF; /* 字体颜色的active */
+    --text-color-second: #8E8E8E; /* 次要字体颜色 */
     --text-color-success:  rgba(1, 167, 84, 0.85);/* 成功的字体颜色 */
+
+    
 }
 
 body {

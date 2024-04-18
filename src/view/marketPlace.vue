@@ -38,7 +38,7 @@
             </div>
             <!-- 表格显示 -->
             <!-- 所有订单 -->
-            <div>
+            <div class="all-listing-table">
               <a-table
                 :dataSource="allListingData" 
                 :columns="allListColumns"
@@ -169,6 +169,19 @@ let allListColumns = [
   { title: "Accept", dataIndex: "accept", key: "accept"},
   { title: "KYT", dataIndex: "KYT", key: "KYT"}
 ];
+let allListingData = reactive([
+  {
+    owner: "0x3...dfa",
+    strikePrice: "3100",
+    price: "2000",
+    deribitPrice: "2500",
+    amount: 10,
+    totalAmount: 500,
+    payWith: ["USDC", "USDT"], // TODO 
+    accept: "Cash Settlement",
+    KTY: "Passed"
+  }
+])
 
 </script>
 
@@ -216,6 +229,11 @@ let allListColumns = [
 
     .select-list-switch{
         width: 200px;
+    }
+    .all-listing-table{
+      width: 100%;
+      max-height: 340px;
+      overflow: auto;
     }
 }
 

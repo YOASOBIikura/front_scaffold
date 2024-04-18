@@ -4,7 +4,7 @@ const CustomTheme = {
     //   colorTextLightSolid: 'rgba(0, 0, 0, 0.90)',
     //   colorBgElevated: '#1f1f1f',
       colorTextHeading: '#000',
-      colorTextBase: '#8E8E8E',
+      colorTextBase: '#000',
     //   colorTextBase: '#fae252',
     //   colorBgContainer: 'transparent',
     //   // colorBorder: '#FAE252',
