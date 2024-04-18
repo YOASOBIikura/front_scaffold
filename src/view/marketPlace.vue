@@ -52,10 +52,10 @@
 
 <script setup>
 import { ref, reactive } from "vue"
-import selectSwitch from "../components/select-switch.vue"
-import swiperSelect from "../components/swiper-select.vue"
+import selectSwitch from "../components/utils/select-switch.vue"
+import swiperSelect from "../components/utils/swiper-select.vue"
 // 菜单区分类型
-const menuOptionType = ref([
+const menuOptionType = reactive([
     {
         key: 'call',
         label: 'Call option valuts',
@@ -67,7 +67,7 @@ const menuOptionType = ref([
         title: 'Put option vaults'
     }
 ]);
-let currentSelectOption = ref(['call']);
+let currentSelectOption = reactive(['call']);
 
 // 选择option币种
 const optionTokenSwitchList = [{name: 'ETH',label: 'ETH'},{name: 'BTC', label: 'BTC'}];

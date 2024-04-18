@@ -33,9 +33,6 @@
       <protfolioFilter></protfolioFilter>
       <protfolioSort></protfolioSort>
       <liquidation></liquidation>
-
-
-
     </div>
 </template>
 

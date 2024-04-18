@@ -72,7 +72,7 @@ import "swiper/css/effect-coverflow";
 
 // import required modules
 import { EffectCoverflow } from "swiper/modules";
-import { Debounce } from "../common/debounce";
+import { Debounce } from "../../common/debounce";
 
 const modules = [EffectCoverflow];
 
