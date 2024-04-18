@@ -13,7 +13,12 @@ const routes = [{
   path: '/marketPlace',
   name: 'marketPlace',
   component: () => import('@/view/marketPlace.vue')
-}
+},
+  {
+    path: '/assets',
+    name: 'assets',
+    component: () => import('@/view/assets.vue')
+  }
 ]
 
 const router = createRouter({
