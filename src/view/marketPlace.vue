@@ -8,7 +8,7 @@
                 I expect ETH $3,000 -> $3,100 in 6d
             </div>
             <!-- 选择期权币种 -->
-            <div>
+            <div class="select-option-token-content">
                 <select-switch 
                     :switchList="optionTokenSwitchList" 
                     v-model:value="currentSelectOptionToken"
@@ -36,6 +36,15 @@
                     theme="black"
                 ></select-switch>
             </div>
+            <!-- 表格显示 -->
+            <!-- 所有订单 -->
+            <div class="all-listing-table">
+              <a-table
+                :dataSource="allListingData" 
+                :columns="allListColumns"
+              ></a-table>
+            </div>
+            <!-- 我的订单 -->
         </div>
     </div>
 </template>
@@ -147,6 +156,33 @@ const selectChange = (index) => {
     console.log(index);
 }
 
+
+
+// 所有订单数据
+let allListColumns = [
+  { title: "Owner" ,dataIndex: "owner", key: "owner"},
+  { title: "Strike Price",dataIndex: "strikePrice",key: "strikePrice"},
+  { title: "Price", dataIndex: "price", key: "price"},
+  { title: "Deribit Price", dataIndex: "deribitPrice", key: "deribitPrice"},
+  { title: "Amount", dataIndex: "amount", key: "amount"},
+  { title: "Pay With", dataIndex: "payWith", key: "payWith"},
+  { title: "Accept", dataIndex: "accept", key: "accept"},
+  { title: "KYT", dataIndex: "KYT", key: "KYT"}
+];
+let allListingData = reactive([
+  {
+    owner: "0x3...dfa",
+    strikePrice: "3100",
+    price: "2000",
+    deribitPrice: "2500",
+    amount: 10,
+    totalAmount: 500,
+    payWith: ["USDC", "USDT"], // TODO 
+    accept: "Cash Settlement",
+    KTY: "Passed"
+  }
+])
+
 </script>
 
 
@@ -155,40 +191,26 @@ const selectChange = (index) => {
     max-width: 400px;
 }
 .order-content{
-    padding: 32px;
+    padding: 16px 32px;
     .price-tips-content{
-        padding: 12px 8px;
-        background-color: rgba(1, 167, 84, 0.07);
-        color: var(--text-color-success);
-        border-radius: 8px;
+      padding: 0px 8px;
+      background-color: rgba(1, 167, 84, 0.07);
+      color: var(--text-color-success);
+      border-radius: 8px;
+      height: 40px;
+      line-height: 40px;
+      margin-bottom: 16px;
     }
 
-    .option-token-switch{
-        height: 32px;
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        background-color: var(--bg-color-secondarycontainer);
-        border-radius: 56px;
-        font-size: 14px;
-        font-weight: 600;
-        .item{
-            width: 50%;
-            text-align: center;
-            line-height: 32px;
-            
-            &.active{
-                background-color: var(--bg-color-container-active);
-                color: var(--text-color-active);
-                border-radius: 56px;
-            }
-        }
+    .select-option-token-content{
+      margin-bottom: 16px;
     }
 
     .option-select-content{
         width: 100%;
         display: flex;
         justify-content: space-between;
+        margin-bottom: 16px;
         .option-card{
             height: 167px;
             width: calc(50% - 8px);
@@ -207,6 +229,11 @@ const selectChange = (index) => {
 
     .select-list-switch{
         width: 200px;
+    }
+    .all-listing-table{
+      width: 100%;
+      max-height: 340px;
+      overflow: auto;
     }
 }
 
