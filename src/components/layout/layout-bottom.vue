@@ -1,21 +1,34 @@
 <template>
     <div class="layout-bottom">
-        <div class="bottom-item">
-            <img src="@/assets/images/bottom-trading.png" />
-            Trading</div>
-        <div class="bottom-item">
-            <img src="@/assets/images/bottom-portfolio.png"/>
-            Portfolio</div>
-        <div class="bottom-item">
-            <img src="@/assets/images/bottom-notifications.png"/>
-            Notifications</div>
-        <div class="bottom-item">
-            <img src="@/assets/images/bottom-asset.png"/>
-            Asset</div>
+         <div class="bottom-item" v-for="(item,index) in allTabbrList" :key="item">
+            <img :src="getImgSrc(index)" @click="changeTabbar(item)"/>
+            {{item}}
+        </div>
+
     </div>
 </template>
 <script setup>
+import { computed, reactive } from "vue";
+import { useRouter } from "vue-router";
 
+let baseData = reactive({
+    currentSelect: "Trading",
+
+});
+const allTabbrList = ["Trading", "Portfolio", "Notification", "Asset"];
+const router = useRouter();
+const changeTabbar = (data) => {
+    if(data == baseData.currentSelect){
+        return;
+    }
+    baseData.currentSelect = data;
+}
+const getImgSrc = (index) => {
+    if(allTabbrList.indexOf(baseData.currentSelect) == index){
+        return `/src/assets/images/tabbar${(parseInt(index)+ 1)}_active.png`;
+    }
+    return `/src/assets/images/tabbar${(parseInt(index)+ 1)}.png`;
+}
 </script>
 <style lang="less" scoped>
 .layout-bottom{

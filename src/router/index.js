@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 
+
 const routes = [{
   path: '/',
   redirect: '/homepage'
@@ -7,27 +8,42 @@ const routes = [{
 {
   path: '/homepage',
   name: 'homepage',
-  component: () => import('@/view/homepage.vue')
+  component: () => import('@/view/homepage.vue'),
+  meta: {
+    showLayout: false
+  }
 },
 {
   path: '/marketPlace',
   name: 'marketPlace',
-  component: () => import('@/view/marketPlace.vue')
+  component: () => import('@/view/marketPlace.vue'),
+  meta: {
+    showLayout: true
+  }
 },
 {
-  path: '/optionReview',
-  name: 'optionReview',
-  component: () => import('@/view/optionReview.vue')
+  path: '/buyOption',
+  name: 'buyOption',
+  component: () => import('@/view/buyOption.vue'),
+  meta: {
+    showLayout: false
+  }
 },
 {
   path: '/sellOption',
   name: 'sellOption',
-  component: () => import('@/view/sellOption.vue')
+  component: () => import('@/view/sellOption.vue'),
+  meta: {
+    showLayout: false
+  }
 },
 {
   path:"/protfolio",
   name:"protfolio",
-  component: () => import('@/view/protfolio.vue')
+  component: () => import('@/view/protfolio.vue'),
+  meta: {
+    showLayout: true
+  }
 },
   {
     path:"/assets",
@@ -55,5 +71,7 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes,
 })
+
+
 
 export default router
