@@ -2,7 +2,8 @@
     <div>
     <div class="page">
         <!-- 页头位置 -->
-        <div class="page-header">
+        <navigation-bar></navigation-bar>
+        <!-- <div class="page-header">
             <div>
                 <img src="@/assets/images/back.svg" class="back"/>
             </div>
@@ -11,7 +12,7 @@
                     <img src="@/assets/images/copy.svg" />
                     Copy to sell</div>
             </div>
-        </div>
+        </div> -->
         <!-- 标题 -->
         <div class="header-content">
             <div class="title">Buy ETH {{ baseData.optionType }}</div>
@@ -109,8 +110,9 @@
 
 <script setup>
 import { reactive } from "vue"
-import inputNumber from "@/components/utils/input-number.vue"
-import optionDetails from "../components/optionReview/option-details.vue"
+import inputNumber from "@/components/utils/inputNumber.vue"
+import optionDetails from "../components/buyOption/optionDetails.vue"
+import navigationBar from "../components/utils/navigationBar.vue";
 
 let baseData = reactive({
     optionType: "call",

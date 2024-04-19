@@ -28,8 +28,8 @@
 import { reactive } from "vue";
 import description from "./description.vue";
 import settlement from "./settlement.vue";
-import repayType from "./repay-type.vue";
-import detailsInfo from "./details-info.vue";
+import repayType from "./repayType.vue";
+import detailsInfo from "./detailsInfo.vue";
 
 let data = reactive({
     detailCollapse: false

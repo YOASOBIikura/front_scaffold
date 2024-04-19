@@ -21,14 +21,14 @@
                     <div class="title">Expiry Date</div>
                     <div>
                     <swiperSelect 
-                        :options="options" @selectChange="selectChange"></swiperSelect>
+                        :options="baseData.options" @selectChange="selectChange"></swiperSelect>
                     </div>
                 </div>
                 <div class="option-card">
                     <div class="title">Strike Price</div>
                      <div>
                     <swiperSelect 
-                        :options="options" @selectChange="selectChange"></swiperSelect>
+                        :options="baseData.options" @selectChange="selectChange"></swiperSelect>
                     </div>
                 </div>
             </div>
@@ -47,7 +47,7 @@
             <!-- 所有订单 -->
             <div class="all-listing-table">
               <listing-table    
-                :dataSource="allListingData" 
+                :dataSource="baseData.allListingData" 
                 :columns="allListColumns"
                 :listingType="baseData.currentListing"
               >
@@ -61,11 +61,11 @@
 
 <script setup>
 import { ref, reactive } from "vue"
-import selectSwitch from "../components/utils/select-switch.vue"
-import swiperSelect from "../components/utils/swiper-select.vue"
+import selectSwitch from "../components/utils/selectSwitch.vue"
+import swiperSelect from "../components/utils/swiperSelect.vue"
 import listingTable from "../components/marketPlace/listing-table.vue"
 // 菜单区分类型
-const menuOptionType = reactive([
+const menuOptionType = [
     {
         key: 'call',
         label: 'Call option valuts',
@@ -76,103 +76,13 @@ const menuOptionType = reactive([
         label: 'Put option vaults',
         title: 'Put option vaults'
     }
-]);
+  ];
 const optionTokenSwitchList = [
   {key: 'ETH',label: 'ETH', icon: "/src/assets/images/eth.png"},
   {key: 'WBTC', label: 'WBTC', icon: "/src/assets/images/wbtc.png"}
 ];
 // 订单类型选择
 const listingSwitchList = [{key: 'All', label: 'All Listings'},{key: 'My', label: 'My Listings'}]
-
-
-let baseData = reactive({
-  currentSelectOption: ["call"],
-  currentSelectOptionToken: "ETH",
-  currentListing: "All"
-});
-
-
-// 订单日期TODO
-const options = reactive([
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  },
-  {
-    value: '1',
-    name: '12 DEC 23'
-  }
-])
-const selectChange = (index) => {
-    console.log(index);
-}
-
-
-
 // 所有订单数据
 let allListColumns = [
   { title: "Owner" ,dataIndex: "owner", key: "owner"},
@@ -184,7 +94,46 @@ let allListColumns = [
   { title: "Accept", dataIndex: "accept", key: "accept"},
   { title: "KYT", dataIndex: "KYT", key: "KYT"}
 ];
-let allListingData = reactive([
+
+let baseData = reactive({
+  currentSelectOption: ["call"],
+  currentSelectOptionToken: "ETH",
+  currentListing: "All",
+  options: [
+  {
+    value: '1',
+    name: '12 DEC 23'
+  },
+  {
+    value: '1',
+    name: '12 DEC 23'
+  },
+  {
+    value: '1',
+    name: '12 DEC 23'
+  },
+  {
+    value: '1',
+    name: '12 DEC 23'
+  },
+  {
+    value: '1',
+    name: '12 DEC 23'
+  },
+  {
+    value: '1',
+    name: '12 DEC 23'
+  },
+  {
+    value: '1',
+    name: '12 DEC 23'
+  },
+  {
+    value: '1',
+    name: '12 DEC 23'
+  }
+  ],
+  allListingData: [
   {
     owner: "0x3...dfa",
     strikePrice: "3100",
@@ -196,8 +145,12 @@ let allListingData = reactive([
     accept: "Cash Settlement",
     KYT: "Passed"
   }
-]);
+  ]
+});
 
+const selectChange = (index) => {
+    console.log(index);
+}
 
 const changeListSwitch = (value) => {
   console.log(value);
@@ -209,15 +162,15 @@ const changeListSwitch = (value) => {
     deribitPrice: "2500",
     amount: 10,
     totalAmount: 500,
-    payWith: ["USDC", "USDT"], // TODO 
+    payWith: ["USDC", "USDT"], 
     accept: "Cash Settlement",
     KYT: "Passed"
   }
 ];
   if(value == "My"){
-    allListingData = [];
+    baseData.allListingData = [];
   } else {
-    allListingData = baseData;
+    baseData.allListingData = baseData;
   }
 }
 

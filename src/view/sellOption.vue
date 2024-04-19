@@ -3,10 +3,7 @@
     <div class="page">
          <!-- 页头位置 -->
         <div class="page-header">
-            <div class="back">
-                <img src="@/assets/images/back.svg" class="back-img"/>
-            </div>
-            <div>Sell {{baseData.optionType}} Options</div>
+            <navigation-bar></navigation-bar>
         </div>
        
         <!-- 选择币种 -->
@@ -81,17 +78,14 @@
         <div class="expiry-data-content">
             <div class="title">Expiry Date</div>
             <div>
-                <div class="current-expiry-date">
-                    7 days · 22 Mar 24
-                </div>
-                <a-slider v-model:value="value" :marks="expiryDataList" :max="7" :dots="true" :step="null" :tip-formatter="null">
-                    <template #mark="{}">
-
-                    </template>
-                </a-slider>
+                <expiry-date-slider
+                    class="expiry-date"
+                    :expiryDataList="expiryDataList" 
+                    v-model:value="baseData.expiryData"
+                    @changeAfterReturnTime="changeExpiry"
+                ></expiry-date-slider>
             </div>
         </div>
-
         <!-- 价格 -->
         <div class="price-content">
             <div class="price-title">
@@ -138,11 +132,15 @@
 </template>
 <script setup>
 import { reactive } from "vue";
-import selectSwitch from "../components/utils/select-switch.vue"
-import inputNumber from "@/components/utils/input-number.vue"
-import strikePrice from "@/components/sellOption/strike-price.vue"
-import mulSelect from "@/components/sellOption/mul-select.vue"
-const optionTokenSwitchList = [{name: 'ETH',label: 'ETH'},{name: 'WBTC', label: 'WBTC'}];
+import selectSwitch from "../components/utils/selectSwitch.vue"
+import inputNumber from "@/components/utils/inputNumber.vue"
+import strikePrice from "@/components/sellOption/strikePrice.vue"
+import mulSelect from "@/components/sellOption/mulSelect.vue"
+import navigationBar from "../components/utils/navigationBar.vue";
+import expiryDateSlider from "@/components/sellOption/expiryDateSlider.vue"
+
+
+const optionTokenSwitchList = [{key: 'ETH',label: 'ETH', icon: "/src/assets/images/eth.png"},{key: 'WBTC', label: 'WBTC',icon: "/src/assets/images/wbtc.png"}];
 const strikePriceList = [{price: 2900},{price: 3000},{price: 3100},{price: 3200},{price: 3300},{price: 3400},{price: 3500}]
 const premiumList = [{key: 'USDT', label: "USDT", icon: "/src/assets/images/usdt.png"}, {key: "USDC", label: "USDC", icon: "/src/assets/images/usdc.png"}];
 const acceptList = [{key: "cash", label: "Cash Settlement"}, {key: "asset", label: "Asset Delivery"}];
@@ -156,9 +154,13 @@ let baseData = reactive({
     strikePrice: 2900,
     price: "3000",
     premiumSelectList: ["USDT", "USDC"],
-    acceptSelectList: ["cash"]
+    acceptSelectList: ["cash"],
+    expiryData: 2
 });
 
+const changeExpiry = (date) => {
+    console.log(date);
+}
 
 
 </script>
@@ -313,6 +315,9 @@ let baseData = reactive({
         margin-bottom: 16px;
         font-size: 16px;
     }
+    .expiry-date{
+        margin-top: 16px;
+    }
 }
 
 // 价格区域
@@ -372,29 +377,6 @@ let baseData = reactive({
     }
 }
 
-:deep(.ant-slider-step .ant-slider-dot){
-    border: none;
-}
 
-:deep(.ant-slider-handle){
-    width: 24px;
-    height: 24px;
-    &:hover{
-        &::after{
-            box-shadow: 0 0 0 var(--bg-color-secondarycontainer);
-            border: 2px solid var(--bg-color-secondarycontainer);
-            width: 24px;
-            height: 24px;
-            transform: translate(0%, -25%);
-        }
-    }
-    &::after{
-        box-shadow: 0 0 0 var(--bg-color-secondarycontainer);
-        border: 2px solid var(--bg-color-secondarycontainer);
-        width: 24px;
-        height: 24px;
-        transform: translate(0%, -25%);
-    }
-}
 
 </style>
