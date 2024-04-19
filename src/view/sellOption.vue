@@ -61,13 +61,11 @@
                         <span>Market Price</span>
                         <span style="font-weight: bold;"> $3100</span>
                     </div>
-                    <div class="refresh">
-                        <img src="@/assets/images/refresh.png" />
-                    </div>
+                    <refresh></refresh>
                 </div>
             </div>
             <div class="strike">
-                <strike-price :priceList="strikePriceList" v-model:value="baseData.price" >
+                <strike-price :priceList="strikePriceList" v-model:value="baseData.strikePrice" >
                     
                 </strike-price>
             </div>
@@ -89,19 +87,17 @@
         <!-- 价格 -->
         <div class="price-content">
             <div class="price-title">
-                <div class="title">Strike Price</div>
+                <div class="title">Price</div>
                 <div class="current-price">
                     <div class="price">
                         <span>Deribit Price</span>
                         <span style="font-weight: bold;"> $3100</span>
                     </div>
-                    <div class="refresh">
-                        <img src="@/assets/images/refresh.png" />
-                    </div>
+                    <refresh></refresh>
                 </div>
             </div>
             <div>
-                <input-number class="input" v-model:value="baseData.optionNumber"></input-number>
+                <input-number class="input" v-model:value="baseData.price"></input-number>
             </div>
         </div>
 
@@ -138,6 +134,7 @@ import strikePrice from "@/components/sellOption/strikePrice.vue"
 import mulSelect from "@/components/sellOption/mulSelect.vue"
 import navigationBar from "../components/utils/navigationBar.vue";
 import expiryDateSlider from "@/components/sellOption/expiryDateSlider.vue"
+import refresh from "@/components/utils/refresh.vue"
 
 
 const optionTokenSwitchList = [{key: 'ETH',label: 'ETH', icon: "/src/assets/images/eth.png"},{key: 'WBTC', label: 'WBTC',icon: "/src/assets/images/wbtc.png"}];
@@ -152,11 +149,12 @@ let baseData = reactive({
     currentSelectOptionToken: "ETH",
     optionNumber: "100",
     strikePrice: 2900,
-    price: "3000",
+    price: "3213",
     premiumSelectList: ["USDT", "USDC"],
     acceptSelectList: ["cash"],
     expiryData: 2
 });
+
 
 const changeExpiry = (date) => {
     console.log(date);
