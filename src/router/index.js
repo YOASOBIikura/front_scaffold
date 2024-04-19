@@ -38,6 +38,16 @@ const routes = [{
   }
 },
 {
+  path: '/optionReview',
+  name: 'optionReview',
+  component: () => import('@/view/optionReview.vue')
+},
+{
+  path: '/sellOption',
+  name: 'sellOption',
+  component: () => import('@/view/sellOption.vue')
+},
+{
   path:"/protfolio",
   name:"protfolio",
   component: () => import('@/view/protfolio.vue'),
