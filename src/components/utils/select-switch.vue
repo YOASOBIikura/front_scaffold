@@ -1,12 +1,13 @@
 <template>
     <div class="select-switch">
-        <div v-for="item in switchList" :key="item" 
+        <div v-for="item in switchList" :key="item.key" 
             :class="[
-                {'active': currentSelect == item.name},
+                {'active': currentSelect == item.key},
                 'item-' + theme
             ]"
             @click="changeSelect(item)"
         >
+            <img v-if="item.icon" :src="item.icon" class="icon"/>
             {{ item.label }}
         </div>
     </div>
@@ -18,7 +19,7 @@ const props = defineProps({
     value: String,
     theme: {type: String, default: 'white'}
 });
-const emits = defineEmits(["update:value"]);
+const emits = defineEmits(["update:value", "change"]);
 let currentSelect = ref(props.value); 
 
 watch(
@@ -27,11 +28,15 @@ watch(
         currentSelect.value = val;
     }
 )
-watch()
+
 
 const changeSelect = (data) => {
-    currentSelect.value = data.name;
+    if( currentSelect.value === data.key){
+        return;
+    }
+    currentSelect.value = data.key;
     emits("update:value", currentSelect.value);
+    emits("change", currentSelect.value)
 }
 </script>
 <style lang="less" scoped>
@@ -66,5 +71,11 @@ const changeSelect = (data) => {
                 border-radius: 56px;
             }
         }
+    }
+
+    .icon{
+        margin-right: 2px;
+        width: 16px;
+        vertical-align: sub;
     }
 </style>

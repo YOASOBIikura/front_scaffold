@@ -1,7 +1,7 @@
 
 <template>
     <div class="page">
-        <a-menu v-model:selectedKeys="currentSelectOption" mode="horizontal" :items="menuOptionType" />
+        <a-menu v-model:selectedKeys="baseData.currentSelectOption" mode="horizontal" :items="menuOptionType" />
         <div class="order-content">
             <!-- 价格提示 -->
             <div class="price-tips-content">
@@ -11,7 +11,7 @@
             <div class="select-option-token-content">
                 <select-switch 
                     :switchList="optionTokenSwitchList" 
-                    v-model:value="currentSelectOptionToken"
+                    v-model:value="baseData.currentSelectOptionToken"
                     theme="white"
                 ></select-switch>
             </div>
@@ -26,23 +26,32 @@
                 </div>
                 <div class="option-card">
                     <div class="title">Strike Price</div>
+                     <div>
+                    <swiperSelect 
+                        :options="options" @selectChange="selectChange"></swiperSelect>
+                    </div>
                 </div>
             </div>
             <!-- 选择单子类型 -->
             <div class="select-list-switch">
                 <select-switch 
                     :switchList="listingSwitchList" 
-                    v-model:value="currentListing"
+                    v-model:value="baseData.currentListing"
                     theme="black"
-                ></select-switch>
+                    @change="changeListSwitch"
+                >
+                  <template></template>
+                </select-switch>
             </div>
             <!-- 表格显示 -->
             <!-- 所有订单 -->
             <div class="all-listing-table">
-              <a-table
+              <listing-table    
                 :dataSource="allListingData" 
                 :columns="allListColumns"
-              ></a-table>
+                :listingType="baseData.currentListing"
+              >
+              </listing-table>
             </div>
             <!-- 我的订单 -->
         </div>
@@ -54,6 +63,7 @@
 import { ref, reactive } from "vue"
 import selectSwitch from "../components/utils/select-switch.vue"
 import swiperSelect from "../components/utils/swiper-select.vue"
+import listingTable from "../components/marketPlace/listing-table.vue"
 // 菜单区分类型
 const menuOptionType = reactive([
     {
@@ -67,15 +77,20 @@ const menuOptionType = reactive([
         title: 'Put option vaults'
     }
 ]);
-let currentSelectOption = reactive(['call']);
-
-// 选择option币种
-const optionTokenSwitchList = [{name: 'ETH',label: 'ETH'},{name: 'BTC', label: 'BTC'}];
-let currentSelectOptionToken = ref("ETH");
-
+const optionTokenSwitchList = [
+  {key: 'ETH',label: 'ETH', icon: "/src/assets/images/eth.png"},
+  {key: 'WBTC', label: 'WBTC', icon: "/src/assets/images/wbtc.png"}
+];
 // 订单类型选择
-const listingSwitchList = [{name: 'All', label: 'All Listings'},{name: 'My', label: 'My Listings'}]
-let currentListing = ref("All");
+const listingSwitchList = [{key: 'All', label: 'All Listings'},{key: 'My', label: 'My Listings'}]
+
+
+let baseData = reactive({
+  currentSelectOption: ["call"],
+  currentSelectOptionToken: "ETH",
+  currentListing: "All"
+});
+
 
 // 订单日期TODO
 const options = reactive([
@@ -179,9 +194,32 @@ let allListingData = reactive([
     totalAmount: 500,
     payWith: ["USDC", "USDT"], // TODO 
     accept: "Cash Settlement",
-    KTY: "Passed"
+    KYT: "Passed"
   }
-])
+]);
+
+
+const changeListSwitch = (value) => {
+  console.log(value);
+  let baseData = [
+  {
+    owner: "0x3...dfa",
+    strikePrice: "3100",
+    price: "2000",
+    deribitPrice: "2500",
+    amount: 10,
+    totalAmount: 500,
+    payWith: ["USDC", "USDT"], // TODO 
+    accept: "Cash Settlement",
+    KYT: "Passed"
+  }
+];
+  if(value == "My"){
+    allListingData = [];
+  } else {
+    allListingData = baseData;
+  }
+}
 
 </script>
 
@@ -234,7 +272,9 @@ let allListingData = reactive([
       width: 100%;
       max-height: 340px;
       overflow: auto;
+      margin-top: 16px;
     }
 }
+
 
 </style>
