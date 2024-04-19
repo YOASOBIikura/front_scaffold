@@ -32,18 +32,23 @@ const routes = [{
   {
     path:"/assets",
     name: "assets",
-    component: () => import('@/view/assets.vue')
+    component: () => import('@/view/assets/assets.vue') 
   },
   {
-    path:"/assetsNetworkFailed",
-    name: "assetsNetworkFailed",
-    component: () => import('@/view/assetsNetworkFailed.vue')
+    path:"/networkError",
+    name: "networkError",
+    component: () => import('@/view/error/network.vue')
   },
   {
-    path:"/userProfile",
-    name: "userProfile",
-    component: () => import('@/view/userProfile.vue')
-  }
+    path:"/assetTransfer",
+    name: "assetTransfer",
+    component: () => import('@/view/assets/transfer.vue')
+  },  
+  {
+    path:"/logout",
+    name: "logout",
+    component: () => import('@/view/assets/logout.vue')
+  },
 ]
 
 const router = createRouter({

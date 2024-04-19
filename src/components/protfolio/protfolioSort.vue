@@ -1,6 +1,5 @@
 <template>
-    <div class="protfolioSort">
-      <a-drawer height="260px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="data.openSortCondition"  @close="data.openSortCondition=false" >
+      <a-drawer  class="protfolioSort" height="260px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="data.openSortCondition"  @close="data.openSortCondition=false" >
         <template v-slot:title>
              <div class="filter">
                  <img  class="close" src="@/assets/images/close.png" alt="" @click="data.openSortCondition=false">
@@ -25,7 +24,6 @@
                 
         </div>
       </a-drawer>
-    </div>
 </template>
 <script setup>
 import { reactive } from 'vue';
