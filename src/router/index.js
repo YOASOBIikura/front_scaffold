@@ -22,9 +22,9 @@ const routes = [{
   }
 },
 {
-  path: '/optionReview',
-  name: 'optionReview',
-  component: () => import('@/view/optionReview.vue'),
+  path: '/buyOption',
+  name: 'buyOption',
+  component: () => import('@/view/buyOption.vue'),
   meta: {
     showLayout: false
   }
@@ -36,16 +36,6 @@ const routes = [{
   meta: {
     showLayout: false
   }
-},
-{
-  path: '/optionReview',
-  name: 'optionReview',
-  component: () => import('@/view/optionReview.vue')
-},
-{
-  path: '/sellOption',
-  name: 'sellOption',
-  component: () => import('@/view/sellOption.vue')
 },
 {
   path:"/protfolio",
