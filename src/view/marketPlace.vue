@@ -167,6 +167,8 @@ const options = reactive([
     name: '12 DEC 23'
   }
 ])
+
+
 const selectChange = (index) => {
     console.log(index);
 }
