@@ -14,11 +14,19 @@
                     </p>
                 </div>
           </div>
-          <img class="option" src="@/assets/images/arrow_right.png" alt="">     
+          <div class="option" @click="goLogout">
+            <img class="option-icon" src="@/assets/images/arrow_right.png" alt="" >  
+          </div>
+            
          </div>
 </template>
 <script setup>
-
+import { reactive } from 'vue';
+import { useRouter,useRoute } from "vue-router";
+const router=useRouter()
+var goLogout=()=>{
+     router.push({path:"/logout"})
+}
 </script>
 <style lang="less" scoped>
     .assetsHeader{
@@ -67,8 +75,11 @@
             }
         }
         .option{
-            width: 16px;
-            height: 16px;
+            padding: 10px;
+            .option-icon{
+                width: 16px;
+                height: 16px;
+            }
         }
 
     }

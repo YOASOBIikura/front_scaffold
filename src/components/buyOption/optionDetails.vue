@@ -28,8 +28,8 @@
 import { reactive } from "vue";
 import description from "./description.vue";
 import settlement from "./settlement.vue";
-import repayType from "./repay-type.vue";
-import detailsInfo from "./details-info.vue";
+import repayType from "./repayType.vue";
+import detailsInfo from "./detailsInfo.vue";
 
 let data = reactive({
     detailCollapse: false
@@ -37,13 +37,15 @@ let data = reactive({
 
 </script>
 <style scoped lang="less">
-
- .collapse-title{
+.option-details{
+    margin-top: 28px; 
+    .collapse-title{
         font-size: 14px;
         font-weight: 600;
         text-align: center;
         width: 100%;
         position: relative;
+    
         img{
             vertical-align: sub;
             width: 16px;
@@ -67,10 +69,9 @@ let data = reactive({
             right: 0;
         }
     }
-      .title{
-            font-size: 24px;
-            font-weight: bold;
-        }
+}
+
+
   
    
    

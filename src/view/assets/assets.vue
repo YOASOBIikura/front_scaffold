@@ -15,17 +15,28 @@
                   <span class="text">$253322</span>
               </p>
         </div>
-        <assetOption v-for="(item,index) in 4" :key="index"></assetOption>
+        <div class="contains">
+           <assetOption  v-for="(item,index) in 3" :key="index"></assetOption>  
+        </div>
+       
     </div>
 </template>
 <script setup>
 import assetHeader from "@/components/assets/assetHeader.vue"
 import assetOption from "@/components/assets/assetOption.vue"
+import {reactive} from "vue"
+const data=reactive({
+   
+})
 
 </script>
 <style lang="less" scoped>
    .assets{
       width: 100%;
+      padding-top:56px;
+      padding-bottom: 50px;
+      box-sizing: border-box;
+      height: 100%;
       .total-info{
           width: 100%;
           padding: 24px 16px;
@@ -64,6 +75,13 @@ import assetOption from "@/components/assets/assetOption.vue"
                 font-weight: 600;
              }        
           }
+      }
+      .contains{
+         width: 100%;
+         height: 100%;
+         overflow-y:auto ;
+         padding-bottom: 233px;
+         box-sizing: border-box;  
       }
    }
 </style>

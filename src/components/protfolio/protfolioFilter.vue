@@ -1,8 +1,8 @@
 <template>
-     <a-drawer height="570px" class="protfolioFilter"  :closable="false" :headerStyle="{padding:'0px'}"  :bodyStyle="{padding:'0px'}"  :placement="'bottom'"   :open="data.openSelectCondition" >
+     <a-drawer height="570px" class="protfolioFilter"  :closable="false" :headerStyle="{padding:'0px'}"  :bodyStyle="{padding:'0px'}"  :placement="'bottom'"   :open="props.isOpen" >
         <template v-slot:title>
              <div class="filter">
-                 <img  class="close" src="@/assets/images/close.png" alt="" @click="data.openSelectCondition=false">
+                 <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
                  <span class="title">Filter</span>
                  <span></span>
              </div>
@@ -32,12 +32,19 @@
       </a-drawer>
 </template>
 <script setup>
-import { reactive } from 'vue';
-  let data=reactive({
-    openSelectCondition:false,
-    optionSelectList:[],
-    statusSelectList:[],
-    optionList:[
+import { reactive,defineProps,defineEmits} from 'vue';
+const props=defineProps({
+   isOpen:{
+       type:Boolean,
+       require:true,
+       default:false
+   }
+})
+const emits= defineEmits(["update:isOpen"])
+const data=reactive({
+     optionSelectList:[],
+     statusSelectList:[],
+     optionList:[
         {
          label:"Buy Call Options",
          value:"0",
@@ -65,8 +72,11 @@ import { reactive } from 'vue';
            value:"2"
          }
      ]
- 
-  })
+})
+//关闭弹窗
+var closeDrawer=()=>{
+   emits("update:isOpen",false)
+}
 </script>
 <style lang="less" scoped>
     .filter{

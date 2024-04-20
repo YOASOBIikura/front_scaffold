@@ -37,7 +37,7 @@
         padding: 24px 16px;
         border: 1px solid var(--component-border);
         border-radius: 16px;
-        margin-bottom: 60px;
+        margin-bottom: 20px;
         .item{
             margin-top: 24px;
             display: flex;

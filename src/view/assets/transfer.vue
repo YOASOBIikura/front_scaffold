@@ -1,6 +1,6 @@
 <template>
     <div class="assetsTransfer">
-        <navigationBar>
+        <navigationBar title="Transfer ETH">
             <template v-slot:icon>
                 <img  :style="{width: '16px',height: '16px'}" src="@/assets/images/token-eth.png" alt="">
             </template>
@@ -59,26 +59,31 @@
             <span class="right">0.002Eth</span>
         </div>
         <!--  -->
-        <span class="btn">Transfer</span>
+        <span class="btn" @click="transferTx">Transfer</span>
         <!--  -->
-        <assetTranfer></assetTranfer>
+        <assetTranfer v-model:isOpen="data.isOpen" ></assetTranfer>
     </div>
 </template>
 <script setup>
 import navigationBar from "@/components/utils/navigationBar.vue"
-import inputNumber from "@/components/utils/input-number.vue"
+import inputNumber from "@/components/utils/inputNumber.vue"
 import assetTranfer from "@/components/assets/assetTranfer.vue"
 import {reactive} from "vue"
-let data=reactive({
-    optionNumber:0
+const data=reactive({
+    optionNumber:0,
+    isOpen:false
 })
+
+var transferTx=()=>{
+     data.isOpen=true
+}
 </script>
 <style lang="less" scoped>
 .assetsTransfer{
     width: 100%;
     display: flex;
     flex-direction: column;
-    padding: 16px;
+    padding:72px 16px 0px;
     box-sizing: border-box;
     .option{
         width: 100%;

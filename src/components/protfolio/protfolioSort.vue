@@ -1,8 +1,8 @@
 <template>
-      <a-drawer  class="protfolioSort" height="260px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="data.openSortCondition"  @close="data.openSortCondition=false" >
+      <a-drawer  class="protfolioSort" height="260px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  >
         <template v-slot:title>
              <div class="filter">
-                 <img  class="close" src="@/assets/images/close.png" alt="" @click="data.openSortCondition=false">
+                 <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
                  <span class="title">Sort</span>
                  <span></span>
              </div>
@@ -26,11 +26,24 @@
       </a-drawer>
 </template>
 <script setup>
-import { reactive } from 'vue';
-let data=reactive({
-    openSortCondition:false,
-    sortSelect:"Recommended"
-  })
+import { reactive,defineProps,defineEmits} from 'vue';
+const data=reactive({
+
+})
+const props=defineProps({
+   isOpen:{
+       type:Boolean,
+       require:true,
+       default:false
+   }
+})
+const emits= defineEmits(["update:isOpen"])
+
+//关闭弹窗
+var closeDrawer=()=>{
+   emits("update:isOpen",false)
+}
+
 </script>
 <style lang="less" scoped>
 .protfolioSort{

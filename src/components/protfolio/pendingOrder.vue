@@ -55,7 +55,7 @@
                 </p>
             </div> 
 
-            <div class="bottom-right">
+            <div class="bottom-right" @click="editOption">
                 <img class="edit" src="@/assets/images/edit.png">
             </div>
         </div>
@@ -63,9 +63,14 @@
 </template>
 <script setup>
    import { reactive } from 'vue';
-   let data=reactive({
+   import { useRouter} from "vue-router";
+   const router=useRouter()
+   const data=reactive({
 
    })
+   var editOption=()=>{
+        router.push({path:"/sellCall"})
+   }
 </script>
 
 <style lang="less" scoped>
@@ -76,6 +81,7 @@
       display: flex;
       flex-direction: column;
       margin-top: 17px;
+      margin-bottom:17px ;
       .pendingOrder-header{
            width: 100%;
            padding: 16px;

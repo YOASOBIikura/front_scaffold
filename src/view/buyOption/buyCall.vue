@@ -1,17 +1,6 @@
 <template>
-    <div>
-    <div class="page">
-        <!-- 页头位置 -->
-        <div class="page-header">
-            <div>
-                <img src="@/assets/images/back.svg" class="back"/>
-            </div>
-            <div>
-                <div class="copy-btn">
-                    <img src="@/assets/images/copy.svg" />
-                    Copy to sell</div>
-            </div>
-        </div>
+    <navigation-bar title="Buy Call Options"></navigation-bar>
+    <div class="buyOption">
         <!-- 标题 -->
         <div class="header-content">
             <div class="title">Buy ETH {{ baseData.optionType }}</div>
@@ -90,27 +79,25 @@
             </div>
         </div>
         <!-- 详细数据 -->
-        <div class="details-content">
-            <option-details></option-details>
-        </div>
-       
+        <option-details></option-details> 
     </div>
         <!-- 支付按钮区域 -->
-        <div class="pay-btn-content">
-            <a-button 
-                type="primary"
-                class="pay-btn"
-                >Pay 10 USDT</a-button>
-        </div>
+    <div class="pay-btn-content">
+        <a-button 
+            type="primary"
+            class="pay-btn"
+            >Pay 10 USDT</a-button>
     </div>
+
      
     
 </template>
 
 <script setup>
 import { reactive } from "vue"
-import inputNumber from "@/components/utils/input-number.vue"
-import optionDetails from "../components/optionReview/option-details.vue"
+import inputNumber from "@/components/utils/inputNumber.vue"
+import optionDetails from "@/components/buyOption/optionDetails.vue"
+import navigationBar from "@/components/utils/navigationBar.vue";
 
 let baseData = reactive({
     optionType: "call",
@@ -124,34 +111,13 @@ let baseData = reactive({
 </script>
 
 <style scope lang="less">
-.page{
-    padding: 12px 12px 40px;
+.buyOption{
+    padding: 56px 12px 80px;
     overflow: auto;
-}
-.page-header{
-    height: 48px;
     width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    align-items: center;
-    .back{
-        width: 24px;
-        height: 24px;
-    }
-    .copy-btn{
-        line-height: 32px;
-        font-size: 14px;
-        background-color: var(--bg-color-secondarycontainer);
-        padding: 4px 12px;
-        border-radius: 32px;
-        font-weight: 600;
-        img{
-           vertical-align: sub;
-           margin-right: 4px;
-        }
-    }
+    height: 100%;
 }
+
 .header-content{
   height: 48px;  
   margin-top: 8px;
@@ -313,10 +279,6 @@ let baseData = reactive({
     }
 }
 
-// 详情区域
-.details-content{
-    margin-top: 28px;
-}
 .pay-btn-content{
     position: fixed;
     bottom: 0;

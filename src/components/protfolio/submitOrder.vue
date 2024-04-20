@@ -49,9 +49,9 @@
                 </p>
             </div>
 
-            <!-- <div class="btn">
+            <div class="btn" @click="liquidation">
                 Exercise
-            </div> -->
+            </div>
 
           
         </div>
@@ -64,9 +64,14 @@
  </template>
 <script setup>
 import { reactive } from 'vue';
-let data=reactive({         
+const emits= defineEmits(["liquidation"])
+const data=reactive({         
 
 })
+var liquidation=()=>{
+   console.log(3333)
+    emits("liquidation")
+}
 </script>
 <style lang="less" scoped>
   .submitOrder{

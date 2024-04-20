@@ -1,5 +1,5 @@
 <template>
-    <div class="header">
+    <div class="layout-header">
         <div>
             <img class="logo" src="@/assets/images/jVaultLogo.png"/>
         </div>
@@ -49,13 +49,19 @@ watch(() => axiosStore.isConnect,
 
 </script>
 <style lang="less" scoped>
-.header{
+.layout-header{
+    position: fixed;
+    background-color: var(--bg-color-page);
+    top: 0px;
+    left: 0px;
     height: 56px;
     width: 100%;
     display: flex;
     padding: 12px;
     justify-content: space-between;
     align-items: center;
+    z-index: 1000;
+    // opacity: 0.5;
     .logo{
         height: 30px;
     }

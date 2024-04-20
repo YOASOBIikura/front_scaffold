@@ -3,14 +3,17 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [{
   path: '/',
-  redirect: '/homepage'
+  redirect: '/marketPlace',
+  meta:{
+    showLayout: true
+  }
 },
 {
   path: '/homepage',
   name: 'homepage',
   component: () => import('@/view/homepage.vue'),
-  meta: {
-    showLayout: false
+  meta:{
+    showLayout: true
   }
 },
 {
@@ -22,49 +25,90 @@ const routes = [{
   }
 },
 {
-  path: '/buyOption',
-  name: 'buyOption',
-  component: () => import('@/view/buyOption.vue'),
-  meta: {
+  path: '/buyCall',
+  name: 'buyCall',
+  component: () => import('@/view/buyOption/buyCall.vue'),
+  meta:{
     showLayout: false
   }
 },
 {
-  path: '/sellOption',
-  name: 'sellOption',
-  component: () => import('@/view/sellOption.vue'),
-  meta: {
+  path: '/buyPut',
+  name: 'buyPut',
+  component: () => import('@/view/buyOption/buyPut.vue'),
+  meta:{
     showLayout: false
   }
 },
+
+{
+  path: '/sellCall',
+  name: 'sellCall',
+  component: () => import('@/view/sellOption/sellCall.vue'),
+  meta:{
+    showLayout: false
+  }
+},
+
+{
+  path: '/sellPut',
+  name: 'sellPut',
+  component: () => import('@/view/sellOption/sellPut.vue'),
+  meta:{
+    showLayout: false
+  }
+},
+
+
 {
   path:"/protfolio",
   name:"protfolio",
   component: () => import('@/view/protfolio.vue'),
-  meta: {
-    showLayout: true
-  }
-},
+    meta: {
+      showLayout: true
+     }
+  },
   {
-    path:"/assets",
-    name: "assets",
-    component: () => import('@/view/assets/assets.vue') 
+    path:"/asset",
+    name: "asset",
+    component: () => import('@/view/assets/assets.vue'),
+    meta: {
+      showLayout: true
+     }
   },
   {
     path:"/networkError",
     name: "networkError",
-    component: () => import('@/view/error/network.vue')
+    component: () => import('@/view/error/network.vue'),
+    meta:{
+      showLayout: false
+    }
+
   },
   {
     path:"/assetTransfer",
     name: "assetTransfer",
-    component: () => import('@/view/assets/transfer.vue')
+    component: () => import('@/view/assets/transfer.vue'),
+    meta:{
+      showLayout: false
+    }
   },  
   {
     path:"/logout",
     name: "logout",
-    component: () => import('@/view/assets/logout.vue')
+    component: () => import('@/view/assets/logout.vue'),
+    meta:{
+      showLayout: false
+    }
   },
+  {
+    path:"/notification",
+    name: "notification",
+    component: () => import('@/view/notification.vue'),
+    meta:{
+      showLayout: true
+    }
+  }
 ]
 
 const router = createRouter({

@@ -22,11 +22,11 @@
 
 </script>
 <style scoped lang="less">
-.title{
-            font-size: 24px;
-            font-weight: bold;
-}
  .settlement{
+       .title{
+        font-size: 24px;
+        font-weight: bold;
+       }
         margin-top: 40px;
         .settlement-img{
             position: relative;

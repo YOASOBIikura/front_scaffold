@@ -1,26 +1,46 @@
 <template>
     <div class="navigationBar">
-          <img class="icon" src="@/assets/images/back.png" alt="">
+          <img class="icon" src="@/assets/images/back.png" alt="" @click="goRoute">
           <div class="info">
             <slot class="iconSlot" name="icon"></slot>
-            <span class="titleText">Transfer Eth</span>
+            <span class="titleText">{{props.title}}</span>
           </div>
           <span></span>
 
     </div>
 </template>
 <script setup>
-
+import { useRouteStore } from "@/pinia/modules/route"
+import { useRouter} from "vue-router";
+import {defineProps} from "vue"
+const  routeStore=useRouteStore()
+const router=useRouter()
+const props=defineProps({
+     title:{
+         type:String,
+         required:false,
+         default:""
+     }
+})
+var goRoute=()=>{
+    router.replace({path:routeStore.preRoute})
+}
 </script>
 <style lang="less" scoped>
  .navigationBar{
      width: 100%;
-     padding: 16px 0;
+     padding: 0px 16px;
      box-sizing: border-box;
      display: flex;
      flex-direction: row;
      align-items: center;
      justify-content: space-between;
+     position: fixed;
+     height: 56px;
+     top: 0px;
+     left: 0px;
+     background-color: var(--bg-color-page);
+     z-index: 1000;
      .icon{
         width: 24px;
         height: 24px;

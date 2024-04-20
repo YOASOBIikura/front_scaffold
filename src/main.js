@@ -4,7 +4,7 @@ import { store } from '@/pinia'
 import router from "@/router/index"
 import {i18n} from "@/plugin/i18n/i18n"
 import '@/assets/css/global.css'
-import "@/router/promission"
+// import "@/router/promission"
 
 import Antd from 'ant-design-vue';
 

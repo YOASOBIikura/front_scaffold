@@ -1,8 +1,8 @@
 <template>
-      <a-drawer height="420px" class="assetTranfer"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="data.openSortCondition"  @close="data.openSortCondition=false" >
+      <a-drawer height="420px" class="assetTranfer"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  @close="closeDrawer" >
         <template v-slot:title v-if="true">
              <div class="filter">
-                 <img  class="close" src="@/assets/images/close.png" alt="" @click="data.openSortCondition=false">
+                 <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
                  <span class="title">tranfer</span>
                  <span></span>
              </div>
@@ -32,11 +32,21 @@
       </a-drawer>
 </template>
 <script setup> 
-import { reactive } from 'vue';
+import { reactive,defineProps,defineEmits} from 'vue';
+const props=defineProps({
+   isOpen:{
+       type:Boolean,
+       require:true,
+       default:false
+   }
+})
+const emits=defineEmits(["update:isOpen"])
 let data=reactive({
-    openSortCondition:true,
-    sortSelect:"Recommended"
-  })
+
+})
+var closeDrawer=()=>{
+   emits("update:isOpen",false)
+}
 </script>
 <style lang="less" scoped>
 .assetTranfer{

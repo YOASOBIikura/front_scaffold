@@ -17,22 +17,39 @@
 
          <div class="bottom">
              <div class="p1">
-                 <p class="select left">
+                 <p class="select left" @click="goTransfer">
                     <img  src="@/assets/images/arrow_right2.png" alt="">
                  </p>
-                 <p class="select">
+                 <p class="select" @click="goTransfer">
                     <img  src="@/assets/images/arrow_left.png" alt="">
                  </p>       
              </div>
              <p class="p2">
-                 <span class="option ">Sell Call</span>
-                 <span class="option right">Sell Put</span>
+                 <span class="option" @click="goSellOption('call')">Sell Call</span>
+                 <span class="option right" @click="goSellOption('put')">Sell Put</span>
              </p> 
          </div>
     </div>
 </template>
 <script setup>
+import { reactive } from 'vue';
+import { useRouter,useRoute } from "vue-router";
+const router=useRouter()
+const data=reactive({
 
+})
+var goTransfer=()=>{
+    router.push({path:"/assetTransfer"})
+}
+
+var goSellOption=(orderType)=>{
+    if(orderType=="call"){
+        router.push({path:"/sellCall"})
+    }else{
+        router.push({path:"/sellPut"})
+    }
+   
+}
 </script>
 <style lang="less" scoped>
  .assetOption{
