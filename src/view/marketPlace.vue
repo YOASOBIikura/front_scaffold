@@ -65,7 +65,7 @@
 import { ref, reactive } from "vue"
 import selectSwitch from "../components/utils/selectSwitch.vue"
 import swiperSelect from "../components/utils/swiperSelect.vue"
-import listingTable from "../components/marketPlace/listing-table.vue"
+import listingTable from "../components/marketPlace/listingTable.vue"
 // 菜单区分类型
 const menuOptionType = [
     {
