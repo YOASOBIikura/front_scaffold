@@ -1,13 +1,15 @@
 import { defineStore } from 'pinia'
-
-
 export const useRouteStore = defineStore('route', {
     state: () => ({
         preRoute:null,
         currentRoute:null,
-        showLayout:true
+        showLayout:true,
+        //更改路由
+        changeRoute:"/"
     }),
-    getters: {},
+    getters: {
+
+    },
     actions: {
         setCurrentRoute(preRoute,currentRoute){
              this.currentRoute=currentRoute.path;          
@@ -23,6 +25,9 @@ export const useRouteStore = defineStore('route', {
              }else{
                  this.preRoute=localStorage.getItem("preRoute")
              }           
+        },
+        setChangeRoute(changeRoute){
+            this.changeRoute=changeRoute
         }
     }
 });

@@ -40,6 +40,8 @@ function Axios(config){
      _this.headers={}
      _this.statusSuccess=true
      _this.statusFail=false
+     _this.resolve=null
+     _this.delayTime=500
      for(let k in config.headers){
          _this.headers[k]=config.headers[k]
      }
@@ -53,6 +55,7 @@ function Axios(config){
             当使用Axios()   拦截此函数
           */
          apply(fn,thisArg,args){
+            _this.currentLoop=0;
             return _this.request(...args)
          },
          get(fn,key){
@@ -68,10 +71,16 @@ function Axios(config){
      return proxy     
 }
 
-
+//睡眠阻塞器
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+ }
 
 
 Axios.prototype.request=async function(option){
+    let resolveR={
+        request:""
+    }
     //请求拦截器
     let list = this.interceptors.request.list;
     //不能直接改this
@@ -95,7 +104,8 @@ Axios.prototype.request=async function(option){
     }
     // 处理循环请求次数
     if(!option.loop){
-        option.loop =this.loop 
+        option.loop =option.loop>this.loop ? option.loop:this.loop;
+        // option.loop=this.loop
     }
 
     // 处理安全块
@@ -104,29 +114,43 @@ Axios.prototype.request=async function(option){
               option.data.safeBlock=this.safeBlock
         }
     }
+    return handleRequest(this,option,resolveR)
+}
 
+
+function handleRequest(_this,option,resolveR){
     return new Promise((resolve,reject) => {
         //循环请求
-        this.currentLoop+=1
-        if(option.mode == "chainBlockCall" || option.mode=="http"){
-            if(option.loop !=0 &&this.currentLoop> option.loop && option.loop != "infinite"){
+        //贮存resolve返回方法
+        if(_this.currentLoop==0){
+            resolveR.request=resolve
+        }
+        _this.currentLoop+=1
+        if(option.mode == "chainBlockCall" || option.mode=="http" || option.mode =="chainBlockNormal"){
+            if(option.loop !=0 &&_this.currentLoop> option.loop && option.loop != "infinite"){  
                 throw new Error("request fail")
             }
         }
-        request(this,option).then((response) => {
+        request(_this,option).then((response) => {
             //响应拦截器
-            let list = this.interceptors.response.list;
+            let list = _this.interceptors.response.list;
             // console.log("真正的请求发送",response)
             list.forEach((fn) => {
-                response = fn(response,option,this);
+                response = fn(response,option,_this);
             })
-            this.currentLoop=0
-            resolve(response)
-        },(error) => {     
-            if(option.mode =="chainBlockCall" || option.mode == "http"){
+            _this.currentLoop=0
+            resolveR.request(response)
+        },async (error) => {    
+            if(String(error).includes("lack field")){
+                console.error(error)
+                return
+            }
+            if(option.mode =="chainBlockCall" || option.mode == "http" || option.mode == "chainBlockNormal"){
                 //注意下这里的逻辑 todo
                 if(option.loop>0){
-                    this.request(option)
+                    //睡眠0.5s 再请求
+                    await sleep(_this.delayTime);
+                    await handleRequest(_this,option,resolveR)
                 }    
             }else{
                 console.error(error)
@@ -134,7 +158,6 @@ Axios.prototype.request=async function(option){
             
         });
     })
-
 }
 
 export default Axios

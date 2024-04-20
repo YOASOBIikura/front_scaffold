@@ -1,6 +1,6 @@
 import {toRaw} from "vue"
 import { BigNumber, ethers } from "ethers";
-import {SimpleAccountAPI, PaymasterAPI, HttpRpcClient} from "@account-abstraction/sdk"
+import {SimpleAccountAPI} from "@account-abstraction/sdk"
 import {sendOrderR,getOrderR,getVaultR,getVaultMaxSaltR,getVaultNonceR,getFeeDataR,getAllVaultLengthR} from "@/api/bundler"
 import {useAxiosStore} from "@/pinia/modules/axios"
 
@@ -8,15 +8,26 @@ import {useAxiosStore} from "@/pinia/modules/axios"
 let beneficiary="0x2E4621E682272680AEAB78f48Fc0099CED79e7d6"//bundler受益人
 let loopTime=3000 //多长时间循环一次 
 let loopCount=10  //循环多少次
-async function sendTxToBundler(dest, value, func){
+
+async function sendTxToBundler(data){
+    //处理数据
+    let dest=[]
+    let value=[]
+    let func=[]
+    data?.forEach(item=>{
+         dest.push(target)
+         value.push(value)
+         func.push(callData)
+  
+    })   
     let axiosStore=useAxiosStore()
     //获取provider 获得signer
     let provider= toRaw(axiosStore.currentProvider)  
     let signer=await provider.getSigner()
     //获取下标index
-    // let response= await getVaultMaxSaltR(axiosStore.currentAccount)
-    // let maxSalt=response.message.maxSalt.add(BigNumber.from(1))
-    let maxSalt=1
+    let response= await getVaultMaxSaltR(axiosStore.currentAccount)
+    let maxSalt=response.message.maxSalt.add(BigNumber.from(1))
+    // let maxSalt=1
     // console.log(response,"maxSalt",maxSalt.toString(),axiosStore.currentAccount)
     //获取vault
     let vaultResponse=  await getVaultR(axiosStore.currentAccount,maxSalt)
@@ -27,7 +38,7 @@ async function sendTxToBundler(dest, value, func){
     console.log(vaultCode,"vaultCode")
     let initCode="0x"
     if (vaultCode == "0x") {
-        initCode = `${axiosStore.currentContractData["VaultFactory"]}5fbfb9cf${String(axiosStore.currentAccount).substring(2).padStart(64, "0")}${String(Number(maxSalt)).toString(16).padStart(64, "0")}`
+        initCode = `${axiosStore.currentContractData["VaultFactory"]}5fbfb9cf${String(axiosStore.currentAccount).substring(2).padStart(64, "0")}${(Number(maxSalt)).toString(16).padStart(64, "0")}`
     }
     //获取nonce
     let nonceResponse= await getVaultNonceR(vault)
@@ -41,13 +52,32 @@ async function sendTxToBundler(dest, value, func){
     //处理vault要做的事情
     let funcHex = new ethers.utils.Interface(["function executeBatch(address[] dest,uint256[] value,bytes[] func)"])
     let callData= funcHex.encodeFunctionData("executeBatch", [ dest,value, func])
-    console.log(callData,"callData")
+    //-----预估gasLimit-----
+    let callGasLimit;
+    let gasPriceRate=await getMainGasPriceRate(axiosStore.chainId);
+    try {
+        if(initCode=="0x"){
+            let esGasLimit = await provider.estimateGas({
+                from:axiosStore.currentContractData["EntryPoint"],
+                to:  vault, //已存在vault地址
+                data: callData
+            });
+            let GasLimit = esGasLimit.mul(parseInt(gasPriceRate.toString())) ;
+            callGasLimit += GasLimit.toNumber();
+        }else{
+            callGasLimit = parseInt((2500000 * gasPriceRate).toString());
+        }
+    } catch (e) {
+        console.log("预估gas 失败：", e);
+        callGasLimit = parseInt((2500000 * gasPriceRate).toString());
+    }
+    //-------
     var unsignOp = {
         sender: vault,
         nonce: nonce,
         initCode: initCode,
         callData: callData,
-        callGasLimit: 5800000,
+        callGasLimit: callGasLimit, 
         verificationGasLimit: 500000,
         maxFeePerGas: parseInt(suggesMaxFeePerGas * 1.5),
         maxPriorityFeePerGas: parseInt(suggesMaxPriorityFeePerGas * 1.1),
@@ -91,19 +121,20 @@ async function sendTxToBundler(dest, value, func){
      let orderId=hashResponse.data.id
      let hash = await getOperationHash(orderId, loopTime, loopCount)
      console.log(hash,"hash")
-     let tx = await provider.waitForTransaction(hash)
-     if(tx.status==1){
-        console.log(tx,"交易成功")
-        return {
-            status:true,
-            message:hash
-        }
-     }else{
-        console.log(tx,"交易失败")
-        return {
-            status:false,
-            message:hash
-        }
+     const tx = await provider.waitForTransaction(hash)
+     if(tx.status === 1){
+       console.log("交易成功: ", tx)
+       const resp = await parseLogForBundler(hash)
+       return {
+         status: resp,
+         message: hash
+       }
+     } else {
+       console.log("交易失败: ", tx)
+       return {
+         status: false,
+         message: hash
+       }
      }
    
 }
@@ -136,6 +167,46 @@ async function getOperationHash(orderId, time, count) {
         },time)  
     })
  }
+
+/**
+ * 获取主网的gasPrice倍率
+ * 在arbitrum 是L2 网络需要根据L1 的gas去浮动gasLimit
+ * 所以此方法为计算L1 网络gasPrice并计算出合适的系数作为L2网络的gasLimit系数
+ */
+ async function getMainGasPriceRate(chainId) {
+    if(chainId !== 42161){
+        return 1;
+    }
+    // -- 获取主网gasPrice
+    let mainRpcUrl = "https://ethereum.blockpi.network/v1/rpc/c8f16dd083f31f39453253c58718d2636d808e6e";
+    const customProvider = new ethers.providers.JsonRpcProvider(mainRpcUrl);
+    let gasprice = await customProvider.send('eth_gasPrice', []);
+    let gaspriceRate = ethers.BigNumber.from(gasprice).div(20 * 10 ** 9).toNumber();
+    if(gaspriceRate < 1){
+        gaspriceRate = 1;
+    }
+    return gaspriceRate;
+}
+
+//解析日志 看看bundler内部交易是否正确
+async function parseLogForBundler(txHash){
+    let result = false
+    let provider= toRaw(axiosStore.currentProvider)  
+    let receipt = await provider.getTransactionReceipt(txHash);
+    let funcHex = new ethers.utils.Interface(["event UserOperationEvent(bytes32 indexed userOpHash, address indexed sender, address indexed paymaster, uint256 nonce, bool success, uint256 actualGasCost, uint256 actualGasUsed)"])
+    if (receipt.logs.length > 0) {
+      for (let i=0; i<receipt.logs.length; i++) {
+        try {
+          const parsedLog = funcHex.parseLog(receipt.logs[i]);
+          console.log(parsedLog,"-----s-数据据"); 
+          result=parsedLog.args.success
+        } catch(e) {
+        }
+      }
+    }
+    return result
+  }
+
 
 export {sendTxToBundler}
 

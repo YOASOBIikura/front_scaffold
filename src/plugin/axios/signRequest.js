@@ -12,7 +12,7 @@ async function sign(_this,option){
           message:""
     }
     try{
-        result["message"]= await  _this.chainBlockSendProvider.request({
+        result["message"]= await _this.chainBlockSendProvider.request({
             method:"eth_sign",
             params:[_this.wallet,message]
         })

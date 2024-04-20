@@ -1,12 +1,22 @@
 import { defineStore } from 'pinia'
 import { createWeb3Modal, defaultConfig } from '@web3modal/ethers5/vue'
-import {mainnet,polygon,arbitrum,goerli} from "@/config/walletConnect/chainBlockNetwork"
+import {polygon} from "@/config/chainBlock/polygon"
+import {arbitrum} from "@/config/chainBlock/arbitrum"
 import {useAxiosStore} from "./axios"
+import {useRouteStore} from "./route"
 import { ethers } from 'ethers'
+let eth={
+  chainId: 1,
+  name: "ethereum",
+  currency: "ETH",
+  explorerUrl: "https://etherscan.io",
+  rpcUrl: "https://cloudflare-eth.com",
+}
 export const useModalStore = defineStore('modal', {
   state:()=>({
     projectId:'f47863c3ad29e5bae9cee8013ec05982',//云项目id
     modal:null,
+    allowChain:[arbitrum,arbitrum]
   }),
   actions: {
      initModal(){   
@@ -16,13 +26,14 @@ export const useModalStore = defineStore('modal', {
             description: 'My Website description',
             url: 'https://mywebsite.com', // origin must match your domain & subdomain
             icons: ['https://avatars.mywebsite.com/']
-        }      
+        }  
+        //创造modal    
         const modal = createWeb3Modal({
             termsConditionsUrl:"http://www.baidu.com",//条款和条件链接的url
             privacyPolicyUrl:"https://www.google.com/",//隐私政策链接url
             featuredWalletIds:["2a3c89040ac3b723a1972a33a125b1db11e258a6975d3a61252cd64e6ea5ea01"],//默认钱包
             ethersConfig: defaultConfig({ metadata }),
-            chains: [mainnet,polygon,arbitrum,goerli],
+            chains: [polygon.chainInfo,arbitrum.chainInfo,eth],
             projectId:this.projectId,
             enableAnalytics: true, // 云数据分析
             allWallets:"SHOW", //控制移动钱包显示 HIDE 不显示  ONLY_MOBILE 只在移动端显示  SHOW 全部显示
@@ -58,26 +69,52 @@ export const useModalStore = defineStore('modal', {
 })
 
 // 定义订阅事件
-function handleChange({ provider, providerType, address, error, chainId, isConnected }) {
+function handleChange({provider, providerType, address, error, chainId, isConnected }) { 
      console.log("事件触发",provider, providerType, address, error, chainId, isConnected)
      //重新初始化axios
      if(isConnected){
-      let chainBlockCallProvider=  new ethers.providers.Web3Provider(provider)
-      console.log(chainBlockCallProvider,"---+++----")
-      const axiosStore=useAxiosStore();
-      axiosStore.initProvider(chainBlockCallProvider,provider,address)
-      axiosStore.setChainId(chainId)
-      axiosStore.setCurrentAccount(address)   
-      axiosStore.setIsConnect(true)
-      axiosStore.setCurrentProvider(chainBlockCallProvider)
-     }else{
-      const axiosStore=useAxiosStore();
-      axiosStore.initProvider(null,null,ethers.constants.AddressZero)
-      axiosStore.setChainId(-1)
-      axiosStore.setCurrentAccount(ethers.constants.AddressZero)   
-      axiosStore.setIsConnect(false)
-      axiosStore.setCurrentProvider(null)
+        if(checkChain(chainId))return true;      
+        //真正的链接
+        const axiosStore=useAxiosStore();
+        let chainBlockCallProvider=  new ethers.providers.Web3Provider(provider)
+        console.log(chainBlockCallProvider,"---+++----")
+        axiosStore.initProvider(chainBlockCallProvider,provider,address)
+        axiosStore.setChainId(chainId)
+        axiosStore.setCurrentAccount(address)   
+        axiosStore.setIsConnect(true)
+        axiosStore.setCurrentProvider(chainBlockCallProvider)
+        return
      }
+     clearChain()
 }
+//检查是否链接正确
+function checkChain(chainId){
+        //判断当前链项目是否支持
+        const modalStore=useModalStore();
+        let allowChain=  modalStore.allowChain
+        let isExistChain=false
+        allowChain.forEach(item=>{
+              if(item?.chainInfo?.chainId==Number(chainId)){
+                isExistChain=true
+              }
+        })
+        if(!isExistChain){
+          clearChain()
+          let routeStore=useRouteStore()
+          routeStore.setChangeRoute("/networkError")
+           return
+        }
+        return false
+}
+//清除相关信息
+function clearChain(){
+  const axiosStore=useAxiosStore();
+  axiosStore.initProvider(null,null,ethers.constants.AddressZero)
+  axiosStore.setChainId(-1)
+  axiosStore.setCurrentAccount(ethers.constants.AddressZero)   
+  axiosStore.setIsConnect(false)
+  axiosStore.setCurrentProvider(null)
+}
+
   
 

@@ -1,5 +1,5 @@
 import { BigNumber } from "ethers";
-import { useAxiosStore } from "../pinia/modules/axios";
+import { useAxiosStore } from "@/pinia/modules/axios";
 
 function  testChainBlock(){
    return  useAxiosStore().axios({
@@ -9,7 +9,7 @@ function  testChainBlock(){
         // method:"get" //请求方式  http时 填get   rpc 填方法
         method:"getApp5",
         data:{
-          safeBlock:6,  
+        
           param:{
              "tuple":{
                 "address":"0xa024c99baf0be55f3755a878e43225bd32291b4a",
@@ -87,6 +87,29 @@ function testGet(address){
     }});
 }
 
+
+// function testGetEth(){
+//     return  useAxiosStore().axios({
+//         mode:"chainBlockCall", //chainBlockCall  http  chainBlockSend  sign  unSign  
+//         target:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",// chainBlock 时是合约地址   http时是url
+//         loop:5,//填5 尝试5次   infinite 无限
+//         // method:"get" //请求方式  http时 填get   rpc 填方法
+//         method:"balanceOf",
+//         headers:{
+//             Origin:" https://app.uniswap.org",  
+//             Referer:"https://app.uniswap.org/swap"           
+//         },
+//         data:{
+//           safeBlock:6,  
+//           param:{
+//              "address":"0x685b7c9a85b8f1e1a168892fB2DD35399bFDCB99"
+//           },
+//           returnsType:{
+//              "uint256":"number"   
+//           }         
+//     }});
+// }
+
 function testSwitchNetwork(chainId){
      return useAxiosStore().axios({
         mode:"switchChain",
@@ -162,7 +185,8 @@ function testMultiCall(){
                param:{
                   "address":"0xDC66a4E0c00F2ae4F858c2a4804FAF648EBC66C5" 
                }          
-            },{
+            },
+            {
                func:"getEth",
                param:{
 
@@ -181,4 +205,16 @@ function testMultiCall(){
 }
 
 
-export {testChainBlock,testHttp,testSend,testGet,testSwitchNetwork,testSign,testUnSign,testSign712,testMultiCall}
+function  testEthApi(){
+    // debugger
+    return  useAxiosStore().axios({
+        mode:"chainBlockSend", 
+        target:"0xdCfc97D8B58D9418B1Ac9f993D278976F383194d",
+        loop:5,
+        data:{
+          value:BigNumber.from(String(0.01*10**18)),
+          safeBlock:12     
+    }});
+}
+
+export {testChainBlock,testHttp,testSend,testGet,testSwitchNetwork,testSign,testUnSign,testSign712,testMultiCall,testEthApi}

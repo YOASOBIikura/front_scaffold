@@ -1,6 +1,7 @@
 import {parseRequest,parseResponse,makeHex} from "./chainBlockUtils"
 //链上查询请求
 async function chainBlockCallRequest(_this,option){
+   console.log(option,"-----")
    if( !option.data || !option.data.param) {
       throw  new Error("lack field param")
    } 
@@ -21,8 +22,9 @@ async function chainBlockCallRequest(_this,option){
    let arg=JSON.parse(JSON.stringify(option.data));
    let request=parseRequest(arg.param)
    let responseHex=await callConrtact(_this,option,request.argType,request.argValue)
+   console.log(arg.returnsType,"---sjjjjsj")
    let response= parseResponse(responseHex,arg.returnsType)
-   // console.log(response,"----")
+   console.log(response,"----")
    return {
       status:_this.statusSuccess,
       message:response
@@ -36,6 +38,7 @@ async function callConrtact(_this,option,paramType,param){
       to:option.target,
       data:dataHex
      })
+     console.log(result,"请求结果")
 
     return result; 
 }
@@ -58,14 +61,19 @@ async function multiCall(_this,option){
    param["address[]"]=option.data.contracts
    let hexList=[]
    for(let i=0;i<option.data.param.length;i++){
-      if(!option.data.param[i].param){
-         throw new Error("lack field param")
+      let dataHex=""
+      if(option.data.parseMode){       
+         if(!option.data.param[i].param){
+            throw new Error("lack field param")
+         }  
+         if(!option.data.param[i].func){
+            throw new Error("lack field func")
+         }
+         let request= parseRequest(option.data.param[i].param)
+         dataHex= makeHex(option.data.param[i].func,request.argType,request.argValue)
+      }else{
+         dataHex=option.data.param[i]
       }
-      let request= parseRequest(option.data.param[i].param)
-      if(!option.data.param[i].func){
-         throw new Error("lack field func")
-      }
-      let dataHex= makeHex(option.data.param[i].func,request.argType,request.argValue)
       hexList.push(dataHex)
    }
    param["bytes[]"]=hexList

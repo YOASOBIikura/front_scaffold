@@ -7,6 +7,7 @@ function parseRequest(obj){
     for(let key in obj){
        let tempKey=key.split(":")
         switch(tempKey[0]){
+         
             case "tuple":              
                let resultTuple=  recursionTuple(obj[key]) 
                argType.push(resultTuple["key"])
@@ -18,7 +19,8 @@ function parseRequest(obj){
                 argValue.push(resultArray["value"])
                 break;
             default :
-               argType.push(key),
+               let tempKey2=key.split(":")
+               argType.push(tempKey2[0]),
                argValue.push(obj[key])                  
         }
     }
@@ -41,7 +43,8 @@ function recursionTuple(obj){
            tupleValue.push(resultArray["value"])
            break  
          default :
-          tupleKey+=`${key},`  
+          let tempKey2=key.split(":")
+          tupleKey+=`${tempKey2[0]},`  
           tupleValue.push(obj[key])  
      }  
    }
@@ -58,8 +61,9 @@ function recursionArray(obj){
   for(let i=0;i<obj.length;i++){
      let temp=[]
      let result=recursionTuple(obj[i])
-     if(i==0){     
-        tupleKey+=result["key"]
+     if(i==0){  
+        let tempKey=String(result["key"]).split(":")  
+        tupleKey+=tempKey[0]
      }
      temp.push(result["value"])
      tupleValue.push(temp)
@@ -92,11 +96,14 @@ function parseResponse(response,returnsType){
                argValue.push(resultArray["value"])
                break;
            default :
-              argType.push(key) 
+              let tempKey2=key.split(":")
+              argType.push(tempKey2[0]) 
               argValue.push(returnsType[key])               
        }
    }
+
    //解析链上返回的结果
+   // console.log(argType,"argType")
    var returnData=ethers.utils.defaultAbiCoder.decode(argType,response)   
 
   let responseData={};
@@ -110,7 +117,6 @@ function parseResponse(response,returnsType){
            responseData[tempKey[1]]=recursionArrayResponse(returnsType[key],returnData[index]) 
           break;
         default:
-           console.log()
            responseData[returnsType[key]]=returnData[index];          
      }
   })

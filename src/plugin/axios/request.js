@@ -3,6 +3,7 @@ import {httpRequest} from "./httpRequest"
 import {chainBlockSendRequest} from "./chainBlockSendRequest"
 import {switchNetwork} from "./switchNetwork"
 import {sign,unSign,sign712} from "./signRequest"
+import {chainBlockNormal} from "./chainBlockNormal";
 
 
 //请求分流
@@ -13,6 +14,9 @@ async function request(_this,option){
     let response
     // 请求分流
     switch(option.mode){
+       case "chainBlockNormal":
+          response=await chainBlockNormal(_this,option)
+          break;
        case "http":
         response=await httpRequest(_this,option)
           break

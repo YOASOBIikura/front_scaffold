@@ -5,17 +5,20 @@ async function switchNetwork(_this,option){
         throw  new Error("lack field")
     } 
     var netwrok=ethers.utils.hexStripZeros(ethers.utils.hexlify(option.data.chainId)) 
-    let status=_this.statusSuccess;
     try {
         await _this.chainBlockSendProvider.request({
           method:"wallet_switchEthereumChain",
           params:[{chainId:netwrok}]
         })
     }catch(error){
-        status=_this.statusFail
+        return {
+           status: _this.statusFail,
+           message:error
+        }
     }
     return {
-        status:status        
+        status:_this.statusSuccess,
+        message:"switch success"
     }
 }
 export {switchNetwork}

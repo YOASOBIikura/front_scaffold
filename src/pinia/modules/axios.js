@@ -1,10 +1,8 @@
 import { defineStore } from 'pinia'
 import { useWeb3Modal,useWeb3ModalState } from '@web3modal/ethers5/vue'
 import Axios from "@/plugin/axios/axios"
-import {contractGoerli,bundlerGoerli} from "@/config/contract/goerli"
-import {contractPolygon,bundlerPolygon} from "@/config/contract/polygon"
-import {contractEthereum,bundlerEthereum} from "@/config/contract/ethereum"
-import {contractArbitrum,bundlerArbitrum} from "@/config/contract/arbitrum"
+import {polygon} from "@/config/chainBlock/polygon"
+import {arbitrum} from "@/config/chainBlock/arbitrum"
 
 export const useAxiosStore = defineStore('axios', {
   state:()=>({
@@ -41,21 +39,13 @@ export const useAxiosStore = defineStore('axios', {
      setChainId(chainId){ 
       this.chainId=chainId
       switch(Number(chainId)){
-          case 1:
-             this.currentContractData=contractEthereum
-             this.bundlerUrl=bundlerEthereum
-             break;
-          case 5:
-            this.currentContractData=contractGoerli
-            this.bundlerUrl=bundlerGoerli
-             break;
           case 137:
-            this.currentContractData=contractPolygon
-            this.bundlerUrl=bundlerPolygon
+            this.currentContractData=polygon.contractData
+            this.bundlerUrl=polygon.bundlerUrl
             break
           case 42161:
-             this.currentContractData=contractArbitrum
-             this.bundlerUrl=bundlerArbitrum
+             this.currentContractData=arbitrum.contractData
+             this.bundlerUrl=arbitrum.bundlerUrl
              break;       
       }
      },
@@ -88,26 +78,26 @@ function sleep(ms) {
 function requestInterceptors(axios){
     //判断当前钱包是否登录
     axios.interceptors.request.use(async function(_this,option){
-      let axiosStore=useAxiosStore()
-      // console.log("请求拦截器(拦截chainBlockCall 和 chainBlockSend请求)")
-      if(option.mode == "chainBlockCall" || option.mode == "chainBlockSend" || option.mode== "sign" || option.mode== "sign712" || option.mode== "unSign" || option.mode== "switchChain"){          
-         if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || !axiosStore.isConnect){
-              while(!axiosStore.isConnect && !axiosStore.currentProvider){
-                  //链接钱包
-                 var { open, selectedNetworkId } = useWeb3ModalState()
-                 if(!open){
-                   var { open, close } = useWeb3Modal()
-                   open({view: 'Networks'})
-                 }
-                 //每2.5秒检测一下是否登录
-                 await sleep(2500)
-               }  
-               //    return {
-               //       status:false,
-               //       message:"not connect wallet"
-               // }
-         }
-      }
+      // let axiosStore=useAxiosStore()
+      // // console.log("请求拦截器(拦截chainBlockCall 和 chainBlockSend请求)")
+      // if(option.mode == "chainBlockCall" || option.mode == "chainBlockSend" || option.mode== "sign" || option.mode== "sign712" || option.mode== "unSign" || option.mode== "switchChain"){          
+      //    if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || !axiosStore.isConnect){
+      //         while(!axiosStore.isConnect && !axiosStore.currentProvider){
+      //             //链接钱包
+      //            var { open, selectedNetworkId } = useWeb3ModalState()
+      //            if(!open){
+      //              var { open, close } = useWeb3Modal()
+      //              open({view: 'Networks'})
+      //            }
+      //            //每2.5秒检测一下是否登录
+      //            await sleep(2500)
+      //          }  
+      //          //    return {
+      //          //       status:false,
+      //          //       message:"not connect wallet"
+      //          // }
+      //    }
+      // }
 
       return true
    })

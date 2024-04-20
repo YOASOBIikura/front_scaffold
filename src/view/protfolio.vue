@@ -46,7 +46,7 @@ import buyOptionEmpty from "@/components/utils/buyOptionEmpty.vue"
 import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
 import {reactive} from "vue"
   let data=reactive({
-    activeKey:"options",
+    activeKey:"listing",
     isOpenSelect:false,
     isOpenSort:false,
     isOpenLiquidation:false

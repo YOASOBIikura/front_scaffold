@@ -9,14 +9,6 @@ const routes = [{
   }
 },
 {
-  path: '/homepage',
-  name: 'homepage',
-  component: () => import('@/view/homepage.vue'),
-  meta:{
-    showLayout: true
-  }
-},
-{
   path: '/marketPlace',
   name: 'marketPlace',
   component: () => import('@/view/marketPlace.vue'),
