@@ -1,25 +1,43 @@
+import ethPng from "@/assets/images/token-eth.png"
+import usdtPng from "@/assets/images/token-usdt.png"
+import usdcPng from "@/assets/images/usdc.png"
+import wbtcPng from "@/assets/images/wbtc.png"
+import maticPng from "@/assets/images/polygon.png"
 let contractData={
     "EntryPoint": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
-    "DiamondCutFacet": "0xB8B8f2393a44F67227a2D50ec9453abbbCd1DB6e",
-    "DiamondLoupeFacet": "0x9476251331d3ECc37950e292b434d064E6720D26",
-    "OwnershipFacet": "0xCA5738556C2260C43E7b24869c27199e8370b19D",
-    "Diamond": "0x886A340739a7Dd48889e8baB57457c3dEE31b30b",
-    "PlatformFacet": "0xF82C9B1e58208153594e4C049ac415732ADA2537",
-    "VaultFacet": "0x5917730CBA30D5c9cE8e30cF218eAd99140AdD2C",
-    "LendFacet": "0x64b496EAD483A0dC0b6f1828BF5BDa6Abc9B9c46",
-    "PaymasterFacet": "0x6979140Faf3323287064855aAc7C7c2174Eb9acA",
-    "VaultPaymaster": "0x84D8f6e066C3Dff154F3E662a84485E13B41D791",
-    "VaultManageModule": "0xE53a40106eB2d255f989f122B6389D94797DbA15",
-    "TradeModule": "0xaFaf0FB89B71692733a92B0F8e87403716FF6A9D",
-    "IssuanceModule": "0xB593be092508589bD7a48BfEeEF790Cce1Ef8993",
-    "Manager": "0x113f67ce46D91E37d5206bec264f4054592EFe09",
-    "LendModule": "0xDC66a4E0c00F2ae4F858c2a4804FAF648EBC66C5",
-    "UniswapV2ExchangeAdapter": "0x97a024aAe0EA50BDAB056c388cDD97Ef480558ad",
-    "UniswapV3ExchangeAdapter": "0x74c842E10f7E99aEeEd3284A076Dee12A7958585",
-    "VaultFactory": "0x27f29709042d55433CDad490b406b9c181E8f315",
-    "LeverageFacet":"0x3020EAD5e2569e3dD3Db89F5E3fc3D780C14CA49",
-    "LeverageModule":"0x549aFcAe6E94dC7e5DD5B0F639A5F7ad78e997cD"
+    "DiamondCutFacet": "0x988eBf9b4aC63926AFEe513FA3d70e2efAcfe373",
+    "DiamondLoupeFacet": "0xcD0D57c4a4e3A4DBb640Ee92EDd22967F46Af7eF",
+    "OwnershipFacet": "0x8e55004308A68b9B8ecfe4e16961AF0f2dfe9e66",
+    "Diamond": "0x84cdF80D1fC671e769E953007481735669980DA1",
+    "PlatformFacet": "0x028d98b84aD7FA59FBbdc0a0b3264a1541438eb3",
+    "VaultFacet": "0x2ac69e72e59A51044D94D4F4f248C1d0844f6b60",
+    "VaultPaymaster": "0x19c7F160790Fd062661eFD9E99a34fA391869EaE",
+    "VaultManageModule": "0xa41cADEb1bbD69Ebd380588D53fFE08D46BfA71F",
+    "TradeModule": "0xd26B1Ca37da21284261c3192A3e3ED3FC30b032a",
+    "IssuanceModule": "0x9b53caE46ee5185f4a1Afe92F2B5285332947F7D",
+    "IssuanceFacet": "0x69bE747bd3e50e9234a1eC026c502770b3396bc1",
+    "Manager": "0x60eaF8Bf67F09f80191e202b7168851B5d7fC424",
+    "OptionModule": "0xFF7708b167C7173fb25Bdf2C5df5f9924f6cC7eE",
+    "UniswapV2ExchangeAdapter": "0xa6FA6Ac0Ac42BEc01a4739aF72D582278D62aab0",
+    "UniswapV3ExchangeAdapter": "0x304639f69c044CeA60202670c357E076Ab16fD02",
+    "VaultFactory": "0x1636b3D0aAD92De68B2CAD6224Bef3E66922c6D9",
+    "PaymasterFacet": "0xFd51d086d9dA928Ac759D9C13EB7149917527aE4",
+    "OptionFacet":"0xf4f946d572502e1e429dC7C8d7FD7e78a0F2D128",
+    "BusinessFacet":"0xFFd03e991DdFC3E33ff14A4fa534c0111B391FC8",
+    "PriceOracle":"0x492eED872032CbDaab71ffE44384c419687fC8eA",
+    "ChainLinkOracleAdapter":"0x8a64a1d50a237Fe12Ef2d670514F498c99004a2a",
+    "BusinessService":"0x3eA102F3f3aEc8810c475dFDe7c90F1b25193808",
+    "OptionService":"0x1b4958F7e160F6001535FB95D599083f2BD8e189"
 }
+
+let remark={
+    masterToken:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+    usdToken:"0x0000000000000000000000000000000000000001",
+    ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    priceDecimals:18,
+    gasSymbol:"matic"
+}
+
 let bundlerUrl="https://ethgo-polygon.fly.dev"
 
 let chainInfo={
@@ -30,12 +48,82 @@ let chainInfo={
     rpcUrl:"https://polygon.blockpi.network/v1/rpc/public"
 }
 
+let tokens=[
+    {
+     name:"MATIC",
+     address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+     decimals:18,
+     img:maticPng,
+     isGasToken:true,
+     isShowAsset:true,
+     isAble:true,
+     type:1,
+     isSellPut:true,
+     isSellCall:true,
+    },
+    {
+    name:"ETH",
+    address:"0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+    decimals:18,
+    img:ethPng,
+    isGasToken:false,
+    isShowAsset:true,
+    isAble:true,
+    type:1,
+    isSellPut:true,
+    isSellCall:true,
+    },
+    {
+        name:"WBTC",
+        address:"0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+        decimals:8,
+        img:wbtcPng,
+        isGasToken:false,
+        isShowAsset:true,
+        isAble:true,
+        type:1,
+        isSellPut:true,
+        isSellCall:true,
+   
+    }, 
+    {
+     name:"USDT",
+     address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+     decimals:6,
+     img:usdtPng,
+     isGasToken:false,
+     isShowAsset:true,
+     isAble:true,
+     type:1,
+     isSellPut:false,
+     isSellCall:false,
+
+    },
+    {
+     name:"USDC",
+     address:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+     decimals:6,
+     img:usdcPng,
+     isGasToken:false,
+     isShowAsset:true,
+     isAble:true,
+     type:1,
+     isSellPut:false,
+     isSellCall:false,  
+
+    }
+
+]
+
 
 const polygon={
     contractData:contractData,
     bundlerUrl:bundlerUrl,
-    chainInfo:chainInfo
+    chainInfo:chainInfo,
+    tokens:tokens,
+    remark:remark
 }
+
 
 
 

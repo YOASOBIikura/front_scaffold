@@ -1,34 +1,33 @@
 import { ethers } from "ethers"
 
-function balanceOf(_tokenAddress,_account){
+function balanceOf(_key,_tokenAddress,_account){
     let funcHex = new ethers.utils.Interface(["function balanceOf(address account) public view returns(uint256)"])
     let callData= funcHex.encodeFunctionData("balanceOf", [_account]) 
-    console.log(callData)
     let returnType={
           "uint256":"balance"
     }
    return { 
-       key:"balanceOf",
+       key:_key,
        contract:_tokenAddress,
        param:callData,
        returnType:returnType,
     }
 }
 
-function decimals(_tokenAddress){
+function decimals(_key,_tokenAddress){
     let funcHex = new ethers.utils.Interface(["function decimals() public view returns(uint256)"])
     let callData= funcHex.encodeFunctionData("decimals",[]) 
     let returnType={
           "uint256":"decimals"
     }
    return { 
-       key:"decimals",
+       key:_key,
        contract:_tokenAddress,
        param:callData,
        returnType:returnType,
     }
 }
-function symbol(_tokenAddress){
+function symbol(_key,_tokenAddress){
     let funcHex = new ethers.utils.Interface(["function symbol() public view  returns(string memory)"])
     let callData= funcHex.encodeFunctionData("symbol", []) 
 
@@ -37,33 +36,33 @@ function symbol(_tokenAddress){
           "string":"symbol"
     }
    return { 
-       key:"symbol",
+       key:_key,
        contract:_tokenAddress,
        param:callData,
        returnType:returnType,
     }
 }
-function name(_tokenAddress){
+function name(_key,_tokenAddress){
     let funcHex = new ethers.utils.Interface(["function name() public view  returns(string memory)"])
     let callData= funcHex.encodeFunctionData("name", []) 
     let returnType={
           "string":"name"
     }
    return { 
-       key:"name",
+       key:_key,
        contract:_tokenAddress,
        param:callData,
        returnType:returnType,
     }
 }
-function allowance(_tokenAddress,_owner,_account){
+function allowance(_key,_tokenAddress,_owner,_account){
     let funcHex = new ethers.utils.Interface(["function allowance(address owner, address spender) public view virtual override returns (uint256)"])
     let callData= funcHex.encodeFunctionData("allowance", [_owner,_account]) 
     let returnType={
           "uint256":"allowance"
     }
     return { 
-       key:"allowance",
+       key:_key,
        contract:_tokenAddress,
        param:callData,
        returnType:returnType,

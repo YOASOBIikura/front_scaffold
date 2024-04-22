@@ -1,7 +1,7 @@
 import {parseRequest,parseResponse,makeHex} from "./chainBlockUtils"
 //链上查询请求
 async function chainBlockCallRequest(_this,option){
-   console.log(option,"-----")
+   // console.log(option,"-----")
    if( !option.data || !option.data.param) {
       throw  new Error("lack field param")
    } 
@@ -14,6 +14,7 @@ async function chainBlockCallRequest(_this,option){
    if(!option.target){
       throw new Error("lack field target")
    }
+   // debugger
    //如果查询是multicall的情况下 就走multiCall
    if(option.method == "multiCall"){
       return multiCall(_this,option)
@@ -22,9 +23,9 @@ async function chainBlockCallRequest(_this,option){
    let arg=JSON.parse(JSON.stringify(option.data));
    let request=parseRequest(arg.param)
    let responseHex=await callConrtact(_this,option,request.argType,request.argValue)
-   console.log(arg.returnsType,"---sjjjjsj")
+   // console.log(arg.returnsType,"---sjjjjsj")
    let response= parseResponse(responseHex,arg.returnsType)
-   console.log(response,"----")
+   // console.log(response,"----")
    return {
       status:_this.statusSuccess,
       message:response
@@ -38,7 +39,7 @@ async function callConrtact(_this,option,paramType,param){
       to:option.target,
       data:dataHex
      })
-     console.log(result,"请求结果")
+   //   console.log(result,"请求结果")
 
     return result; 
 }
@@ -93,6 +94,7 @@ async function multiCall(_this,option){
        let realResponse=parseResponse(response.multResult[i],option.data.returnsType[i])
        responseList.push(realResponse)
    }
+   // debugger
    // console.log(result,"请求结果",response)
    return {
       status:_this.statusSuccess,

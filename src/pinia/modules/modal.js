@@ -16,7 +16,8 @@ export const useModalStore = defineStore('modal', {
   state:()=>({
     projectId:'f47863c3ad29e5bae9cee8013ec05982',//云项目id
     modal:null,
-    allowChain:[arbitrum,arbitrum]
+    allowChain:[arbitrum,polygon],
+
   }),
   actions: {
      initModal(){   
@@ -71,6 +72,7 @@ export const useModalStore = defineStore('modal', {
 // 定义订阅事件
 function handleChange({provider, providerType, address, error, chainId, isConnected }) { 
      console.log("事件触发",provider, providerType, address, error, chainId, isConnected)
+
      //重新初始化axios
      if(isConnected){
         if(checkChain(chainId))return true;      
@@ -88,14 +90,14 @@ function handleChange({provider, providerType, address, error, chainId, isConnec
      clearChain()
 }
 //检查是否链接正确
-function checkChain(chainId){
+function checkChain(chainId){      
         //判断当前链项目是否支持
         const modalStore=useModalStore();
         let allowChain=  modalStore.allowChain
         let isExistChain=false
         allowChain.forEach(item=>{
               if(item?.chainInfo?.chainId==Number(chainId)){
-                isExistChain=true
+                  isExistChain=true
               }
         })
         if(!isExistChain){

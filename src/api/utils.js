@@ -26,9 +26,20 @@ function getWalletBalanceApi(wallet){
         mode:"chainBlockNormal", 
         method:"getBalance",
         data:{        
-          param:[wallet]
-    
-    }}); 
+          param:[wallet] 
+        }}
+    )
+}
+function getContractCodeApi(contract){
+    return  useAxiosStore().axios({
+        mode:"chainBlockNormal", 
+        method:"getCode",
+        data:{        
+          param:[contract] 
+        }}
+    )
 }
 
-export {switchNetworkApi,unSignApi,getWalletBalanceApi}
+
+
+export {switchNetworkApi,unSignApi,getWalletBalanceApi,getContractCodeApi}

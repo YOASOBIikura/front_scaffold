@@ -55,51 +55,5 @@ function getVaultNonceR(vault){
 }
 
 
-function getVaultR(wallet,salt){
-    return  useAxiosStore().axios({
-        mode:"chainBlockCall",  
-        target:"@VaultFactory",
-        method:"getAddress",
-        data:{
-          param:{
-             "address":wallet,
-             "uint256":salt
-          },
-          returnsType:{
-             "address":"vault"   
-          }         
-    }});
-}
-
-function getVaultMaxSaltR(wallet){
-    return  useAxiosStore().axios({
-        mode:"chainBlockCall",  
-        target:"@VaultFactory",
-        method:"getVaultMaxSalt",
-        data:{
-          param:{
-             "address":wallet
-          },
-          returnsType:{
-             "uint256":"maxSalt"   
-          }         
-    }});
-}
-
-function getAllVaultLengthR(wallet){
-    return  useAxiosStore().axios({
-        mode:"chainBlockCall",  
-        target:"@VaultFactory",
-        method:"getAllVaultLength",
-        data:{
-          param:{
-             "address":wallet
-          },
-          returnsType:{
-             "uint256":"maxSalt"   
-          }         
-    }}); 
-}
-
-export {sendOrderR,getOrderR,getVaultR,getVaultMaxSaltR,getVaultNonceR,getFeeDataR,getAllVaultLengthR}
+export {sendOrderR,getOrderR,getVaultNonceR,getFeeDataR}
 

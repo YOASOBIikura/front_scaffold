@@ -2,6 +2,7 @@ import { useAxiosStore } from "@/pinia/modules/axios";
 
 //组合查询 
 function multiCallApi(contracts,param,returnsType){
+
     return  useAxiosStore().axios({
         mode:"chainBlockCall", 
         target:"@Manager",

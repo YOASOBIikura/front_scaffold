@@ -5,7 +5,7 @@ export const useRouteStore = defineStore('route', {
         currentRoute:null,
         showLayout:true,
         //更改路由
-        changeRoute:"/"
+        changeRoute:"/",
     }),
     getters: {
 
@@ -28,6 +28,6 @@ export const useRouteStore = defineStore('route', {
         },
         setChangeRoute(changeRoute){
             this.changeRoute=changeRoute
-        }
+        },
     }
 });

@@ -1,3 +1,8 @@
+import ethPng from "@/assets/images/token-eth.png"
+import usdtPng from "@/assets/images/token-usdt.png"
+import usdcPng from "@/assets/images/usdc.png"
+import wbtcPng from "@/assets/images/wbtc.png"
+
 let contractData={
     "EntryPoint": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
     "DiamondCutFacet": "0x462482E07D7b2AfFAD9d934544bfFB24Dbcb019A",
@@ -24,6 +29,15 @@ let contractData={
 }
 let bundlerUrl="https://ethgo-arbitrum.fly.dev"
 
+let remark={
+    masterToken:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+    usdToken:"0x0000000000000000000000000000000000000001",
+    ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    priceDecimals:18,
+    gasSymbol:"Eth"
+}
+
+
 let chainInfo={
     chainId:42161,
     name:"arbitrum",
@@ -32,11 +46,67 @@ let chainInfo={
     rpcUrl:"https://arbitrum.blockpi.network/v1/rpc/public"
 }
 
+let tokens=[
+    {
+        name:"WBTC",
+        address:"0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+        decimals:8,
+        img:wbtcPng,
+        isGasToken:false,
+        isShowAsset:true,
+        isAble:true,
+        type:1,
+        isSellPut:true,
+        isSellCall:true,  
+    },
+    {
+    name:"ETH",
+    address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    decimals:18,
+    img:ethPng,
+    isGasToken:true,
+    isShowAsset:true,
+    isAble:true,
+    type:1,
+    isSellPut:true,
+    isSellCall:true,  
+    },
+    {
+     name:"USDT",
+     address:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+     decimals:6,
+     img:usdtPng,
+     isGasToken:false,
+     isShowAsset:true,
+     isAble:true,
+     type:1,
+     isSellPut:false,
+     isSellCall:false,  
+    },
+    {
+     name:"USDC",
+     address:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+     decimals:6,
+     img:usdcPng,
+     isGasToken:false,
+     isShowAsset:true,
+     isAble:true,
+     type:1,
+     isSellPut:false,
+     isSellCall:false,  
+    }
+
+]
+
+
+
 
 const arbitrum={
     contractData:contractData,
     bundlerUrl:bundlerUrl,
-    chainInfo:chainInfo
+    chainInfo:chainInfo,
+    tokens:tokens,
+    remark:remark
 }
 
 

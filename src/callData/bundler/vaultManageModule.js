@@ -1,4 +1,5 @@
 import {useAxiosStore} from "@/pinia/modules/axios"
+import { ethers } from "ethers"
 //设置module
 function setVaultModule(_vault,_modules,_status){
     let axiosStore=useAxiosStore()
