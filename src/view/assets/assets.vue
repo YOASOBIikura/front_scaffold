@@ -24,7 +24,7 @@
 <script setup>
 import assetHeader from "@/components/assets/assetHeader.vue"
 import assetOption from "@/components/assets/assetOption.vue"
-import {reactive,onMounted} from "vue"
+import {reactive,onMounted,watch,computed} from "vue"
 import {useAxiosStore} from "@/pinia/modules/axios";
 import {getVaultApi} from "@/api/vaultFactory"
 import { BigNumber, ethers } from "ethers";
@@ -53,7 +53,17 @@ onMounted(async ()=>{
    await handleValue()
    console.log("tokenList",data.tokenList)
 })
-
+//处理监听事件
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+   console.log("监听到变化",newVal)
+      //请求处理页面
+   await handleBalance()
+   //获取价格
+   await handlePrice()
+   //计算总价值
+   await handleValue()
+   console.log("tokenList",data.tokenList)
+})
 
 //计算总价值
 var handleValue= async ()=>{

@@ -68,7 +68,8 @@ export const useAxiosStore = defineStore('axios', {
         this.currentProvider=provider
      },
      setIsWalletChange(newVal){
-       this.isWalletChange=newVal
+        this.isWalletChange+=newVal
+        console.log(newVal,"-s---ss",this.isWalletChange)
      }
   }
 })

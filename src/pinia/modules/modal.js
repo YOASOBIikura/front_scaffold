@@ -72,7 +72,8 @@ export const useModalStore = defineStore('modal', {
 // 定义订阅事件
 function handleChange({provider, providerType, address, error, chainId, isConnected }) { 
      console.log("事件触发",provider, providerType, address, error, chainId, isConnected)
-
+    
+    
      //重新初始化axios
      if(isConnected){
         if(checkChain(chainId))return true;      
@@ -85,6 +86,7 @@ function handleChange({provider, providerType, address, error, chainId, isConnec
         axiosStore.setCurrentAccount(address)   
         axiosStore.setIsConnect(true)
         axiosStore.setCurrentProvider(chainBlockCallProvider)
+        axiosStore.setIsWalletChange(1)
         return
      }
      clearChain()
@@ -116,6 +118,7 @@ function clearChain(){
   axiosStore.setCurrentAccount(ethers.constants.AddressZero)   
   axiosStore.setIsConnect(false)
   axiosStore.setCurrentProvider(null)
+  axiosStore.setIsWalletChange(1)
 }
 
   
