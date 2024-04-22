@@ -29,7 +29,9 @@ const emits = defineEmits(["change", "update:value"]);
 watch(
   () => props.value,
   (v1, v2) => {
-    inputModel.value = v1;
+    nextTick(() => {
+      inputModel.value = v1;
+    });
   }
 );
 watch(
