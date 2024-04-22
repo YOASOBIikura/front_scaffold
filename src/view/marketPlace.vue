@@ -47,8 +47,6 @@
             <!-- 所有订单 -->
             <div class="all-listing-table">
               <listing-table  
-                v-for="(item) in 10" 
-                :key="index" 
                 :dataSource="baseData.allListingData" 
                 :columns="allListColumns"
                 :listingType="baseData.currentListing"
@@ -94,7 +92,8 @@ let allListColumns = [
   { title: "Amount", dataIndex: "amount", key: "amount"},
   { title: "Pay With", dataIndex: "payWith", key: "payWith"},
   { title: "Accept", dataIndex: "accept", key: "accept"},
-  { title: "KYT", dataIndex: "KYT", key: "KYT"}
+  { title: "KYT", dataIndex: "KYT", key: "KYT"},
+  { title: "", dataIndex: "", key: "action", fixed: "right", width: 16}
 ];
 
 let baseData = reactive({
@@ -155,8 +154,7 @@ const selectChange = (index) => {
 }
 
 const changeListSwitch = (value) => {
-  console.log(value);
-  let baseData = [
+  let tempData = 
   {
     owner: "0x3...dfa",
     strikePrice: "3100",
@@ -167,13 +165,16 @@ const changeListSwitch = (value) => {
     payWith: ["USDC", "USDT"], 
     accept: "Cash Settlement",
     KYT: "Passed"
-  }
-];
+  };
   if(value == "My"){
     baseData.allListingData = [];
   } else {
-    baseData.allListingData = baseData;
+    baseData.allListingData = [];
+    for(let i = 0;i < 10;i++){
+      baseData.allListingData.push(tempData);
+    }
   }
+  console.log()
 }
 
 </script>

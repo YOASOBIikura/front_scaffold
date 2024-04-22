@@ -5,6 +5,7 @@
                 :columns="columns"
                 :bordered="false"
                 :pagination="false"
+                :scroll="{ x: 1100,y: 'calc(100vh - 570px)'}"
         >
         <template #bodyCell="{ column, record }">
             <!-- owner -->
@@ -87,6 +88,13 @@
                     <div v-else>-</div>
                 </div>
             </template>
+
+
+            <template v-if="column.key === 'action'">
+                <div>
+                    <img src="@/assets/images/copy.png" class="copy-img"/>
+                </div>
+            </template>
         </template>
         </a-table>
     </div>
@@ -108,7 +116,7 @@
 </template>
 <script setup>
 const props = defineProps({
-  dataSource: Array,
+  dataSource: {type: Array, default: []},
   columns: Array,
   listingType: {type: String, default: "All"}
 });
@@ -223,6 +231,9 @@ const props = defineProps({
         margin-right: 2px;
     }
 }
+.copy-img{
+    width: 16px;
+}
 :deep(.ant-table-content){
     font-size: 12px;
   .ant-table-thead {
@@ -236,5 +247,23 @@ const props = defineProps({
         }
     }
   }
+}
+:deep(.ant-table-tbody  .ant-table-cell-fix-right){
+    padding: 0;
+    right: -1px !important;
+    &::after{
+       box-shadow: inset -4px -4px 1px 4px rgba(255,255,255,0.5);
+       width: 10px;
+    }
+}
+:deep(.ant-table-thead .ant-table-cell){
+    background-color: var(--bg-color-page);
+}
+:deep(.ant-table-thead .ant-table-cell-fix-right){
+    right: -1px !important;
+    &::after{
+        box-shadow: inset -4px -4px 1px 4px rgba(255,255,255,0.5);
+       width: 10px;
+    }
 }
 </style>
