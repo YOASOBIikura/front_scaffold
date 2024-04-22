@@ -43,6 +43,19 @@ const data=reactive({
 })
 // 生命周期
 onMounted(async ()=>{
+   await init()
+
+})
+//处理监听事件
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+   await  init()
+})
+
+
+var init=async ()=>{
+   if(axiosStore.isConnect==1){
+      return
+   }
    //处理币种信息
    await hanleToken()
    //请求处理页面
@@ -52,18 +65,7 @@ onMounted(async ()=>{
    //计算总价值
    await handleValue()
    console.log("tokenList",data.tokenList)
-})
-//处理监听事件
-watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
-   console.log("监听到变化",newVal)
-      //请求处理页面
-   await handleBalance()
-   //获取价格
-   await handlePrice()
-   //计算总价值
-   await handleValue()
-   console.log("tokenList",data.tokenList)
-})
+}
 
 //计算总价值
 var handleValue= async ()=>{

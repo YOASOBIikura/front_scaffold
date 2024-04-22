@@ -71,7 +71,7 @@ import navigationBar from "@/components/utils/navigationBar.vue"
 import inputNumber from "@/components/utils/inputNumber.vue"
 import assetTranfer from "@/components/assets/assetTranfer.vue"
 import inputValue from "@/components/utils/inputNumber.vue"
-import {reactive,onMounted,computed,toRaw} from "vue"
+import {reactive,onMounted,computed,watch} from "vue"
 import { useRouter,useRoute} from "vue-router";
 import {useRouteStore} from "@/pinia/modules/route";
 import {useAxiosStore} from "@/pinia/modules/axios";
@@ -87,7 +87,7 @@ import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
 
 
-const asiosStore= useAxiosStore()
+const axiosStore= useAxiosStore()
 const routeStore=useRouteStore()
 const router=useRouter()
 const route=useRoute()
@@ -117,6 +117,12 @@ onMounted(async ()=>{
     }
     await handleBalance()
 })
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+    //请求处理页面
+   await handleBalance()
+})
+
+
 // -------------计算属性----------------
 var walletBalance=computed(()=>{
     if(data.walletBalanceValue.eq(BigNumber.from("0"))){
@@ -136,6 +142,9 @@ var vaultBalance=computed(()=>{
 var transferTx=async ()=>{
     if(data.optionNumber==0){
         return
+    }
+    if(axiosStore.isConnect==1){
+       return
     }
     await sendTx()
 }
@@ -183,16 +192,19 @@ var inputNomal=(value)=>{
 
 //处理余额
 var handleBalance=async ()=>{
+    if(axiosStore.isConnect==1){
+       return
+    }
     let walletBalance=BigNumber.from("0")
     let vaultBalance=BigNumber.from("0")
      if(data.tokenInfo.isGasToken){
-         walletBalance= await getWalletBalanceApi(asiosStore.currentAccount)
+         walletBalance= await getWalletBalanceApi(axiosStore.currentAccount)
          vaultBalance=await getWalletBalanceApi(data.tokenInfo.vault)    
          walletBalance=walletBalance.message  
          vaultBalance=vaultBalance.message  
      }else{
        let multiCallData=[]
-       let walletBalanceCallData= balanceOf("wallet",data.tokenInfo.address,asiosStore.currentAccount)
+       let walletBalanceCallData= balanceOf("wallet",data.tokenInfo.address,axiosStore.currentAccount)
        let vaultBalanceCallData=  balanceOf("vault",data.tokenInfo.address,data.tokenInfo.vault)
        multiCallData=[walletBalanceCallData,vaultBalanceCallData]
        let multiCallResponse=  await multiCallObjR(multiCallData)
@@ -224,8 +236,7 @@ var sendTx=async ()=>{
          transferAmount=ethers.utils.parseUnits(`${data.optionNumber}`,decimals)
        }
     }
-    console.log(transferAmount,"transferAmount--")
-    
+    console.log(transferAmount,"transferAmount--") 
     //添加按钮锁
     if(data.btnLock){
         return
@@ -269,7 +280,7 @@ var approveTx=async(isGasToken,token,vault,amount)=>{
         console.log("apprvoeResponse",apprvoeResponse)
         return 
     }
-    let allownoceResponse= await allownoceApi(token,asiosStore.currentAccount,vault)
+    let allownoceResponse= await allownoceApi(token,axiosStore.currentAccount,vault)
     allownoceResponse=allownoceResponse?.message?.allowance || BigNumber.from("0")
     console.log(allownoceResponse,amount,"对比")
     if(allownoceResponse.lt(amount)){
@@ -283,12 +294,12 @@ var approveTx=async(isGasToken,token,vault,amount)=>{
 var vaultInitCallData=(vault) =>{
     //组装白名单module
     let modles=[
-        asiosStore.currentContractData["VaultManageModule"],
-        asiosStore.currentContractData["VaultPaymaster"],
-        asiosStore.currentContractData["IssuanceModule"],
-        asiosStore.currentContractData["OptionModule"],
-        asiosStore.currentContractData["OptionService"],
-        asiosStore.currentContractData["PriceOracle"]
+        axiosStore.currentContractData["VaultManageModule"],
+        axiosStore.currentContractData["VaultPaymaster"],
+        axiosStore.currentContractData["IssuanceModule"],
+        axiosStore.currentContractData["OptionModule"],
+        axiosStore.currentContractData["OptionService"],
+        axiosStore.currentContractData["PriceOracle"]
     ]
     let status=[true,true,true,true,true,true]
     let moduleCallData= setVaultModule(vault,modles,status)
@@ -296,13 +307,13 @@ var vaultInitCallData=(vault) =>{
     //组装vault白名单
     let tokenList=[]
     let typeList=[]
-    asiosStore?.currentTokens?.forEach(item=>{
+    axiosStore?.currentTokens?.forEach(item=>{
         tokenList.push(item.address)
         typeList.push(item.type)
     })
     let tokenCallData= setVaultTokens(vault,tokenList,typeList)
     // 设置masterToken
-    let masterTokenCallData= setVaultMasterToken(vault,asiosStore.remark.masterToken)
+    let masterTokenCallData= setVaultMasterToken(vault,axiosStore.remark.masterToken)
 
     return [moduleCallData,tokenCallData,masterTokenCallData]
 }
@@ -313,10 +324,10 @@ var issueAndRedeemCallData= (isGasToken,type,vault,asset,amount,assetType)=>{
         if(isGasToken){
             amount=BigNumber.from("0")
         }
-       let issueCallData= issue(vault,asiosStore.currentAccount,[asset],[amount])
+       let issueCallData= issue(vault,axiosStore.currentAccount,[asset],[amount])
        return [issueCallData]
     }else{
-        let redeemCallData= redeem(vault,asiosStore.currentAccount,[assetType],[asset],[amount])
+        let redeemCallData= redeem(vault,axiosStore.currentAccount,[assetType],[asset],[amount])
         return [redeemCallData]
     }
 } 

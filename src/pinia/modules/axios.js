@@ -9,7 +9,7 @@ export const useAxiosStore = defineStore('axios', {
     axios:null,
     chainId:-1,
     currentAccount:"",
-    isConnect:false,//是否链接钱包
+    isConnect:1,//是否链接钱包  1完成未链接  2 只有发交易时才链接  3 完全链接
     currentContractData:{}, //钱包是那条链 这里就是那条链的项目合约
     bundlerUrl:"",//钱包是那条链 这里就是那条链的bundlerUrl
     currentProvider:null,  //钱包provider
@@ -94,8 +94,8 @@ function requestInterceptors(axios){
       // let axiosStore=useAxiosStore()
       // // console.log("请求拦截器(拦截chainBlockCall 和 chainBlockSend请求)")
       // if(option.mode == "chainBlockCall" || option.mode == "chainBlockSend" || option.mode== "sign" || option.mode== "sign712" || option.mode== "unSign" || option.mode== "switchChain"){          
-      //    if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || !axiosStore.isConnect){
-      //         while(!axiosStore.isConnect && !axiosStore.currentProvider){
+      //    if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || axiosStore.isConnect!=3){
+      //         while(axiosStore.isConnect!=3 && !axiosStore.currentProvider){
       //             //链接钱包
       //            var { open, selectedNetworkId } = useWeb3ModalState()
       //            if(!open){

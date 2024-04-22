@@ -12,6 +12,7 @@ export const useRouteStore = defineStore('route', {
     },
     actions: {
         setCurrentRoute(preRoute,currentRoute){
+            console.log(currentRoute,"---ssss")
              this.currentRoute=currentRoute.path;          
              if(currentRoute.meta&&currentRoute.meta.showLayout){
                  this.showLayout=true

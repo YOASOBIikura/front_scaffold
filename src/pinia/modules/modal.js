@@ -84,7 +84,7 @@ function handleChange({provider, providerType, address, error, chainId, isConnec
         axiosStore.initProvider(chainBlockCallProvider,provider,address)
         axiosStore.setChainId(chainId)
         axiosStore.setCurrentAccount(address)   
-        axiosStore.setIsConnect(true)
+        axiosStore.setIsConnect(3)
         axiosStore.setCurrentProvider(chainBlockCallProvider)
         axiosStore.setIsWalletChange(1)
         return
@@ -116,7 +116,7 @@ function clearChain(){
   axiosStore.initProvider(null,null,ethers.constants.AddressZero)
   axiosStore.setChainId(-1)
   axiosStore.setCurrentAccount(ethers.constants.AddressZero)   
-  axiosStore.setIsConnect(false)
+  axiosStore.setIsConnect(1)
   axiosStore.setCurrentProvider(null)
   axiosStore.setIsWalletChange(1)
 }
