@@ -125,11 +125,17 @@ async function sendTxToBundler(vault,salt,data){
      }
      let orderId=hashResponse.data.id
      let hash = await getOperationHash(orderId, loopTime, loopCount)
-     return hash;
+     return {
+        status:true,
+        hash:hash
+     };
    
 }
 
 async function getBundlerTxResult(hash){
+    let axiosStore=useAxiosStore()
+    //获取provider 获得signer
+    let provider= toRaw(axiosStore.currentProvider)  
     console.log(hash,"hash")
     const tx = await provider.waitForTransaction(hash,5)
     console.log("交易",tx)
@@ -200,6 +206,7 @@ async function getOperationHash(orderId, time, count) {
 
 //解析日志 看看bundler内部交易是否正确
 async function parseLogForBundler(txHash){
+    let axiosStore=useAxiosStore()
     let result = false
     let provider= toRaw(axiosStore.currentProvider)  
     let receipt = await provider.getTransactionReceipt(txHash);

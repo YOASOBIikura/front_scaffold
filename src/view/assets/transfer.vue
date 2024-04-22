@@ -140,6 +140,9 @@ var vaultBalance=computed(()=>{
 })
 //---------------方法-------------------
 var transferTx=async ()=>{
+    data.isOpen=true
+
+    return
     if(data.optionNumber==0){
         return
     }
@@ -264,12 +267,18 @@ var sendTx=async ()=>{
         return
     }
     //起弹窗
-    data.txHash=bundlerResponse
+    data.txHash=bundlerHash.hash
     data.isOpen=true
     //等待交易结果
-    let result=  await getBundlerTxResult(bundlerHash)
+    let result=  await getBundlerTxResult(bundlerHash.hash)
     data.txResult=result
     console.log(result)
+    if(result.status){
+        data.btnLock=false
+        return
+    }
+
+
 }
 
 //授权交易

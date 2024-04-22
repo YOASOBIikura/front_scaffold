@@ -1,5 +1,5 @@
 <template>
-      <a-drawer height="420px" class="assetTranfer"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  @close="closeDrawer" >
+      <a-drawer v-if="props.isOpen" height="420px" class="assetTranfer"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  @close="closeDrawer" >
         <template v-slot:title v-if="true">
              <div class="filter">
                  <!-- <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer"> -->

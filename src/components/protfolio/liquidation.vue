@@ -1,5 +1,5 @@
 <template>
-      <a-drawer  class="liquidation" height="500px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen">
+      <a-drawer v-if="props.isOpen"  class="liquidation" height="500px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen">
         <template v-slot:title>
              <div class="filter">
                  <!-- <img  class="close" src="@/assets/images/close.png" alt="" @click="data.openSortCondition=false"> -->
