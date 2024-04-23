@@ -1,8 +1,8 @@
 <template>
     <a-config-provider   :theme="CustomTheme">       
-        <layout-header v-if="routeStore.showLayout"/>
+        <layout-header v-show="routeStore.showLayout"/>
         <router-view/>
-        <layout-bottom v-if="routeStore.showLayout"/>
+        <layout-bottom v-show="routeStore.showLayout" />
     </a-config-provider>
 </template>
 <script setup>
@@ -12,17 +12,14 @@ import { useRouteStore } from "@/pinia/modules/route"
 import CustomTheme from '@/assets/theme/custom'
 import layoutHeader from "@/components/layout/layoutHeader.vue"
 import layoutBottom from "@/components/layout/layoutBottom.vue"
-import {  watch,computed} from 'vue';
+import { watch,computed} from 'vue';
 import { useRouter} from "vue-router";
-// import
 //初始化modal
 let modalStore= useModalStore()
 modalStore.initModal()
 //初始化axios
 const axiosStore=useAxiosStore()
 axiosStore.initAxios(null,null,"");
-
-
 
 //----------全局路由处理----------------
 //路由管控
@@ -31,6 +28,7 @@ const router = useRouter();
 //监听路由状态
 let routeResult=computed(() => router.currentRoute.value)
 watch(routeResult,(newVal,oldVal)=>{
+    console.log("新路由",newVal)
     routeStore.setCurrentRoute(oldVal,newVal)
 })
 let changeRoute=computed(() => routeStore.changeRoute)

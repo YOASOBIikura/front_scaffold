@@ -1,5 +1,5 @@
 import {useAxiosStore} from "@/pinia/modules/axios"
-
+import { ethers } from "ethers"
 function issue(_vault,_from,_assets,_amounts){
     let axiosStore=useAxiosStore()
     let funcHex = new ethers.utils.Interface(["function issue(address _vault,address payable _from,address[] memory _assets,uint256[] memory _amounts) external payable"])

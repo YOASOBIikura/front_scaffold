@@ -9,10 +9,15 @@ export const useAxiosStore = defineStore('axios', {
     axios:null,
     chainId:-1,
     currentAccount:"",
-    isConnect:false,//是否链接钱包
+    isConnect:1,//是否链接钱包  1完成未链接  2 只有发交易时才链接  3 完全链接
     currentContractData:{}, //钱包是那条链 这里就是那条链的项目合约
     bundlerUrl:"",//钱包是那条链 这里就是那条链的bundlerUrl
     currentProvider:null,  //钱包provider
+    currentTokens:[],// 当前tokenList
+    remark:{},//辅助额外信息
+
+   //--是否触发钱包相关事件--
+   isWalletChange:1
   }),
   getters: {
  
@@ -25,7 +30,7 @@ export const useAxiosStore = defineStore('axios', {
             chainBlockCallProvider:chainBlockCallProvider,
             chainBlockSendProvider:chainBlockSendProvider,
             safeBlock:6,
-            loop:0,
+            loop:5,
             headers:{},
             wallet:wallet
          })
@@ -42,10 +47,14 @@ export const useAxiosStore = defineStore('axios', {
           case 137:
             this.currentContractData=polygon.contractData
             this.bundlerUrl=polygon.bundlerUrl
+            this.currentTokens=polygon.tokens
+            this.remark=polygon.remark
             break
           case 42161:
              this.currentContractData=arbitrum.contractData
              this.bundlerUrl=arbitrum.bundlerUrl
+             this.currentTokens=arbitrum.tokens
+             this.remark=arbitrum.remark
              break;       
       }
      },
@@ -57,6 +66,10 @@ export const useAxiosStore = defineStore('axios', {
      },
      setCurrentProvider(provider){
         this.currentProvider=provider
+     },
+     setIsWalletChange(newVal){
+        this.isWalletChange+=newVal
+        console.log(newVal,"-s---ss",this.isWalletChange)
      }
   }
 })
@@ -81,8 +94,8 @@ function requestInterceptors(axios){
       // let axiosStore=useAxiosStore()
       // // console.log("请求拦截器(拦截chainBlockCall 和 chainBlockSend请求)")
       // if(option.mode == "chainBlockCall" || option.mode == "chainBlockSend" || option.mode== "sign" || option.mode== "sign712" || option.mode== "unSign" || option.mode== "switchChain"){          
-      //    if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || !axiosStore.isConnect){
-      //         while(!axiosStore.isConnect && !axiosStore.currentProvider){
+      //    if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || axiosStore.isConnect!=3){
+      //         while(axiosStore.isConnect!=3 && !axiosStore.currentProvider){
       //             //链接钱包
       //            var { open, selectedNetworkId } = useWeb3ModalState()
       //            if(!open){
@@ -150,16 +163,15 @@ function requestInterceptors(axios){
 function responseInterceptors(axios){
     //拦截错误信息
     axios.interceptors.response.use(function(response,option,_this){
-        console.log(response,"响应拦截器1")
         //错误拦截  链上错误拦截
         if(response.status == _this.statusFail){
-          
+            console.log("错误拦截",response)
         }
         return response;
      })  
     
     axios.interceptors.response.use(function(response,option,_this){
-      // console.log(response,"响应拦截器2")
+      console.log(response,"响应拦截器2")
       return response;
 
     })

@@ -20,7 +20,7 @@
 import { watch, ref,nextTick } from "vue"
 const props = defineProps({
   placeholder: { type: String, default: "" },
-  value: { type: String, default: "" },
+  value: { type: [String], default: "" },
   decimals: { type: Number, default: 18 },
   bordered: { type: Boolean, default: false },
   hasMinus: { type: Boolean, default: false }, // 是否支持输入负数
@@ -29,7 +29,9 @@ const emits = defineEmits(["change", "update:value"]);
 watch(
   () => props.value,
   (v1, v2) => {
-    inputModel.value = v1;
+    nextTick(() => {
+      inputModel.value = v1;
+    });
   }
 );
 watch(

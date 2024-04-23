@@ -31,7 +31,6 @@ import request from "./request"
 function Axios(config){
      var _this=this
      _this.wallet=config.wallet || ""
-     _this.currentLoop=0
      _this.httpUrl=config.httpUrl  //管http
      _this.chainBlockCallProvider=config.chainBlockCallProvider //管查询
      _this.chainBlockSendProvider=config.chainBlockSendProvider //钱包的provider
@@ -40,7 +39,6 @@ function Axios(config){
      _this.headers={}
      _this.statusSuccess=true
      _this.statusFail=false
-     _this.resolve=null
      _this.delayTime=500
      for(let k in config.headers){
          _this.headers[k]=config.headers[k]
@@ -55,7 +53,6 @@ function Axios(config){
             当使用Axios()   拦截此函数
           */
          apply(fn,thisArg,args){
-            _this.currentLoop=0;
             return _this.request(...args)
          },
          get(fn,key){
@@ -75,11 +72,10 @@ function Axios(config){
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
  }
-
-
 Axios.prototype.request=async function(option){
-    let resolveR={
-        request:""
+    option.internalData={
+        request:"",
+        currentLoop:0
     }
     //请求拦截器
     let list = this.interceptors.request.list;
@@ -114,20 +110,20 @@ Axios.prototype.request=async function(option){
               option.data.safeBlock=this.safeBlock
         }
     }
-    return handleRequest(this,option,resolveR)
+    return handleRequest(this,option)
 }
 
 
-function handleRequest(_this,option,resolveR){
+function handleRequest(_this,option){
     return new Promise((resolve,reject) => {
         //循环请求
         //贮存resolve返回方法
-        if(_this.currentLoop==0){
-            resolveR.request=resolve
+        if(option.internalData.currentLoop==0){
+            option.internalData.request=resolve
         }
-        _this.currentLoop+=1
+        option.internalData.currentLoop+=1
         if(option.mode == "chainBlockCall" || option.mode=="http" || option.mode =="chainBlockNormal"){
-            if(option.loop !=0 &&_this.currentLoop> option.loop && option.loop != "infinite"){  
+            if(option.loop !=0 &&option.internalData.currentLoop > option.loop && option.loop != "infinite"){  
                 throw new Error("request fail")
             }
         }
@@ -138,8 +134,7 @@ function handleRequest(_this,option,resolveR){
             list.forEach((fn) => {
                 response = fn(response,option,_this);
             })
-            _this.currentLoop=0
-            resolveR.request(response)
+            option.internalData.request(response)
         },async (error) => {    
             if(String(error).includes("lack field")){
                 console.error(error)
@@ -150,7 +145,7 @@ function handleRequest(_this,option,resolveR){
                 if(option.loop>0){
                     //睡眠0.5s 再请求
                     await sleep(_this.delayTime);
-                    await handleRequest(_this,option,resolveR)
+                    await handleRequest(_this,option)
                 }    
             }else{
                 console.error(error)

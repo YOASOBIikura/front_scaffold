@@ -2,53 +2,103 @@
     <div class="assetOption">
          <div class="top">
             <p class="p1">
-               <img class="icon" src="@/assets/images/eth.png" alt="">
-               <span class="text">ETH</span>
+               <img class="icon" :src="props.tokenInfo.img" alt="">
+               <span class="text">{{props.name}}</span>
             </p>
             <p class="p2">
-                <span class="title">30234</span>
-                <span class="text">$10223202</span>
+                <span class="title">{{ walletBalance }}</span>
+                <span class="text">${{ walletAmountUsd}}</span>
             </p>
             <p class="p2">
-                <span class="title">102</span>
-                <span class="text">$1521212</span>
+                <span class="title">{{vaultBalance}}</span>
+                <span class="text">${{vaultAmountUsd}}</span>
             </p>
          </div>
 
          <div class="bottom">
              <div class="p1">
-                 <p class="select left" @click="goTransfer">
+                 <p class="select left" @click="goTransfer('issue')">
                     <img  src="@/assets/images/arrow_right2.png" alt="">
                  </p>
-                 <p class="select" @click="goTransfer">
+                 <p class="select" @click="goTransfer('redeem')">
                     <img  src="@/assets/images/arrow_left.png" alt="">
                  </p>       
              </div>
              <p class="p2">
-                 <span class="option" @click="goSellOption('call')">Sell Call</span>
-                 <span class="option right" @click="goSellOption('put')">Sell Put</span>
+                 <span :class="props.tokenInfo.isSellCall&&'option'||'option unActive'" @click="goSellOption('call')">Sell Call</span>
+                 <span :class="props.tokenInfo.isSellPut&&'option right'||'option right unActive'  " @click="goSellOption('put')">Sell Put</span>
              </p> 
          </div>
     </div>
-</template>
+</template>   
+
 <script setup>
-import { reactive } from 'vue';
-import { useRouter,useRoute } from "vue-router";
+import { ethers } from 'ethers';
+import { reactive,defineProps,onMounted,computed} from 'vue';
+import { useRouter,useRoute,} from "vue-router";
+import {useAxiosStore} from "@/pinia/modules/axios";
+const axiosStore= useAxiosStore()
 const router=useRouter()
-const data=reactive({
-
+const props=defineProps({
+    tokenInfo:{
+         type:Object,
+         require:true,
+         default:{}
+    }
 })
-var goTransfer=()=>{
-    router.push({path:"/assetTransfer"})
-}
+//-----------计算属性---------------------
+var walletAmountUsd=computed(()=>{
+    let value=  props.tokenInfo.tokenPrice.mul(props.tokenInfo.walletBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
+    return (value.toNumber()/100).toFixed(2)
+})
 
+var vaultAmountUsd=computed(()=>{
+    let value= props.tokenInfo.tokenPrice.mul(props.tokenInfo.vaultBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
+    return (value.toNumber()/100).toFixed(2)
+})
+
+var walletBalance=computed(()=>{
+    let value=props.tokenInfo.walletBalance.div(ethers.utils.parseUnits("1",props.tokenInfo.decimals-2))
+    // if(walletAmountUsd>10){
+     
+    // }else{
+
+    // }
+    return  (value.toNumber()/100).toFixed(2)
+})
+
+var vaultBalance=computed(()=>{
+    let value=props.tokenInfo.vaultBalance.div(ethers.utils.parseUnits("1",props.tokenInfo.decimals-2))
+    return  (value.toNumber()/100).toFixed(2)
+})
+
+//---------方法跳转-------------------
+var goTransfer=(type)=>{
+    let salt=props.tokenInfo.salt.toString()
+    let walletBalance=props.tokenInfo.walletBalance.toString()
+    let vaultBalance=props.tokenInfo.vaultBalance.toString()
+    let tokenPrice=props.tokenInfo.tokenPrice.toString()
+    let tokenInfo=JSON.parse(JSON.stringify(props.tokenInfo))  
+    tokenInfo.walletBalance=walletBalance
+    tokenInfo.vaultBalance=vaultBalance
+    tokenInfo.tokenPrice=tokenPrice
+    tokenInfo.salt=salt
+    sessionStorage.setItem("assetTranferData",JSON.stringify(tokenInfo))
+    router.push({path:"/assetTransfer",query:{type:type}})
+}
 var goSellOption=(orderType)=>{
+  
     if(orderType=="call"){
+        if(!props.tokenInfo.isSellCall){
+            return
+        }
         router.push({path:"/sellCall"})
     }else{
+        if(!props.tokenInfo.isSellPut){
+            return
+        }
         router.push({path:"/sellPut"})
     }
-   
 }
 </script>
 <style lang="less" scoped>
@@ -143,6 +193,11 @@ var goSellOption=(orderType)=>{
             }
             .right{
                 margin-left: 8px;
+            }
+            .unActive{
+                background: var(--bg-color-unActive);
+                color: var(--text-color-second);
+                
             }
 
    

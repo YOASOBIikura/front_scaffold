@@ -51,7 +51,7 @@ async function sendContractTransition(_this,option,argType,argValue){
     if(option.method != "" && option.method){
        dataHex=makeHex(option.method,argType,argValue)
     }
-    
+    console.log(option.data.value,dataHex,"是你难受")
     let tx={
         from:_this.wallet,//拿provider的值
         to:option.target,

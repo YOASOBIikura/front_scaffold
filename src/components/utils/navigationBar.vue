@@ -23,7 +23,7 @@ const props=defineProps({
      }
 })
 var goRoute=()=>{
-    router.replace({path:routeStore.preRoute})
+    router.push({path:routeStore.preRoute})
 }
 </script>
 <style lang="less" scoped>

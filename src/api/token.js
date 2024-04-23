@@ -31,6 +31,28 @@ function transferApi(toekn,to,amount){
     }});
 }
 
+
+
+
+//allownoce
+function allownoceApi(toekn,owner,spender){
+    return  useAxiosStore().axios({
+        mode:"chainBlockCall", 
+        target:toekn ,
+        method:"allowance",
+        data:{
+          value:0,
+          param:{
+             "address:1":owner,
+             "address:2":spender
+          },
+          returnsType:{
+             "uint256:1":"allowance"
+          }
+    }});
+}
+
+
 //转移gas币
 function transferEthApi(target,amount){
     return  useAxiosStore().axios({
@@ -42,4 +64,4 @@ function transferEthApi(target,amount){
 }
 
 
-export {approveApi,transferApi,transferEthApi}
+export {approveApi,transferApi,transferEthApi,allownoceApi}

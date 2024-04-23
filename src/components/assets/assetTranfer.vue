@@ -1,30 +1,32 @@
 <template>
-      <a-drawer height="420px" class="assetTranfer"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  @close="closeDrawer" >
+      <a-drawer v-if="props.isOpen" height="420px" class="assetTranfer"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  @close="closeDrawer" >
         <template v-slot:title v-if="true">
              <div class="filter">
-                 <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
-                 <span class="title">tranfer</span>
+                 <!-- <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer"> -->
+                 <span></span>
+                 <span class="title">{{ props.type}}</span>
                  <span></span>
              </div>
         </template>
         <div class="tranferResult">
-              <img class="icon" src="@/assets/images/token-eth.png" alt="">     
-              <span class="balance">20ETH</span>
+              <img class="icon" :src="props.tokenInfo.img" alt="">     
+              <span class="balance">{{ props.amount }}{{ props.tokenInfo.name }}</span>
               <p class="info">
                  <span class="text1">Wallet</span>
-                 <img class="icon2" src="@/assets/images/arrow_right2.png" alt="">
+                 <img class="icon2" :src="data.png" alt="">
                  <span class="text2">JVault</span>
               </p>    
               <div class="cost">
-                <p class="left">
+               <span class="right">{{`${String(props.hash).substring(0,6)}...${String(props.hash).substring(38)}`}}</span>
+                <p class="left">         
+                    <span class="text">Hash</span>
                     <img class="icon3" src="@/assets/images/cost.png" alt="">
-                    <span class="text">Network Cost</span>
                 </p>
-                <span class="right">0.002Eth</span>
+                
               </div>
 
               <!--  -->
-              <div class="btn">
+              <div class="btn" @click="closeDrawer">
                  <img class="icon4" src="@/assets/images/certified.png" alt="">
                  <span class="text">Done</span>
               </div>
@@ -32,18 +34,54 @@
       </a-drawer>
 </template>
 <script setup> 
-import { reactive,defineProps,defineEmits} from 'vue';
+import { reactive,defineProps,defineEmits,onMounted} from 'vue';
+import issuePng from "@/assets/images/arrow_right2.png"
+import redeemPng from "@/assets/images/arrow_left.png"
 const props=defineProps({
    isOpen:{
        type:Boolean,
        require:true,
        default:false
+   },
+   tokenInfo:{
+       type:Object,
+       require:true,
+       default:{}
+   },
+   hash:{
+      type:String,
+      require:false,
+      default:""
+   },
+   type:{
+      type:String,
+      require:true,
+      default:"issue"
+   },
+   amount:{
+      type:String,
+      require:true,
+      default:"0"
+   },
+   txResult:{
+      type:Object,
+      require:false
    }
 })
 const emits=defineEmits(["update:isOpen"])
 let data=reactive({
-
+   title:"issue",
+   png:issuePng
 })
+
+onMounted(()=>{
+    if(props.type=="issue"){
+      data.png=issuePng
+    }else{
+      data.png=redeemPng
+    }
+})
+
 var closeDrawer=()=>{
    emits("update:isOpen",false)
 }

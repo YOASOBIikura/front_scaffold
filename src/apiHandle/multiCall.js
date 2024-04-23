@@ -16,7 +16,6 @@ async function multiCallObjR(data){
         returnsTypeList.push(data[i].returnType)
     } 
     let response= await multiCallApi(contractsList,paramList,returnsTypeList)
-
     let result={}
     response?.message?.forEach((item,index)=>{
         result[keyList[index]]=item

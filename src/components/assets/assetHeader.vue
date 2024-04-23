@@ -9,7 +9,7 @@
                         <img class="img" src="@/assets/images/certified.png" alt="">
                     </p>
                     <p class="bottom">
-                        <span class="text">0x69...350d</span>
+                        <span class="text">{{`${String(props.address).substring(0,6)}...${String(props.address).substring(38)}`}}</span>
                         <img class="img" src="@/assets/images/copy2.png" alt="">
                     </p>
                 </div>
@@ -21,9 +21,17 @@
          </div>
 </template>
 <script setup>
-import { reactive } from 'vue';
+import { ethers } from 'ethers';
+import { reactive,defineProps } from 'vue';
 import { useRouter,useRoute } from "vue-router";
 const router=useRouter()
+const props=defineProps({
+     address:{
+         type:String,
+         require:true,
+         default:ethers.constants.AddressZero
+     }
+})
 var goLogout=()=>{
      router.push({path:"/logout"})
 }

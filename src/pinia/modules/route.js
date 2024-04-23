@@ -5,13 +5,14 @@ export const useRouteStore = defineStore('route', {
         currentRoute:null,
         showLayout:true,
         //更改路由
-        changeRoute:"/"
+        changeRoute:"/",
     }),
     getters: {
 
     },
     actions: {
         setCurrentRoute(preRoute,currentRoute){
+            console.log(currentRoute,"---ssss")
              this.currentRoute=currentRoute.path;          
              if(currentRoute.meta&&currentRoute.meta.showLayout){
                  this.showLayout=true
@@ -28,6 +29,6 @@ export const useRouteStore = defineStore('route', {
         },
         setChangeRoute(changeRoute){
             this.changeRoute=changeRoute
-        }
+        },
     }
 });
