@@ -24,14 +24,13 @@ const props = defineProps({
   decimals: { type: Number, default: 18 },
   bordered: { type: Boolean, default: false },
   hasMinus: { type: Boolean, default: false }, // 是否支持输入负数
+  maxValue: { type: Number, default: -1}
 });
 const emits = defineEmits(["change", "update:value"]);
 watch(
   () => props.value,
   (v1, v2) => {
-    nextTick(() => {
-      inputModel.value = v1;
-    });
+    inputModel.value = v1;
   }
 );
 watch(
@@ -69,11 +68,17 @@ const inputChange = () => {
   if (position === '-') {
     num = position + num;
   }
+  // 如果大于99%的话，默认给他是最大值
+  if(props.maxValue >= 0){
+    if(Number(num)*100 / props.maxValue > 99){
+      num = props.maxValue.toString();
+    }
+  }
   nextTick(() => {
     inputModel.value = num;
+    emits("update:value", inputModel.value);
+    emits("change", inputModel.value);
   })
-  emits("update:value", inputModel.value);
-  emits("change", inputModel.value);
 };
 const inputBlur = () => {
   if (inputModel.value === '' || inputModel.value === undefined || inputModel.value === null) {
