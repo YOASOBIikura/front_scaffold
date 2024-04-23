@@ -21,7 +21,7 @@
 import { computed, onMounted, reactive, watch } from "vue";
 import { TimeTransformDateWithoutHour } from "@/common/timeFormat"
 const props = defineProps({
-    expiryDataList: Array,
+    expiryDataList: [Array,Object],
     value: Number
 });
 const emits = defineEmits(["update:value","changeAfterReturnTime"]);

@@ -48,6 +48,89 @@ let chainInfo={
     rpcUrl:"https://polygon.blockpi.network/v1/rpc/public"
 }
 
+
+let optionBusiness={
+    underlyingAssets:[{
+            name:"ETH",
+            img:ethPng,
+            address:"0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+            decimals:18,
+            isSellPut:true,
+            isSellCall:true,
+        },
+        {
+            name:"WBTC",
+            img:wbtcPng,
+            address:"0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+            decimals:8,
+            isSellPut:true,
+            isSellCall:true,
+        }
+    ],//抵押资产
+    strikeAssets:[
+        {
+            name:"USDT",
+            img:usdtPng,
+            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,
+        },
+        {
+            name:"USDC",
+            img:usdcPng,
+            address:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,           
+        },
+        {
+            name:"USDT",
+            img:usdtPng,
+            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,
+        }
+    ],//行权资产
+    premiumAssets:[
+        {
+            name:"USDT",
+            img:usdtPng,
+            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,
+        },
+        {
+            name:"USDC",
+            img:usdcPng,
+            address:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,          
+        },
+        {
+            name:"USDT",
+            img:usdtPng,
+            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,
+        },          
+    ],//权力金资产
+    liquidation:[
+        {     
+           name:"Cash Settlement",
+           value:0
+        },
+        {
+           name:"Asset Delivery",
+           value:1 
+        }
+   ]//清算方式
+}
+
 let tokens=[
     {
      name:"MATIC",
@@ -74,17 +157,16 @@ let tokens=[
     isSellCall:true,
     },
     {
-        name:"WBTC",
-        address:"0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
-        decimals:8,
-        img:wbtcPng,
-        isGasToken:false,
-        isShowAsset:true,
-        isAble:true,
-        type:1,
-        isSellPut:true,
-        isSellCall:true,
-   
+    name:"WBTC",
+    address:"0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+    decimals:8,
+    img:wbtcPng,
+    isGasToken:false,
+    isShowAsset:true,
+    isAble:true,
+    type:1,
+    isSellPut:true,
+    isSellCall:true, 
     }, 
     {
      name:"USDT",
@@ -121,7 +203,8 @@ const polygon={
     bundlerUrl:bundlerUrl,
     chainInfo:chainInfo,
     tokens:tokens,
-    remark:remark
+    remark:remark,
+    optionBusiness:optionBusiness
 }
 
 

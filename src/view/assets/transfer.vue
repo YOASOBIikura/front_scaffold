@@ -71,7 +71,7 @@ import navigationBar from "@/components/utils/navigationBar.vue"
 import inputNumber from "@/components/utils/inputNumber.vue"
 import assetTranfer from "@/components/assets/assetTranfer.vue"
 import inputValue from "@/components/utils/inputNumber.vue"
-import {reactive,onMounted,computed,watch} from "vue"
+import {reactive,onMounted,computed,watch,nextTick} from "vue"
 import { useRouter,useRoute} from "vue-router";
 import {useRouteStore} from "@/pinia/modules/route";
 import {useAxiosStore} from "@/pinia/modules/axios";
@@ -103,7 +103,8 @@ const data=reactive({
     txHash:"",
     txResult:{},
     //----状态锁-----
-    btnLock:false
+    btnLock:false,
+    issueMode:0
 })
 
 onMounted(async ()=>{
@@ -115,6 +116,7 @@ onMounted(async ()=>{
        data.typePng=redeemPng  
        data.type="redeem"
     }
+    data.issueMode=route.query.issueMode
     await handleBalance()
 })
 watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
@@ -140,9 +142,11 @@ var vaultBalance=computed(()=>{
 })
 //---------------方法-------------------
 var transferTx=async ()=>{
+    if( data.issueMode>=2 && data.type=="issue"){
+        console.log("申购错误")
+        return
+    }
     data.isOpen=true
-
-    return
     if(data.optionNumber==0){
         return
     }
@@ -171,17 +175,21 @@ var inputMax=()=>{
     }
 
 }
-var inputNomal=(value)=>{
+var inputNomal=async (value)=>{
     // 如果接近99% 则视为100% 为最大max
     if(data.type=="issue"){
         console.log(Number(data.optionNumber*100) / Number(walletBalance.value) ,99,data.optionNumber*100,walletBalance.value)
         if(Number(data.optionNumber*100) / Number(walletBalance.value) >99){
-            data.optionNumber=walletBalance.value
+            await nextTick()
+            //去除末尾0
+            data.optionNumber= walletBalance.value.replace(/0+$/, '')
             data.isMax=true
         }
     }else{
         if(Number(data.optionNumber*100) / Number(vaultBalance.value) >99){
-            data.optionNumber=vaultBalance.value
+            await nextTick()
+            //去除末尾0
+            data.optionNumber= walletBalance.value.replace(/0+$/, '')
             data.isMax=true
         }
     }

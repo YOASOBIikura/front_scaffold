@@ -17,7 +17,7 @@
 
          <div class="bottom">
              <div class="p1">
-                 <p class="select left" @click="goTransfer('issue')">
+                 <p :class="props.tokenInfo.isGasToken && props.issueMode >=2?'select left unActive':'select left'" @click="goTransfer('issue')">
                     <img  src="@/assets/images/arrow_right2.png" alt="">
                  </p>
                  <p class="select" @click="goTransfer('redeem')">
@@ -44,6 +44,11 @@ const props=defineProps({
          type:Object,
          require:true,
          default:{}
+    },
+    issueMode:{
+        type:Number,
+        require:false,
+        default:0
     }
 })
 //-----------计算属性---------------------
@@ -74,6 +79,11 @@ var vaultBalance=computed(()=>{
 
 //---------方法跳转-------------------
 var goTransfer=(type)=>{
+    if(props.tokenInfo.isGasToken && props.issueMode >=2){
+        console.log("申购模式错误")
+          return
+    }
+
     let salt=props.tokenInfo.salt.toString()
     let walletBalance=props.tokenInfo.walletBalance.toString()
     let vaultBalance=props.tokenInfo.vaultBalance.toString()
@@ -84,7 +94,7 @@ var goTransfer=(type)=>{
     tokenInfo.tokenPrice=tokenPrice
     tokenInfo.salt=salt
     sessionStorage.setItem("assetTranferData",JSON.stringify(tokenInfo))
-    router.push({path:"/assetTransfer",query:{type:type}})
+    router.push({path:"/assetTransfer",query:{type:type,issueMode:props.issueMode}})
 }
 var goSellOption=(orderType)=>{
   
@@ -92,12 +102,12 @@ var goSellOption=(orderType)=>{
         if(!props.tokenInfo.isSellCall){
             return
         }
-        router.push({path:"/sellCall"})
+        router.push({path:"/sellCall",query:{asset:props.tokenInfo.name}})
     }else{
         if(!props.tokenInfo.isSellPut){
             return
         }
-        router.push({path:"/sellPut"})
+        router.push({path:"/sellPut",query:{asset:props.tokenInfo.name}})
     }
 }
 </script>
@@ -131,6 +141,7 @@ var goSellOption=(orderType)=>{
                 font-size: 16px;
                 font-weight: 600;
             }
+
         }
         .p2{
            display: flex;
@@ -170,7 +181,12 @@ var goSellOption=(orderType)=>{
                 width: 16px;
                 height: 16px;
             }
+
           }
+          .unActive{
+                background:var(--bg-color-unActive);
+                color: var(--text-color-second);   
+            }
           .left{
             margin-right: 8px;
           }

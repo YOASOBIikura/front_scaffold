@@ -37,6 +37,73 @@ let remark={
     gasSymbol:"Eth"
 }
 
+let optionBusiness={
+    underlyingAssets:[{
+            name:"ETH",
+            img:ethPng,
+            address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            decimals:18,
+            isSellPut:true,
+            isSellCall:true,
+        },
+        {
+            name:"WBTC",
+            img:wbtcPng,
+            address:"0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+            decimals:8,
+            isSellPut:true,
+            isSellCall:true,
+        }
+    ],//抵押资产
+    strikeAssets:[
+        {
+            name:"USDT",
+            img:usdtPng,
+            address:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,
+        },
+        {
+            name:"USDC",
+            img:usdcPng,
+            address:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,           
+        }
+    ],//行权资产
+    premiumAssets:[
+        {
+            name:"USDT",
+            img:usdtPng,
+            address:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,
+        },
+        {
+            name:"USDC",
+            img:usdcPng,
+            address:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+            decimals:6,
+            isSellPut:true,
+            isSellCall:true,          
+        }       
+    ],//权力金资产
+    liquidation:[
+        {     
+           label:"Cash Settlement",
+           value:0
+        },
+        {
+           label:"Asset Delivery",
+           value:1 
+        }
+   ]//清算方式
+}
+
+
 
 let chainInfo={
     chainId:42161,
@@ -45,6 +112,9 @@ let chainInfo={
     explorerUrl:"https://arbiscan.io/",
     rpcUrl:"https://arbitrum.blockpi.network/v1/rpc/public"
 }
+
+
+
 
 let tokens=[
     {
@@ -106,7 +176,8 @@ const arbitrum={
     bundlerUrl:bundlerUrl,
     chainInfo:chainInfo,
     tokens:tokens,
-    remark:remark
+    remark:remark,
+    optionBusiness:optionBusiness
 }
 
 

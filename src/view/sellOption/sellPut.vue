@@ -4,8 +4,8 @@
         <!-- 选择币种 -->
         <div class="select-option-token-content">
             <select-switch 
-                :switchList="optionTokenSwitchList" 
-                v-model:value="baseData.currentSelectOptionToken"
+                :switchList="data.underlyingAssetList" 
+                v-model:value="data.currentUnderlyingAsset"
                 theme="white"
             ></select-switch>
         </div>
@@ -27,16 +27,18 @@
                 </div>
             </div>
         </div>
+
        <!-- 数字输入框 -->
        <div class="sell-amount-content">
         <div class="title">Amount</div>
         <div class="input-content">
             <div class="input-row">
-                <input-number class="input" v-model:value="baseData.optionNumber"></input-number>
-                <div class="token">ETH</div>
+                <input-number class="input" v-model:value="data.optionNumber"></input-number>
+                <div class="token">{{data.currentTokenSelect}}</div>
             </div>
             <div class="limit-row">
-                <div>$3000</div>
+                <!-- <div>$3000</div> -->
+                <div></div>
                 <div>
                     <span>8238.10</span>
                     <span>
@@ -48,11 +50,11 @@
        </div>
        
        <!-- 行权价格 -->
-        <div class="strike-price-content">
+       <div class="strike-price-content">
             <div class="strike-title">
                 <div class="title">Strike Price</div>
                 <div class="current-price">
-                    <div :class="[baseData.optionType + '-price']">
+                    <div class="put-price">
                         <span>Market Price</span>
                         <span style="font-weight: bold;"> $3100</span>
                     </div>
@@ -60,9 +62,7 @@
                 </div>
             </div>
             <div class="strike">
-                <strike-price :priceList="strikePriceList" v-model:value="baseData.strikePrice" >
-                    
-                </strike-price>
+                <strike-price :priceList="data.strikePrice" v-model:value="data.currentStrikePrice" > </strike-price>          
             </div>
 
         </div>
@@ -73,14 +73,14 @@
             <div>
                 <expiry-date-slider
                     class="expiry-date"
-                    :expiryDataList="expiryDataList" 
-                    v-model:value="baseData.expiryData"
+                    :expiryDataList="data.expiryDataList" 
+                    v-model:value="data.currentExpiryData"
                     @changeAfterReturnTime="changeExpiry"
                 ></expiry-date-slider>
             </div>
         </div>
-        <!-- 价格 -->
-        <div class="price-content">
+      <!-- 价格 -->
+      <div class="price-content">
             <div class="price-title">
                 <div class="title">Price</div>
                 <div class="current-price">
@@ -92,7 +92,7 @@
                 </div>
             </div>
             <div>
-                <input-number class="input" v-model:value="baseData.price"></input-number>
+                <input-number class="input" v-model:value="data.currentPrice"></input-number>
             </div>
         </div>
 
@@ -100,7 +100,7 @@
         <div class="premium-content">
             <div class="title">Premium</div>
             <div class="mul-content">
-                <mul-select :list="premiumList" v-model:value="baseData.premiumSelectList"></mul-select>
+                <mul-select :list="data.premiumAssetList" v-model:value="data.premiumSelect"></mul-select>
             </div>
         </div>
 
@@ -108,7 +108,7 @@
         <div class="premium-content">
             <div class="title">Accept</div>
             <div class="mul-content">
-                <mul-select :list="acceptList" v-model:value="baseData.acceptSelectList"></mul-select>
+                <mul-select :list="data.strikeAsset" v-model:value="data.currentAsset"></mul-select>
             </div>
         </div>
     </div>
@@ -134,42 +134,76 @@ import expiryDateSlider from "@/components/sellOption/expiryDateSlider.vue"
 import refresh from "@/components/utils/refresh.vue"
 import { reactive,onMounted} from "vue";
 import { useRouter} from "vue-router";
+import ethPng from "@/assets/images/eth.png"
+import wbtcPng from "@/assets/images/wbtc.png"
+import usdtPng from "@/assets/images/usdt.png"
+import usdcPng from "@/assets/images/usdc.png"
 const router=useRouter()
-const data=reactive({
+const data=reactive({ 
+    underlyingAssetList:[
+      {
+         key:"ETH",
+         label:"ETH",
+         icon:ethPng
+      },
+      {
+          key:"WBTC",
+          label:'WBTC',
+          icon:wbtcPng
+      }
+   ],
+   currentUnderlyingAsset:"ETH",
+   optionNumber:"",
+   strikePrice:[
+      {
+        price:"2900",
+      },
+      {
+        price:"3000" 
+      },
+      {
+         price:"3100"
+      }
+   ],
+   currentStrikePrice:"2900",
+   expiryDataList:{
+      1:1,
+      2:2,
+      3:3,
+      4:7,
+      5:14,
+      6:21,
+      7:30
+   },
+   currentExpiryData:2,
+   currentPrice:2100,
+   premiumAssetList:[
+      {
+        key:"USDT",
+        label:"USDT",
+        icon:usdtPng,
+        address:""
+      },
+      {
+        key:"USDC",
+        label:"USDC",
+        icon:usdcPng,
+        address:""
+      }
+   ],
+   premiumSelect:["USDT"],
+   strikeAsset:[{
+      key:"Cash",
+      label:"Cash Settlement",
+      },
+      {
+        key:"Asset",
+       label:"Asset Delivery",       
+      }
+   ],
+   currentAsset:["Cash"]
 
 })
-// 
-onMounted(()=>{
-
-})
-
-
-
-
-//------------
-const optionTokenSwitchList = [{key: 'ETH',label: 'ETH', icon: "/src/assets/images/eth.png"},{key: 'WBTC', label: 'WBTC',icon: "/src/assets/images/wbtc.png"}];
-const strikePriceList = [{price: 2900},{price: 3000},{price: 3100},{price: 3200},{price: 3300},{price: 3400},{price: 3500}]
-const premiumList = [{key: 'USDT', label: "USDT", icon: "/src/assets/images/usdt.png"}, {key: "USDC", label: "USDC", icon: "/src/assets/images/usdc.png"}];
-const acceptList = [{key: "cash", label: "Cash Settlement"}, {key: "asset", label: "Asset Delivery"}];
-const expiryDataList = reactive({1: 1,2: 2,3: 3,4: 7,5: 14,6: 21,7: 30})
-
-
-let baseData = reactive({
-    optionType: "call",
-    currentSelectOptionToken: "ETH",
-    optionNumber: "100",
-    strikePrice: 2900,
-    price: "3213",
-    premiumSelectList: ["USDT", "USDC"],
-    acceptSelectList: ["cash"],
-    expiryData: 2
-});
-
-
-const changeExpiry = (date) => {
-    console.log(date);
-}
-
 
 
 

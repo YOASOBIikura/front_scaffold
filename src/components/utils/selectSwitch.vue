@@ -13,7 +13,7 @@
     </div>
 </template>
 <script setup>
-import { ref,watch,computed } from "vue";
+import { ref,watch,computed,defineEmits } from "vue";
 const props = defineProps({
     switchList: Array,
     value: String,
@@ -36,7 +36,7 @@ const changeSelect = (data) => {
     }
     currentSelect.value = data.key;
     emits("update:value", currentSelect.value);
-    emits("change", currentSelect.value)
+    emits("change", data)
 }
 </script>
 <style lang="less" scoped>

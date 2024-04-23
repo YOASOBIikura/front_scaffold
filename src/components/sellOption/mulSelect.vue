@@ -1,65 +1,57 @@
 <template>
     <div class="mul-content">
-        <div class="mul-item" 
-            v-for="(item,index) in list" 
-            :key="'mul-' + index + item.label"
-            :class="{'active': value.indexOf(item.key) !== -1}"
-            @click="changeSelect(item)"
-        >
-            <img v-if="item.icon" :src="item.icon" class="icon"/>
-            {{ item.label }}
+        <div :class="item.select?'mul-item actice':'mul-item'" @click="select(item)"  v-for="(item,index) in props.value" :key="index">
+              <img v-if="item.img" class="icon" :src="item.img" alt="">
+              <span class="text">{{item.name}}</span>
         </div>
     </div>
 </template>
 <script setup>
-import { reactive,watch } from "vue";
+import {defineEmits} from "vue";
+const emits=defineEmits(["update:value","change"])
 const props = defineProps({
-    list: Array,
-    value: Array,
+    value: {
+        type:Array,
+        default:[]
+    },
 });
-let data = reactive({
-    currentSelect: props.value
-});
-watch(
-    () => props.value,
-    (val) => {
-        console.log(val)
-        data.currentSelect = val;
-    }
-)
-const changeSelect = (item) => {
-    let selectIndex = data.currentSelect.indexOf(item.key);
-    console.log(selectIndex);
-    if(selectIndex === -1){
-        data.currentSelect.push(item.key);
-        emits("update:value", data.currentSelect);
-    } else {
-        data.currentSelect.splice(selectIndex,1);
-        emits("update:value", data.currentSelect);
-    }
+var select=(item)=>{
+    item.select=!item.select
+    emits("change",item)
 }
 </script>
 <style scoped lang="less">
 .mul-content{
     display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: space-between;
     width: 100%;
     .mul-item{
-        width: calc(50% - 8px);
-        height: 48px;
-        border: 1px solid var(--component-border);
-        padding: 14px 16px;
-        font-size: 16px;
-        line-height: 16px;
+        border:1px solid var(--border-color);
         border-radius: 8px;
+        width: 167px;
+        padding: 16px;
+        margin-bottom: 15px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
         .icon{
-            margin-right: 2px;
             width: 16px;
-            vertical-align: top;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 6px;
         }
-        &.active{
-            border: 2px solid var(--bg-color-container-active);
+        .text{
+            box-sizing: border-box;;
+            color: var(--text-color-primary);
+            font-size:16px;
+            font-weight: 600;
         }
+    }
+    .actice{
+        box-sizing: border-box;
+        border: 1px solid var(--border-active);
     }
 }
 </style>

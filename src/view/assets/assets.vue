@@ -16,9 +16,9 @@
               </p>
         </div>
         <div class="contains">
-           <assetOption  :tokenInfo="item" v-for="(item,index) in data.tokenList" :key="index"></assetOption>  
+           <assetOption  :tokenInfo="item" v-for="(item,index) in data.tokenList" :key="index" :issueMode="data.issueMode"></assetOption>  
         </div>
-       
+
     </div>
 </template>
 <script setup>
@@ -34,12 +34,14 @@ import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import {balanceOf} from "@/callData/multiCall/token"
 import {getWalletBalanceApi} from "@/api/utils"
 import {getPrice} from "@/callData/multiCall/priceOracle"
+import {getIssueMode} from "@/callData/multiCall/IssuanceFacet"
 const axiosStore= useAxiosStore()
 const data=reactive({
      tokenList:[],
      totalAsset:0,
      totalWallet:0,
-     totalVault:0
+     totalVault:0,
+     issueMode:0
 })
 // 生命周期
 onMounted(async ()=>{
@@ -112,6 +114,9 @@ var handleBalance=async ()=>{
 
    //multicall数据
    let multiCallData=[]
+   //获取vault申购模式
+   let issueModeCallData=getIssueMode("getIssueMode",vault)
+   multiCallData.push(issueModeCallData)
    //获取vault仓位
    let positions=[1,2,3,4,5,6,7,8,9,10]
    let vaultCallData= getVaultAllPosition("getVaultAllPosition",vault,positions)
@@ -138,7 +143,8 @@ var handleBalance=async ()=>{
        item.vault=vault
        item.salt=BigNumber.from("0")
    })
-
+   //处理申购模式
+   data.issueMode=multiCallResponse["getIssueMode"]?.issueMode || 0 
 
    //处理钱包token余额
    data?.tokenList.forEach(item=>{

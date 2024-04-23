@@ -22,7 +22,7 @@
                     </div>
                   </div>
           </div>
-           <div class="contains padding" v-if="true">
+           <div class="contains padding" v-if="false">
               <submitOrder v-for="(item) in 2" :key="item"  @liquidation="liquidationTx"></submitOrder> 
             </div>   
             <!-- empty -->
