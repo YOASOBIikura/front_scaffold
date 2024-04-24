@@ -1,6 +1,5 @@
 <template>
   <div class="select">
-    <ClientOnly>
       <swiper
         :effect="'coverflow'"
         :grabCursor="true"
@@ -54,7 +53,6 @@
         </swiper-slide>
       </swiper>
       <div v-else class="no-data">No Data</div>
-    </ClientOnly>
   </div>
 </template>
 <script setup lang="ts">
@@ -158,7 +156,6 @@ const initSwiper = (swiper: SwiperClass) => {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 135px;
         .price-change {
           margin-left: 4px;
           &.up {

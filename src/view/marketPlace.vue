@@ -21,6 +21,7 @@
                     <div class="title">Expiry Date</div>
                     <div>
                     <swiperSelect 
+                        :changeTimeout="100"
                         :options="baseData.options" @selectChange="selectChange"></swiperSelect>
                     </div>
                 </div>
@@ -28,6 +29,7 @@
                     <div class="title">Strike Price</div>
                      <div>
                     <swiperSelect 
+                       :changeTimeout="100"
                         :options="baseData.options" @selectChange="selectChange"></swiperSelect>
                     </div>
                 </div>
