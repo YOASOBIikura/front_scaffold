@@ -1,10 +1,10 @@
 import { useAxiosStore } from "@/pinia/modules/axios";
 
 //代币授权
-function approveApi(toekn,spender,amount){
+function approveApi(token,spender,amount){
     return  useAxiosStore().axios({
         mode:"chainBlockSend", 
-        target:toekn ,
+        target:token ,
         method:"approve",
         data:{
           value:0,
@@ -17,10 +17,10 @@ function approveApi(toekn,spender,amount){
 
 
 //代币转移
-function transferApi(toekn,to,amount){
+function transferApi(token,to,amount){
     return  useAxiosStore().axios({
         mode:"chainBlockSend", 
-        target:toekn ,
+        target:token ,
         method:"transfer",
         data:{
           value:0,
@@ -32,13 +32,29 @@ function transferApi(toekn,to,amount){
 }
 
 
+//balanceOf
+function balanceOfApi(token,wallet){
+    return useAxiosStore().axios({
+        mode:"chainBlockCall", 
+        target:token ,
+        method:"balanceOf",
+        data:{
+          value:0,
+          param:{
+             "address":wallet,
+          },
+          returnsType:{
+             "uint256":"balance"
+          }  
+    }});
+}
 
 
 //allownoce
-function allownoceApi(toekn,owner,spender){
+function allownoceApi(token,owner,spender){
     return  useAxiosStore().axios({
         mode:"chainBlockCall", 
-        target:toekn ,
+        target:token ,
         method:"allowance",
         data:{
           value:0,
@@ -64,4 +80,4 @@ function transferEthApi(target,amount){
 }
 
 
-export {approveApi,transferApi,transferEthApi,allownoceApi}
+export {approveApi,transferApi,transferEthApi,allownoceApi,balanceOfApi}

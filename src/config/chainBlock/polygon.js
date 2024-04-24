@@ -84,14 +84,7 @@ let optionBusiness={
             isSellPut:true,
             isSellCall:true,           
         },
-        {
-            name:"USDT",
-            img:usdtPng,
-            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-            decimals:6,
-            isSellPut:true,
-            isSellCall:true,
-        }
+
     ],//行权资产
     premiumAssets:[
         {
@@ -109,15 +102,7 @@ let optionBusiness={
             decimals:6,
             isSellPut:true,
             isSellCall:true,          
-        },
-        {
-            name:"USDT",
-            img:usdtPng,
-            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-            decimals:6,
-            isSellPut:true,
-            isSellCall:true,
-        },          
+        }      
     ],//权力金资产
     liquidation:[
         {     

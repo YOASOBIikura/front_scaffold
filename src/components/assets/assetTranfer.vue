@@ -10,7 +10,7 @@
         </template>
         <div class="tranferResult">
               <img class="icon" :src="props.tokenInfo.img" alt="">     
-              <span class="balance">{{ props.amount }}{{ props.tokenInfo.name }}</span>
+              <span class="balance">{{ data.showAmount }}{{ props.tokenInfo.name }}</span>
               <p class="info">
                  <span class="text1">Wallet</span>
                  <img class="icon2" :src="data.png" alt="">
@@ -37,6 +37,7 @@
 import { reactive,defineProps,defineEmits,onMounted} from 'vue';
 import issuePng from "@/assets/images/arrow_right2.png"
 import redeemPng from "@/assets/images/arrow_left.png"
+import { BigNumber, ethers } from 'ethers';
 const props=defineProps({
    isOpen:{
        type:Boolean,
@@ -59,27 +60,35 @@ const props=defineProps({
       default:"issue"
    },
    amount:{
-      type:String,
+      type:[String,Object],
       require:true,
       default:"0"
    },
    txResult:{
       type:Object,
       require:false
+   },
+   decimals:{
+      type:Number,
+      require:true,
+      default:18
    }
 })
 const emits=defineEmits(["update:isOpen"])
 let data=reactive({
    title:"issue",
-   png:issuePng
+   png:issuePng,
+   showAmount:BigNumber.from("0")
 })
 
 onMounted(()=>{
     if(props.type=="issue"){
       data.png=issuePng
+     
     }else{
       data.png=redeemPng
     }
+    data.showAmount=(BigNumber.from(props.amount).div(ethers.utils.parseUnits("1",props.decimals-2)).toNumber()/100).toFixed()
 })
 
 var closeDrawer=()=>{

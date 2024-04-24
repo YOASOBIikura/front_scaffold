@@ -30,27 +30,15 @@
                 <span class="text">{{vaultBalance}}</span>
             </div>
         </div>
-        <!--  -->
-        <div class="input-content">
-            <div class="input-row">
-                <input-number @input="inputNomal" class="input" v-model:value="data.optionNumber"></input-number>
-                <div class="token">{{data.tokenInfo.name}}</div>
-            </div>
-            <div class="limit-row">
-                <!-- <div>$3000</div> -->
-                <div></div>
-                <div>
-                    <!-- <span>
-                        <span>0.0001</span>
-                        <span>-</span>
-                        <span>10</span>
-                    </span> -->
-                    <span>
-                        <div @click="inputMax" class="max-btn">Max</div>
-                    </span>
-                </div>
-            </div>        
-        </div>
+        <inputValue 
+            v-model:value="data.optionNumber" 
+            :isApproximate="true"
+            :maxValue="data.type=='issue'? data.walletBalanceValue : data.vaultBalanceValue"
+            :symbol="data.tokenInfo.name" 
+            :decimals="data.tokenInfo.decimals"
+           
+        >
+    </inputValue>
         <!--  -->
         <!-- <div class="cost">
             <p class="left">
@@ -62,15 +50,21 @@
         <!--  -->
         <span class="btn" @click="transferTx">Transfer</span>
         <!--  -->
-        <assetTranfer  v-model:isOpen="data.isOpen" :tokenInfo="data.tokenInfo" :type="data.type" :hash="data.txHash" :amount="data.optionNumber" :txResult="data.txResult">
+        <assetTranfer  
+        v-model:isOpen="data.isOpen" 
+        :tokenInfo="data.tokenInfo" 
+        :type="data.type" 
+        :hash="data.txHash" 
+        :amount="data.optionNumber" 
+        :decimals="data.tokenInfo.decimals"
+        :txResult="data.txResult">
         </assetTranfer>
     </div>
 </template>
 <script setup>
 import navigationBar from "@/components/utils/navigationBar.vue"
-import inputNumber from "@/components/utils/inputNumber.vue"
 import assetTranfer from "@/components/assets/assetTranfer.vue"
-import inputValue from "@/components/utils/inputNumber.vue"
+import inputValue from "@/components/utils/inputValue.vue"
 import {reactive,onMounted,computed,watch,nextTick} from "vue"
 import { useRouter,useRoute} from "vue-router";
 import {useRouteStore} from "@/pinia/modules/route";
@@ -92,7 +86,7 @@ const routeStore=useRouteStore()
 const router=useRouter()
 const route=useRoute()
 const data=reactive({
-    optionNumber:"",
+    optionNumber:BigNumber.from("0"),
     isOpen:false,
     tokenInfo:{},
     typePng:issuePng,
@@ -142,17 +136,21 @@ var vaultBalance=computed(()=>{
 })
 //---------------方法-------------------
 var transferTx=async ()=>{
+    console.log(data.optionNumber,"optionNumber")
+    
     if( data.issueMode>=2 && data.type=="issue"){
         console.log("申购错误")
         return
     }
-    data.isOpen=true
-    if(data.optionNumber==0){
+   
+    if(data.optionNumber.eq(BigNumber.from("0"))){
         return
     }
     if(axiosStore.isConnect==1){
        return
     }
+    console.log("进入页面尝试")
+    data.isOpen=true
     await sendTx()
 }
 
@@ -164,37 +162,11 @@ var switchType=()=>{
         data.typePng=issuePng
         data.type="issue"       
     }
-    data.isMax=true
-}
-
-var inputMax=()=>{
-    if(data.type=="issue"){
-        data.optionNumber=walletBalance.value
-    }else{
-        data.optionNumber=vaultBalance.value
-    }
+    data.optionNumber=BigNumber.from("0")
 
 }
-var inputNomal=async (value)=>{
-    // 如果接近99% 则视为100% 为最大max
-    if(data.type=="issue"){
-        console.log(Number(data.optionNumber*100) / Number(walletBalance.value) ,99,data.optionNumber*100,walletBalance.value)
-        if(Number(data.optionNumber*100) / Number(walletBalance.value) >99){
-            await nextTick()
-            //去除末尾0
-            data.optionNumber= walletBalance.value.replace(/0+$/, '')
-            data.isMax=true
-        }
-    }else{
-        if(Number(data.optionNumber*100) / Number(vaultBalance.value) >99){
-            await nextTick()
-            //去除末尾0
-            data.optionNumber= walletBalance.value.replace(/0+$/, '')
-            data.isMax=true
-        }
-    }
-    console.log(data.isMax,data.optionNumber)
-}
+
+
 
 
 
@@ -225,28 +197,15 @@ var handleBalance=async ()=>{
      }
      data.walletBalanceValue=walletBalance
      data.vaultBalanceValue=vaultBalance
+
+     console.log("余额", data.walletBalanceValue, data.vaultBalanceValue)
 }
 //------上链请求----------
 var sendTx=async ()=>{
-    let transferAmount
+    let transferAmount=data.optionNumber
     let token=data.tokenInfo.address
     let vault=data.tokenInfo.vault
     let salt=BigNumber.from(data.tokenInfo.salt) 
-    let decimals=data.tokenInfo.decimals
-    if(data.type=="issue"){
-       if(data.isMax){
-         transferAmount=data.walletBalanceValue
-       }else{
-         transferAmount=ethers.utils.parseUnits(`${data.optionNumber}`,decimals)
-       }
-    }else{
-       if(data.isMax){
-        //  transferAmount=data.vaultBalanceValue
-        transferAmount=BigNumber.from("0")  //赎回是0的情况 全赎回
-       }else{
-         transferAmount=ethers.utils.parseUnits(`${data.optionNumber}`,decimals)
-       }
-    }
     console.log(transferAmount,"transferAmount--") 
     //添加按钮锁
     if(data.btnLock){
@@ -254,7 +213,11 @@ var sendTx=async ()=>{
     }
     data.btnLock=true
     //授权交易
-    await approveTx(data.tokenInfo.isGasToken,token,vault,transferAmount)
+    let approveStatus= await approveTx(data.tokenInfo.isGasToken,token,vault,transferAmount)
+    if(!approveStatus){
+        data.btnLock=false
+        return
+    }
     // 组装交易
     let codeRespose= await getContractCodeApi(vault)
     //未创建vault
@@ -285,17 +248,19 @@ var sendTx=async ()=>{
         data.btnLock=false
         return
     }
-
-
 }
 
 //授权交易
 var approveTx=async(isGasToken,token,vault,amount)=>{
+    //如果是赎回则不用赎回
+    if(data.type=="redeem"){
+        return true
+    }
     //如果是gas币的情况下
     if(isGasToken){
         let apprvoeResponse=await transferEthApi(vault,amount)
         console.log("apprvoeResponse",apprvoeResponse)
-        return 
+        return apprvoeResponse.status
     }
     let allownoceResponse= await allownoceApi(token,axiosStore.currentAccount,vault)
     allownoceResponse=allownoceResponse?.message?.allowance || BigNumber.from("0")
@@ -303,7 +268,10 @@ var approveTx=async(isGasToken,token,vault,amount)=>{
     if(allownoceResponse.lt(amount)){
       let apprvoeResponse=await  approveApi(token,vault,amount)
       console.log("apprvoeResponse",apprvoeResponse)
+      return apprvoeResponse.status
     }
+
+    return true
 }
 
 //-----ops拼装---
@@ -531,6 +499,7 @@ var issueAndRedeemCallData= (isGasToken,type,vault,asset,amount,assetType)=>{
         font-size: 16px;
         font-weight: 600;
         border-radius: 8px;
+        margin-top: 16px;
      }
 }
 

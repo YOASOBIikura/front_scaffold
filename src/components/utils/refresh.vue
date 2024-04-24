@@ -4,8 +4,8 @@
     </div>
 </template>
 <script setup>
-import { reactive } from "vue";
-
+import { reactive,defineEmits } from "vue";
+const emits=defineEmits(["change"])
 let data = reactive({
     hasAnimation: false
 })
@@ -14,6 +14,7 @@ const addAnimation = () => {
     setTimeout(() => {
         data.hasAnimation = false
     }, 500);
+    emits("change")
 }
 </script>
 <style scoped lang="less">
