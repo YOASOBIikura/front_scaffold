@@ -124,7 +124,7 @@ function handleRequest(_this,option){
         option.internalData.currentLoop+=1
         if(option.mode == "chainBlockCall" || option.mode=="http" || option.mode =="chainBlockNormal"){
             if(option.loop !=0 &&option.internalData.currentLoop > option.loop && option.loop != "infinite"){  
-                throw new Error("request fail")
+                throw new Error("request fail",option)
             }
         }
         request(_this,option).then((response) => {

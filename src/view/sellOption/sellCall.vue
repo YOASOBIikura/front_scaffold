@@ -3,6 +3,10 @@
     <div class="sellOption">    
         <!-- 选择币种 -->
         <selectCoin  @change="underlyingChange" :dataList="data.underlyingAssetList" v-model:value="data.currentUnderlyingAsset" ></selectCoin>
+
+
+
+
        <!-- 数字输入框 -->
        <div class="sell-amount-content">
         <div class="title">Amount</div>
@@ -18,27 +22,6 @@
              </div>
         </inputValue>
        </div> 
-       
-           
-       
-       <!-- 行权价格 -->
-        <div class="strike-price-content">
-            <div class="strike-title">
-                <div class="title">Strike Price</div>
-                <div class="current-price">
-                    <div class="call-price">
-                        <span>Market Price</span>
-                        <span style="font-weight: bold;"> $3100</span>
-                    </div>
-                    <refresh ></refresh>
-                </div>
-            </div>
-            <div class="strike">
-                <strike-price :priceList="data.strikePrice" v-model:value="data.currentStrikePrice" > </strike-price>          
-            </div>
-
-        </div>
-
         <!-- 到期时间 -->
         <div class="expiry-data-content">
             <div class="title">Expiry Date</div>
@@ -50,9 +33,30 @@
                     @changeAfterReturnTime="changeExpiry"
                 ></expiry-date-slider>
             </div>
+        </div>   
+           
+       
+       <!-- 行权价格 -->
+        <div class="strike-price-content">
+            <div class="strike-title">
+                <div class="title">Strike Price</div>
+                <div class="current-price">
+                    <div class="call-price">
+                        <span>Market Price</span>
+                        <span style="font-weight: bold;"> ${{data.currentPrice}}</span>
+                    </div>
+                    <refresh ></refresh>
+                </div>
+            </div>
+            <div class="strike">
+                <strike-price :dataList="data.strikePrice" v-model:value="data.currentStrikePrice" > </strike-price>          
+            </div>
+
         </div>
+
+
         <!-- 价格 -->
-        <div class="price-content">
+        <!-- <div class="price-content">
             <div class="price-title">
                 <div class="title">Price</div>
                 <div class="current-price">
@@ -66,13 +70,20 @@
             <div>
                 <input-number class="input" v-model:value="data.currentPrice"></input-number>
             </div>
+        </div> -->
+        <div class="premium-content">
+            <div class="title">Strike</div>
+            <div class="mul-content">
+                <mul-select v-model:value="data.premiumAssetList"></mul-select>
+            </div>
         </div>
+
 
         <!-- 支付币种支持 -->
         <div class="premium-content">
             <div class="title">Premium</div>
             <div class="mul-content">
-                <mul-select v-model:value="data.premiumAssetList"></mul-select>
+                <mul-select v-model:value="data.strikeAssetList"></mul-select>
             </div>
         </div>
 
@@ -122,16 +133,22 @@ const data=reactive({
    premiumAssetList:[],
    liquidationWay:[],//清算方式数组  
    currentPrice:"2100",//当前抵押资产价格
-   currentStrikePrice:"2900",//行权价
+   currentStrikePrice:     {
+        key:0,
+        price:"2900",
+      },//行权价
    currentUnderlyingAsset:{},//当前抵押资产
    strikePrice:[
       {
+        key:0,
         price:"2900",
       },
       {
+        key:1,
         price:"3000" 
       },
       {
+         key:2,
          price:"3100"
       }
    ],
@@ -228,27 +245,25 @@ var underlyingChange=async ()=>{
      data.underlyingAssetBalance=balance
      console.log("抵押资产余额",balance)
 }
-//-------------------
-var premiumChange=(item)=>{
-   console.log(item,"看看看看")
-}
-var sendTx=async ()=>{
-    console.log(data.underlyingAmount,"data.underlyingAmount")
-
-     return
-     let vault= await  getVault()
-     console.log(vault,"vault--ss",data.currentUnderlyingAsset)
-     await checkUpdateGignature(vault,data.currentUnderlyingAsset.address)
-}
-
 //------------
 const changeExpiry = (date) => {
     console.log(date);
 }
+
+
+//--------上链-----------
+var sendTx=async ()=>{
+    console.log(data.underlyingAmount,"data.underlyingAmount",data.currentStrikePrice)
+     return
+     await checkUpdateGignature(data.vault,data.currentUnderlyingAsset.address)
+}
+
+
 //------------------------------
 // 是否触发更新链上的签名
-var  checkUpdateGignature=async (vault,underlyingAsset,currentTimestamp)=>{
-    currentTimestamp=!currentTimestamp  
+var  checkUpdateGignature=async (vault,underlyingAsset)=>{
+   let time=parseInt(new Date().getTime()/1000)
+   let currentTimestamp=BigNumber.from(time)
   //multicall数据
    let multiCallData=[]
    multiCallData.push(getSigatureLock("getSigatureLock",vault,0,underlyingAsset))  
@@ -256,36 +271,45 @@ var  checkUpdateGignature=async (vault,underlyingAsset,currentTimestamp)=>{
    let multiCallResponse=await multiCallObjR(multiCallData)
    console.log("multiCallResponse",multiCallResponse)   
    //如果当前时间戳> 链上时间戳   &&  total大于0的情况 则需要去除老的签名    
-   let timestamp=multiCallResponse["getSigatureLock"]?.timestamp || BigNumber.from("0")
-   let total=multiCallResponse["getUnderlyTotal"]?.total || BigNumber.from("0")
-   let isNextStep=true
-   if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
-        //触发上链签名
-        //_vault,_orderType,_underlyingAsset,_timestamp
-       let resetSigature= await  setSigatureLockApi(_vault,0,underlyingAsset,currentTimestamp)
-       isNextStep=true
-   }
-     
-
+    let timestamp=multiCallResponse["getSigatureLock"]?.timestamp || BigNumber.from("0")
+    let total=multiCallResponse["getUnderlyTotal"]?.total || BigNumber.from("0")
+    let premium=await handlePremiumAsset() 
+    let strike=await handleStrikeAsset()
+    let liquidateModes= handleLiquidation()
    //进行712签名
-   if(isNextStep){
-        let signatureInfo={
-            orderType:0,
-            underlyingAsset: underlyingAsset, 
-            underlyingAssetType:0,
-            underlyingNftID:0,
-            expirationDate:data.currentExpiryData,
-            total:data.optionNumber,
-            timestamp:currentTimestamp,
-            liquidateModes:[],
-            strikeAssets:[],
-            strikeAmounts:[],
-            premiumAssets:[],
-            premiumFees:[]          
-        }
-        let signature= await sign712OrderApi(axiosStore.chainId,axiosStore.currentContractData["OptionPutModule"],signatureInfo)
-        console.log("signature",signature)
+
+    let signatureInfo={
+        orderType:0,
+        underlyingAsset: underlyingAsset, 
+        underlyingAssetType:data.currentUnderlyingAsset.assetType,
+        underlyingNftID:0,
+        expirationDate:data.currentExpiryData,
+        total:data.underlyingAmount,
+        timestamp:currentTimestamp,
+        liquidateModes:liquidateModes,
+        strikeAssets:strike.strikeAssets,
+        strikeAmounts:strike.strikeAmounts,
+        premiumAssets:premium.premiumAssets,
+        premiumFees:premium.premiumFees      
+    }
+    console.log("signatureInfo",signatureInfo)
+    let signatureResponse= await sign712OrderApi(axiosStore.chainId,axiosStore.currentContractData["OptionModule"],signatureInfo)
+    console.log("signature",signatureResponse)
+
+   //是否触发链上签名
+   let isNextStep=signatureResponse.status
+   if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0")) && isNextStep){
+        //触发上链签名
+       let resetSigature= await  setSigatureLockApi(_vault,0,underlyingAsset,currentTimestamp)
+       isNextStep=resetSigature.message.status || false
    }
+   //更新签名到中心化服务器
+   if(isNextStep){
+      let response=await storeSingature(signatureInfo,signature.message)
+      console.log("流程完成",response)
+   }
+
+   
 }
 var getVault=async function(){
   let salt=BigNumber.from("0")  
@@ -300,24 +324,64 @@ var balanceOf=async (underlyingAsset,wallet)=> {
 }
 
 // 存储签名数据到中心化服务器
-var storeSingature=()=>{
+var storeSingature=async ()=>{
 
 }
 
 //处理权力金资产
-var handlePremiumAsset=()=>{
+var handlePremiumAsset=async ()=>{
    let premiumAssets=[]
    let premiumFees=[]
+   data.premiumAssetList.forEach(item=>{
+       if(item.select){
+        premiumAssets.push(item.address)
+       }
+   })
+   //获取权力金价格
+
+   //返回价值
+   return {
+    premiumAssets,
+    premiumFees
+   }
+
 
 }
-//处理行权资产
-var handleStrikeAsset=()=>{
+//处理行权资产  //因为行权资产跟权力金资产一样 所以这里做同步处理
+var handleStrikeAsset=async ()=>{
    let strikeAssets=[]
    let strikeAmounts=[]
+//    data.premiumAssetList.forEach(item=>{   
+//        for(let i=0;i<data.strikeAssetList.length;i++){
+//         if(item.select&& String(data.strikeAssetList[i].address).toLocaleLowerCase() == String(item.address).toLocaleLowerCase){
+//              strikeAssets.push(item.address)
+//          }
+//        }
+//    })
+   data.strikeAssetList.forEach(item=>{
+       if(item.select){
+          strikeAssets.push(item.address)
+       }
+   })
+   //处理行权价格
+
+   return {
+    strikeAssets,strikeAmounts
+   }
+   
 }
 //处理结算方式
 var handleLiquidation=()=>{
    let liquidateModes=[]
+   data.liquidationWay.forEach(item=>{
+      if(item.select){
+         liquidateModes.push(item.value)
+      }
+   })
+   if(liquidateModes.length==2){
+      liquidateModes=[2]
+   }
+   return liquidateModes
 }
 </script>
 <style scoped lang="less">
@@ -342,36 +406,6 @@ var handleLiquidation=()=>{
     box-sizing: border-box;
 }
 
-.lock-token-content{
-    margin-top: 24px;
-     .select-content{
-        margin-top: 8px;
-        border-radius: 8px;
-        border: 1px solid var(--component-border);
-        width: 100%;
-        position: relative;
-        display: flex;
-        .item{
-            height: 48px;
-            width: 50%;
-            border-radius: 8px;
-            padding: 16px 12px;
-            &.active{
-                border: 2px solid var(--bg-color-container-active);
-            }
-            .token{
-                color: var(--text-color-primary);
-                font-size: 16px;
-                line-height: 16px;
-                img{
-                    width: 16px;
-                    margin-right: 4px;
-                    vertical-align: top;
-                }
-            }
-        }
-    }
-}
 .select-option-token-content{
     margin-top: 16px;
 }

@@ -1,64 +1,65 @@
 <template>
-    <div class="s-price-content" >
-        <div    
-            v-for="(item,index) in priceList" 
-            :key="'price-' + index" 
-            class="price-item"
-            @click="changePrice(item)"
-            :class="[{'active': data.currentSelect == item.price}]"
-        >$ {{ item.price }}
-        </div>
+    <div class="stikePrice" >
+        <span @click="select(item,index)" :class="data.currentSelect==index ?'stikePriceItem active':'stikePriceItem'" v-for="(item,index) in props.dataList" :key="index">
+           ${{item.price}}
+        </span>
     </div>
 </template>
 <script setup>
-import { reactive,watch } from "vue";
-
+import { reactive,watch,onMounted } from "vue";
 const props = defineProps({
-    priceList: Array,
-    value: String,
+    dataList: {
+        type:Array,
+        require:true,
+        default:[]
+    },
+    value: {
+        type:Object,
+        require:true,
+        default:{}
+    },
 });
-const emits = defineEmits(["update:value"]);
-let data = reactive({
-    currentSelect: props.value
+const data = reactive({
+    currentSelect: -1
 });
-watch(
-    () => props.value,
-    (val) => {
-        console.log(val)
-        data.currentSelect = val;
-    }
-)
-const changePrice = (data) => {
-    data.currentSelect = data.price;
-    emits("update:value", data.currentSelect);
+const emits = defineEmits(["update:value","change"]);
+onMounted(()=>{
+    props.dataList.forEach((item,index)=>{
+          if(item.key==props.value.key){
+              data.currentSelect=index
+          }
+    })
+})
+
+var select=(item,index)=>{
+      data.currentSelect=index
+     emits("update:value",item)
+     emits("change",item)
 }
 
 </script>
 <style scope lang="less">
-.s-price-content{
+.stikePrice{
     width: 100%;
-    white-space: pre-wrap;
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: row;
+    align-items: center;
     justify-content: flex-start;
-    margin-left: -8px;
-    .price-item{
+    flex-wrap: wrap;
+    .stikePriceItem{
         display: inline-block;
-        padding: 7px 14px;
-        font-size: 14px;
+        padding: 7px 15px;
+        border-radius:32px ;
         background-color: var(--bg-color-secondarycontainer);
-        border-radius: 32px;
-        flex: 1;
-        max-width: calc(25% - 8px);
-        margin-top: 12px;
-        margin-left: 8px;
-        flex-basis:20%;
-        overflow: hidden;
-        white-space: nowrap;
-        &.active{
-            background-color: var( --bg-color-container-active);
-            color: var(--bg-color-page);
-        }
+        color: var(--text-color-primary);
+        font-size: 14px;
+        font-weight: bold;
+        margin-right: 12px;
+        margin-bottom: 10px;
+    }
+    .active{
+        background-color: var(--bg-color-container-active);
+        color: var(--text-color-active);
     }
 }
 
