@@ -107,7 +107,6 @@
 
 </template>
 <script setup>
-import inputNumber from "@/components/utils/inputNumber.vue"
 import inputValue from "@/components/utils/inputValue.vue"
 import strikePrice from "@/components/sellOption/strikePrice.vue"
 import mulSelect from "@/components/sellOption/mulSelect.vue"

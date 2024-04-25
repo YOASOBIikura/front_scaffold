@@ -31,22 +31,25 @@
         <!-- 数字输入框 -->
         <div class="input-content">
             <div class="input-row">
-                <input-number class="input" v-model:value="baseData.optionNumber"></input-number>
-                <div class="token">ETH</div>
-            </div>
-            <div class="limit-row">
-                <div>$3000</div>
-                <div>
-                    <span>
-                        <span>0.0001</span>
-                        <span>-</span>
-                        <span>10</span>
-                    </span>
-                    <span>
-                        <div class="max-btn">Max</div>
-                    </span>
+                <inputValue 
+                    v-model:value="baseData.optionNumber" 
+                    :isApproximate="true"
+                    :symbol="'ETH'" 
+                    :decimals="18"
+                >
+                 <div class="limit-row">
+                    <div>$3000</div>
+                    <div>
+                        <span>
+                            <span>0.0001</span>
+                            <span>-</span>
+                            <span>10</span>
+                        </span>
+                    </div>
                 </div>
+                </inputValue>
             </div>
+           
         </div>
         <!-- 支付币种选择 -->
         <div class="underly-assets-content">
@@ -95,7 +98,7 @@
 
 <script setup>
 import { reactive } from "vue"
-import inputNumber from "@/components/utils/inputNumber.vue"
+import inputValue from "@/components/utils/inputValue.vue"
 import optionDetails from "@/components/buyOption/optionDetails.vue"
 import navigationBar from "@/components/utils/navigationBar.vue";
 
@@ -194,7 +197,7 @@ let baseData = reactive({
     margin-top: 8px;
     background-color: var(--bg-color-secondarycontainer);
     border-radius: 8px;
-    padding: 16px;
+    padding: 4px;
     .input-row{
         display: flex;
         justify-content: space-between;
@@ -212,11 +215,11 @@ let baseData = reactive({
         }
     }
     .limit-row{
-        margin-top: 16px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: var(--text-color-second);
+        font-size: 14px;
         .max-btn{
             background-color: var(--bg-color-page);
             font-size: 14px;
