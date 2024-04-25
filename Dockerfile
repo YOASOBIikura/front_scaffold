@@ -13,7 +13,7 @@ COPY . .
 # RUN yarn build --dotenv .env.${JASPER_ENV}
 
 ENV NODE_OPTIONS=--max_old_space_size=5120
-RUN npm build
+RUN npm run build
 
 FROM nginx:1.26-alpine-slim
 WORKDIR /usr/share/nginx/html
