@@ -34,3 +34,7 @@ body {
     color: var(--text-color-primary);
     background-color: var(--bg-color-page);
 }
+
+w3m-modal{
+    z-index: 1001;
+}
