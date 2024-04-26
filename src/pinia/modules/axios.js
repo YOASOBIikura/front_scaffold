@@ -3,6 +3,7 @@ import { useWeb3Modal,useWeb3ModalState } from '@web3modal/ethers5/vue'
 import Axios from "@/plugin/axios/axios"
 import {polygon} from "@/config/chainBlock/polygon"
 import {arbitrum} from "@/config/chainBlock/arbitrum"
+import { BigNumber } from 'ethers'
 
 export const useAxiosStore = defineStore('axios', {
   state:()=>({
@@ -18,7 +19,8 @@ export const useAxiosStore = defineStore('axios', {
     optionBusiness:{},
 
    //--是否触发钱包相关事件--
-   isWalletChange:1
+   isWalletChange:1,
+   vaultSalt:BigNumber.from("0"),//vault下标
   }),
   getters: {
  
@@ -72,7 +74,6 @@ export const useAxiosStore = defineStore('axios', {
      },
      setIsWalletChange(newVal){
         this.isWalletChange+=newVal
-        console.log(newVal,"-s---ss",this.isWalletChange)
      }
   }
 })
@@ -144,7 +145,7 @@ function requestInterceptors(axios){
                  }
              }
          }
-         console.log(_this,option,"请求拦截器")
+         // console.log(_this,option,"请求拦截器")
          return true
             
         
@@ -174,7 +175,7 @@ function responseInterceptors(axios){
      })  
     
     axios.interceptors.response.use(function(response,option,_this){
-      console.log(response,"响应拦截器2")
+      // console.log(response,"响应拦截器2")
       return response;
 
     })

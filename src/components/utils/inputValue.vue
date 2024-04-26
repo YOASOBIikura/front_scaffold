@@ -5,7 +5,7 @@
            <span class="suffix">{{ props.symbol}}</span>
         </div>
 
-        <div class="input-bottom">
+        <div class="input-bottom" v-if="props.isSuffix">
             <div class="left">
                <slot class="info"></slot>
             </div>
@@ -36,6 +36,14 @@ const props=defineProps({
     isApproximate:{
         type:Boolean,
         default:true
+    },
+    isSuffix:{
+        type:Boolean,
+        default:true
+    },
+    isMax:{
+        type:Boolean,
+        default:true
     }
 })
 const data=reactive({
@@ -53,12 +61,12 @@ var max=()=>{
 }
 var inputValue= (input)=>{
     let value=input.target.value
-    if( BigNumber.from("0").eq(BigNumber.from(props.maxValue))){
+    if(props.isMax && BigNumber.from("0").eq(BigNumber.from(props.maxValue))){
         value=BigNumber.from("0")
     }else{
             if(value!=""){
                 value=ethers.utils.parseUnits(String(value),props.decimals)
-                if(value.mul(ethers.utils.parseUnits("1",2)).div(props.maxValue).gte(BigNumber.from("99"))){
+                if(props.isMax && value.mul(ethers.utils.parseUnits("1",2)).div(props.maxValue).gte(BigNumber.from("99"))){
                     value=props.maxValue       
                 } 
             }else{

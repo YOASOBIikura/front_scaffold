@@ -121,7 +121,7 @@ let baseData = reactive({
 .header-content{
   height: 48px;  
   margin-top: 8px;
-  display: flex;
+  display: flex;  
   padding: 4px 0;
   justify-content: space-between;
   align-items: center;

@@ -70,15 +70,7 @@ let optionBusiness={
         }
     ],//抵押资产
     strikeAssets:[
-        {
-            name:"USDT",
-            img:usdtPng,
-            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-            decimals:6,
-            assetType:1,
-            isSellPut:true,
-            isSellCall:true,
-        },
+
         {
             name:"USDC",
             img:usdcPng,
@@ -87,6 +79,15 @@ let optionBusiness={
             assetType:1,
             isSellPut:true,
             isSellCall:true,           
+        },
+        {
+            name:"USDT",
+            img:usdtPng,
+            address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            decimals:6,
+            assetType:1,
+            isSellPut:true,
+            isSellCall:true,
         },
 
     ],//行权资产

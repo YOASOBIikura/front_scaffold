@@ -124,7 +124,8 @@ function handleRequest(_this,option){
         option.internalData.currentLoop+=1
         if(option.mode == "chainBlockCall" || option.mode=="http" || option.mode =="chainBlockNormal"){
             if(option.loop !=0 &&option.internalData.currentLoop > option.loop && option.loop != "infinite"){  
-                throw new Error("request fail",option)
+                  console.error("request fail",option)
+                 throw new Error("request fail")
             }
         }
         request(_this,option).then((response) => {
@@ -137,7 +138,7 @@ function handleRequest(_this,option){
             option.internalData.request(response)
         },async (error) => {    
             if(String(error).includes("lack field")){
-                console.error(error)
+                console.error(error,option)
                 return
             }
             if(option.mode =="chainBlockCall" || option.mode == "http" || option.mode == "chainBlockNormal"){
@@ -148,7 +149,7 @@ function handleRequest(_this,option){
                     await handleRequest(_this,option)
                 }    
             }else{
-                console.error(error)
+                console.error(error,option)
             }
             
         });

@@ -100,25 +100,6 @@ const data=reactive({
     btnLock:false,
     issueMode:0
 })
-
-onMounted(async ()=>{
-    data.tokenInfo=JSON.parse(sessionStorage.getItem("assetTranferData")||"{}") 
-    if(route.query.type=="issue"){
-      data.typePng=issuePng
-      data.type="issue"
-    }else{
-       data.typePng=redeemPng  
-       data.type="redeem"
-    }
-    data.issueMode=route.query.issueMode
-    await handleBalance()
-})
-watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
-    //请求处理页面
-   await handleBalance()
-})
-
-
 // -------------计算属性----------------
 var walletBalance=computed(()=>{
     if(data.walletBalanceValue.eq(BigNumber.from("0"))){
@@ -135,24 +116,6 @@ var vaultBalance=computed(()=>{
     return (value.toNumber()/100).toFixed(2)
 })
 //---------------方法-------------------
-var transferTx=async ()=>{
-    console.log(data.optionNumber,"optionNumber")
-    
-    if( data.issueMode>=2 && data.type=="issue"){
-        console.log("申购错误")
-        return
-    }
-   
-    if(data.optionNumber.eq(BigNumber.from("0"))){
-        return
-    }
-    if(axiosStore.isConnect==1){
-       return
-    }
-    console.log("进入页面尝试")
-    data.isOpen=true
-    await sendTx()
-}
 
 var switchType=()=>{
     if(data.type=="issue"){
@@ -165,13 +128,23 @@ var switchType=()=>{
     data.optionNumber=BigNumber.from("0")
 
 }
-
-
-
-
-
-//-------------请求-------------------
-//燃气费
+//--------------初始化相关-------------------
+onMounted(async ()=>{
+    data.tokenInfo=JSON.parse(sessionStorage.getItem("assetTranferData")||"{}") 
+    if(route.query.type=="issue"){
+      data.typePng=issuePng
+      data.type="issue"
+    }else{
+       data.typePng=redeemPng  
+       data.type="redeem"
+    }
+    data.issueMode=route.query.issueMode
+    await handleBalance()
+})
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+    //请求处理页面
+   await handleBalance()
+})
 
 //处理余额
 var handleBalance=async ()=>{
@@ -200,7 +173,29 @@ var handleBalance=async ()=>{
 
      console.log("余额", data.walletBalanceValue, data.vaultBalanceValue)
 }
-//------上链请求----------
+//------上链业务处理----------
+
+var transferTx=async ()=>{
+    console.log(data.optionNumber,"optionNumber")
+    
+    if( data.issueMode>=2 && data.type=="issue"){
+        console.log("申购错误")
+        return
+    }
+   
+    if(data.optionNumber.eq(BigNumber.from("0"))){
+        return
+    }
+    if(axiosStore.isConnect==1){
+       return
+    }
+    console.log("进入页面尝试")
+    data.isOpen=true
+    await sendTx()
+}
+
+
+
 var sendTx=async ()=>{
     let transferAmount=data.optionNumber
     let token=data.tokenInfo.address
@@ -274,7 +269,7 @@ var approveTx=async(isGasToken,token,vault,amount)=>{
     return true
 }
 
-//-----ops拼装---
+//------------ops拼装--------------
 //vault初始化
 var vaultInitCallData=(vault) =>{
     //组装白名单module

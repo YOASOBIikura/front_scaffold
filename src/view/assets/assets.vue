@@ -69,6 +69,9 @@ var init=async ()=>{
    console.log("tokenList",data.tokenList)
 }
 
+
+
+//----------------相关初始数据处理-----------------------
 //计算总价值
 var handleValue= async ()=>{
    let totalAsset=BigNumber.from("0");
@@ -104,11 +107,11 @@ var hanleToken=async ()=>{
    })
    data.tokenList=tokenList
 }
-//-------------请求数据组合处理-----------------
+
 //处理余额问题
 var handleBalance=async ()=>{
    //处理余额  获取0号vault
-   let vault= await getVaultApi(axiosStore.currentAccount,BigNumber.from("0"))
+   let vault= await getVaultApi(axiosStore.currentAccount,axiosStore.vaultSalt)
    vault=vault?.message?.vault ||  new Error("vault error")
    console.log(vault,"当前vault")
 

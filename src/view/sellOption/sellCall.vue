@@ -29,7 +29,7 @@
                 <expiry-date-slider
                     class="expiry-date"
                     :expiryDataList="data.expiryDataList" 
-                    v-model:value="data.currentExpiryData"
+                    v-model:value="data.currentExpiryDataKey"
                     @changeAfterReturnTime="changeExpiry"
                 ></expiry-date-slider>
             </div>
@@ -56,7 +56,7 @@
 
 
         <!-- 价格 -->
-        <!-- <div class="price-content">
+        <div class="price-content">
             <div class="price-title">
                 <div class="title">Price</div>
                 <div class="current-price">
@@ -67,14 +67,19 @@
                     <refresh @change="getMarketPrice"></refresh>
                 </div>
             </div>
-            <div>
-                <input-number class="input" v-model:value="data.currentPrice"></input-number>
-            </div>
-        </div> -->
+       
+            <inputValue 
+            :isSuffix="false"  
+            :decimals="18"
+            :isMax="false"
+            v-model:value="data.currentPremiumFee"
+            ></inputValue>
+
+        </div>
         <div class="premium-content">
             <div class="title">Strike</div>
             <div class="mul-content">
-                <mul-select v-model:value="data.premiumAssetList"></mul-select>
+                <mul-select v-model:value="data.strikeAssetList"></mul-select>
             </div>
         </div>
 
@@ -83,7 +88,7 @@
         <div class="premium-content">
             <div class="title">Premium</div>
             <div class="mul-content">
-                <mul-select v-model:value="data.strikeAssetList"></mul-select>
+                <mul-select v-model:value="data.premiumAssetList"></mul-select>
             </div>
         </div>
 
@@ -107,7 +112,6 @@
 
 </template>
 <script setup>
-import inputNumber from "@/components/utils/inputNumber.vue"
 import inputValue from "@/components/utils/inputValue.vue"
 import strikePrice from "@/components/sellOption/strikePrice.vue"
 import mulSelect from "@/components/sellOption/mulSelect.vue"
@@ -115,7 +119,7 @@ import navigationBar from "@/components/utils/navigationBar.vue";
 import expiryDateSlider from "@/components/sellOption/expiryDateSlider.vue"
 import refresh from "@/components/utils/refresh.vue"
 import selectCoin from "@/components/utils/selectCoin.vue"
-import { reactive,onMounted,computed} from "vue";
+import { reactive,onMounted,computed,watch} from "vue";
 import { useRouter,useRoute} from "vue-router";
 import {getSigatureLock,getUnderlyTotal} from "@/callData/multiCall/optionFacet"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
@@ -128,9 +132,9 @@ const router=useRouter()
 const route=useRoute()
 const axiosStore= useAxiosStore()
 const data=reactive({ 
-   underlyingAssetList:[],
-   strikeAssetList:[],
-   premiumAssetList:[],
+   underlyingAssetList:[], //抵押资产列表
+   strikeAssetList:[],//行权资产列表
+   premiumAssetList:[],//权力金资产列表
    liquidationWay:[],//清算方式数组  
    currentPrice:"2100",//当前抵押资产价格
    currentStrikePrice:     {
@@ -161,15 +165,16 @@ const data=reactive({
       6:21,
       7:30
    },
-   currentExpiryData:2,
+   currentExpiryDataKey:2,
+   currentExpiryData:BigNumber.from("0"),
    //---------------
    vault:"", //vault地址
    underlyingAssetBalance:BigNumber.from("0"), //真实数量
    underlyingAmount:BigNumber.from("0"),//抵押数量
-   isMax:false
+   currentPremiumFee:BigNumber.from("2200")
 
 })
-//计算属性
+//---------计算属性-----------------
 //显示的抵押资产余额
 var underlyingAssetBalance=computed(()=>{
     //判断当前对象是0
@@ -180,18 +185,37 @@ var underlyingAssetBalance=computed(()=>{
      return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
 })
 
+
+
+//----------普通处理方法--------------------
+const changeExpiry = (date) => {
+    console.log("到期日",date,data.currentExpiryData);
+    data.currentExpiryData=BigNumber.from(parseInt(date/1000))
+}
+
 var getMarketPrice=()=>{
 
 }
-
-// 
+//-----------初始化相关-------------------
 onMounted(async ()=>{
    console.log(route,"=s=s=")
    await init()
 })
+//处理监听事件
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+   await  init()
+})
+
 
 var init=async () => {
-//    axiosStore
+    if(axiosStore.isConnect==1){
+      return
+    }
+    // 处理到期时间
+    let day= data.expiryDataList[data.currentExpiryDataKey]   
+    data.currentExpiryData= BigNumber.from(parseInt((new Date().getTime()+day*24*60*60*1000)/1000))  
+
+
     //处理抵押资产列表
     let underlyingAssetData=axiosStore?.optionBusiness?.underlyingAssets||[]
     let underlyingAssetList=[]
@@ -240,26 +264,61 @@ var init=async () => {
     await underlyingChange()
 }
 
+
+
+
+//--------基础查询数据-----------
+
+
+var getVault=async function(){
+  let salt=axiosStore.vaultSalt
+  let vaultResponse= await getVaultApi(axiosStore.currentAccount,salt)
+  console.log("vaultResponse",vaultResponse)
+  return vaultResponse.message.vault
+}
+
 var underlyingChange=async ()=>{
      let balance= await balanceOf(data.currentUnderlyingAsset.address,data.vault)
      data.underlyingAssetBalance=balance
      console.log("抵押资产余额",balance)
 }
-//------------
-const changeExpiry = (date) => {
-    console.log(date);
+
+var balanceOf=async (underlyingAsset,wallet)=> {
+    let balanceResponse= await balanceOfApi(underlyingAsset,wallet)
+    return balanceResponse.message.balance
 }
-
-
-//--------上链-----------
+//---------------上链业务相关部分---------------
 var sendTx=async ()=>{
-    console.log(data.underlyingAmount,"data.underlyingAmount",data.currentStrikePrice)
-     return
+     //行权资产列表选择
+     let isStrike=0
+      data.strikeAssetList.forEach(item=>{
+          if(item.select){
+            isStrike++
+          }
+      })
+      if(isStrike==0) return
+    //权力金资产为空时 
+      let isPremum=0
+      data.premiumAssetList.forEach(item=>{
+          if(item.select){
+            isPremum++
+          }
+      })
+      console.log(isPremum)
+      if(isPremum==0) return
+     //清算方式选择
+     let isLiquidationWay=0
+      data.liquidationWay.forEach(item=>{
+          if(item.select){
+              isLiquidationWay++
+          }
+      })
+      if(isLiquidationWay==0) return
+      console.log("开始上链流程",data.vault,data.currentUnderlyingAsset.address)
      await checkUpdateGignature(data.vault,data.currentUnderlyingAsset.address)
 }
 
 
-//------------------------------
 // 是否触发更新链上的签名
 var  checkUpdateGignature=async (vault,underlyingAsset)=>{
    let time=parseInt(new Date().getTime()/1000)
@@ -277,7 +336,6 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
     let strike=await handleStrikeAsset()
     let liquidateModes= handleLiquidation()
    //进行712签名
-
     let signatureInfo={
         orderType:0,
         underlyingAsset: underlyingAsset, 
@@ -292,10 +350,8 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
         premiumAssets:premium.premiumAssets,
         premiumFees:premium.premiumFees      
     }
-    console.log("signatureInfo",signatureInfo)
     let signatureResponse= await sign712OrderApi(axiosStore.chainId,axiosStore.currentContractData["OptionModule"],signatureInfo)
     console.log("signature",signatureResponse)
-
    //是否触发链上签名
    let isNextStep=signatureResponse.status
    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0")) && isNextStep){
@@ -311,65 +367,77 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
 
    
 }
-var getVault=async function(){
-  let salt=BigNumber.from("0")  
-  let vaultResponse= await getVaultApi(axiosStore.currentAccount,salt)
-  console.log("vaultResponse",vaultResponse)
-  return vaultResponse.message.vault
-}
 
-var balanceOf=async (underlyingAsset,wallet)=> {
-    let balanceResponse= await balanceOfApi(underlyingAsset,wallet)
-    return balanceResponse.message.balance
-}
 
-// 存储签名数据到中心化服务器
-var storeSingature=async ()=>{
 
+
+
+//处理行权资产  //因为行权资产跟权力金资产一样 所以这里做同步处理
+var handleStrikeAsset=async ()=>{
+   let strikeAssets=[]
+   let decimals=[]
+   let strikeAmounts=[]
+
+
+   data.strikeAssetList.forEach(item=>{
+       if(item.select){
+          strikeAssets.push(item.address)
+          decimals.push(item.decimals)
+       }
+   })
+   //处理行权资产的价格
+   let strikePrice=[ethers.utils.parseUnits("1",18),ethers.utils.parseUnits("1",18)]
+   //获取价格
+   /**
+    * 1eth 3500usd
+    * 1usdc 1usd
+    * 
+    */
+   //每一份的行权数量
+   let value=ethers.utils.parseUnits(data.currentStrikePrice.price,18) //行权价
+   console.log("行权价",value)
+    strikeAssets.forEach((item,index)=>{
+        //行权价*抵押资产的精度/行权资产的价格
+        let amount=value.mul(ethers.utils.parseUnits("1",decimals[index])).div(strikePrice[index]) 
+        strikeAmounts.push(amount) 
+    })
+   console.log("行权价",strikeAssets,strikeAmounts)
+   return {
+    strikeAssets,strikeAmounts
+   }
 }
 
 //处理权力金资产
 var handlePremiumAsset=async ()=>{
    let premiumAssets=[]
    let premiumFees=[]
+   let decimals=[]
+   
    data.premiumAssetList.forEach(item=>{
        if(item.select){
         premiumAssets.push(item.address)
+        decimals.push(item.decimals)
        }
    })
    //获取权力金价格
-
+   let premium=[ethers.utils.parseUnits("1",18),ethers.utils.parseUnits("1",18)]
+   /**
+    * 期权价格*权力金资产的精度/期权的价格
+    */
+   console.log(data.currentPremiumFee,"-----sss")
+    let value=ethers.utils.parseUnits("10",18)  //权力金费用 带18精度
+    premiumAssets.forEach((item,index)=>{
+          let amount=value.mul(ethers.utils.parseUnits("1",decimals[index])).div(premium[index])
+          premiumFees.push(amount)
+    })
+    console.log("权力金费用",premiumAssets,premiumFees)
    //返回价值
    return {
     premiumAssets,
     premiumFees
    }
-
-
 }
-//处理行权资产  //因为行权资产跟权力金资产一样 所以这里做同步处理
-var handleStrikeAsset=async ()=>{
-   let strikeAssets=[]
-   let strikeAmounts=[]
-//    data.premiumAssetList.forEach(item=>{   
-//        for(let i=0;i<data.strikeAssetList.length;i++){
-//         if(item.select&& String(data.strikeAssetList[i].address).toLocaleLowerCase() == String(item.address).toLocaleLowerCase){
-//              strikeAssets.push(item.address)
-//          }
-//        }
-//    })
-   data.strikeAssetList.forEach(item=>{
-       if(item.select){
-          strikeAssets.push(item.address)
-       }
-   })
-   //处理行权价格
 
-   return {
-    strikeAssets,strikeAmounts
-   }
-   
-}
 //处理结算方式
 var handleLiquidation=()=>{
    let liquidateModes=[]
@@ -382,6 +450,11 @@ var handleLiquidation=()=>{
       liquidateModes=[2]
    }
    return liquidateModes
+}
+
+// 存储签名数据到中心化服务器
+var storeSingature=async ()=>{
+
 }
 </script>
 <style scoped lang="less">
