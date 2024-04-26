@@ -82,7 +82,21 @@
             </div>
         </div>
         <!-- 详细数据 -->
-        <option-details></option-details> 
+        <div class="option-details">
+            <div class="collapse-title" @click="data.detailCollapse = !data.detailCollapse">
+                    <span>
+                        Details 
+                        <img src="@/assets/images/arrow_open.png" v-if="data.detailCollapse"/>
+                        <img src="@/assets/images/arrow_close.png" v-else/>
+                    </span>
+            </div>
+            <div v-if="data.detailCollapse">
+                <details-info></details-info>
+                <description></description>
+                <settlement></settlement>
+                <repay-type></repay-type>          
+            </div>
+       </div>
     </div>
         <!-- 支付按钮区域 -->
     <div class="pay-btn-content">
@@ -97,16 +111,95 @@
 </template>
 
 <script setup>
-import { reactive } from "vue"
-import inputValue from "@/components/utils/inputValue.vue"
-import optionDetails from "@/components/buyOption/optionDetails.vue"
-import navigationBar from "@/components/utils/navigationBar.vue";
+import description from "@/components/buyOption/description.vue";
+import settlement from "@/components/buyOption/settlement.vue";
+import repayType from "@/components/buyOption/repayType.vue";
+import detailsInfo from "@/components/buyOption/detailsInfo.vue";
 
-let baseData = reactive({
-    optionType: "call",
-    optionNumber: "1",
-    detailCollapse: false // 是否折叠详情
+import navigationBar from "@/components/utils/navigationBar.vue";
+import {createVaultService,getMulVaultR,maxSaltVaultR} from "@/apiHandle/vault"
+import {useAxiosStore} from "@/pinia/modules/axios"
+import {issue,redeem} from "@/callData/bundler/issuanceModule"
+import {submitOptionOrder} from "@/callData/bundler/optionModule"
+const axiosStore=useAxiosStore()
+const data = reactive({
+    detailCollapse: false, // 是否折叠详情
+    underlyingAmount: BigNumber.from("0"),
+    underlyingAssetBalance:BigNumber.from("0"),
+    currentUnderlyingAsset:{}
 });
+
+//-------------初始化相关---------------------
+onMounted(async ()=>{
+ 
+    await  init()
+})
+//处理监听事件
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+   await  init()
+})
+var init=async()=>{
+    if(axiosStore.isConnect==1){
+      return
+    }
+
+    //取得0号vault
+    await buyCall()
+    // let vault= await getVaultApi(axiosStore.currentAccount,axiosStore.vaultSalt)
+    // vault=vault?.message?.vault ||  new Error("vault error")
+}
+//------------上链业务相关------------------
+var buyCall=async ()=>{
+   let ops=[]
+   let vaultData= await getMulVaultR([0,"maxSalt"])
+   let maxSaltVault=vaultData["maxSalt"]?.vault
+   let maxSalt=vaultData["maxSalt"]?.salt || 10
+   let mainVault=vaultData["0"]?.vault
+   console.log("sss",mainVault)
+   //创建vault
+   let createVaultData=createVaultService(maxSaltVault)
+   ops=ops.concat(createVaultData)
+   //从0号vault申购
+   let asset=[]
+   let amount=[]
+   ops.push(issue(mainVault,mainVault,asset,amount))  
+   //业务处理
+   let info={
+    strikeSelect:0,
+        holder:"",
+        liquidateSelect:0,
+        writer:"",
+        recipient:"",
+        premiumSelet:0,
+        underlyingAmount:0,
+        signature:{
+            orderType:0,
+            underlyingAsset:"",
+            underlyingAssetType:0,
+            underlyingNftID:0,
+            expirationDate:0,
+            total:1,
+            timestamp:3,
+            liquidateModes:[],
+            strikeAssets:[],
+            strikeAmounts:[],
+            premiumAssets:[],
+            premiumFees:[]
+        }
+   }
+   let writerSignature=""
+   ops.push(submitOptionOrder(info,writerSignature))
+   console.log(vault,salt,ops)
+   //取vault下标
+   console.log(maxSalt,"---")
+   let bundlerHash= await sendTxToBundler(maxSaltVault,salt,ops)
+   console.log("bundlerHash",bundlerHash)
+    //接触按钮锁
+    if(!bundlerHash.status){
+        // data.btnLock=false
+        return
+    }
+}
 
 
 
@@ -293,6 +386,39 @@ let baseData = reactive({
     .pay-btn{
         width: 100%;
         height: 48px;
+    }
+}
+.option-details{
+    margin-top: 28px; 
+    .collapse-title{
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        width: 100%;
+        position: relative;
+    
+        img{
+            vertical-align: sub;
+            width: 16px;
+        }
+        &::before{
+            content: "";
+            width: calc(40% - 20px);
+            border: 1px solid var(--component-border);
+            height: 1px;
+            position: absolute;
+            top: 8px;
+            left: 0px;
+        }
+        &::after{
+            content: "";
+            width: calc(40% - 20px);
+            border: 1px solid var(--component-border);
+            height: 1px;
+            position: absolute;
+            top: 8px;
+            right: 0;
+        }
     }
 }
 

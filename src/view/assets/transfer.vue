@@ -75,10 +75,10 @@ import { BigNumber, ethers } from "ethers";
 import {getWalletBalanceApi,getContractCodeApi} from "@/api/utils"
 import {balanceOf} from "@/callData/multiCall/token"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
-import {setVaultModule,setVaultMasterToken,setVaultTokens} from "@/callData/bundler/vaultManageModule"
 import {issue,redeem} from "@/callData/bundler/issuanceModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
+import {createVaultService} from "@/api/apiHandle/vault"
 
 
 const axiosStore= useAxiosStore()
@@ -219,7 +219,7 @@ var sendTx=async ()=>{
     let ops=[]
     if(codeRespose.message == "0x" ){
         console.log("进入初始化")
-       let initCallData=vaultInitCallData(vault)
+       let initCallData=createVaultService(vault)
        ops=ops.concat(initCallData)
     }
     //申购方法
@@ -270,33 +270,6 @@ var approveTx=async(isGasToken,token,vault,amount)=>{
 }
 
 //------------ops拼装--------------
-//vault初始化
-var vaultInitCallData=(vault) =>{
-    //组装白名单module
-    let modles=[
-        axiosStore.currentContractData["VaultManageModule"],
-        axiosStore.currentContractData["VaultPaymaster"],
-        axiosStore.currentContractData["IssuanceModule"],
-        axiosStore.currentContractData["OptionModule"],
-        axiosStore.currentContractData["OptionService"],
-        axiosStore.currentContractData["PriceOracle"]
-    ]
-    let status=[true,true,true,true,true,true]
-    let moduleCallData= setVaultModule(vault,modles,status)
-
-    //组装vault白名单
-    let tokenList=[]
-    let typeList=[]
-    axiosStore?.currentTokens?.forEach(item=>{
-        tokenList.push(item.address)
-        typeList.push(item.type)
-    })
-    let tokenCallData= setVaultTokens(vault,tokenList,typeList)
-    // 设置masterToken
-    let masterTokenCallData= setVaultMasterToken(vault,axiosStore.remark.masterToken)
-
-    return [moduleCallData,tokenCallData,masterTokenCallData]
-}
 //申购
 var issueAndRedeemCallData= (isGasToken,type,vault,asset,amount,assetType)=>{
     if(type=="issue"){

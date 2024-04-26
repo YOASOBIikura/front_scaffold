@@ -60,5 +60,20 @@ function getAssetTypeCount(_key){
     }
 }
 
+function getVaultToSalt(_key,_vault){
+    let funcHex = new ethers.utils.Interface(["function getVaultToSalt(address _vault) external view"])
+    let callData= funcHex.encodeFunctionData("getVaultToSalt", [_vault]) 
+    let returnType={
+          "uint256":"salt"
+    }
+    return { 
+       key:_key,
+       contract:"@Diamond",
+       param:callData,
+       returnType:returnType,
+    }
+}
 
-export {getAllModules,getTokens,getTokenType,getAssetTypeCount}
+
+
+export {getAllModules,getTokens,getTokenType,getAssetTypeCount,getVaultToSalt}

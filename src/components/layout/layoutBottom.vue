@@ -37,13 +37,13 @@ const data = reactive({
          activePng:portfolioActivePng,
          text:"Portfolio",      
         },
-        {
-         isActive:false,
-         route:"/notification",
-         png:notificationPng,
-         activePng:notificationActivePng,
-         text:"Notification",      
-        },
+      //   {
+      //    isActive:false,
+      //    route:"/notification",
+      //    png:notificationPng,
+      //    activePng:notificationActivePng,
+      //    text:"Notification",      
+      //   },
         {
          isActive:false,
          route:"/asset",

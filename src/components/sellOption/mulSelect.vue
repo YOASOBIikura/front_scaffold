@@ -14,9 +14,20 @@ const props = defineProps({
         type:Array,
         default:[]
     },
+    isSingle:{
+        type:Boolean,
+        default:false
+    }
 });
 var select=(item)=>{
-    item.select=!item.select
+    if(props.isSingle){
+         props.value.forEach(child=>{
+            child.select=false
+         })
+         item.select=true
+    }else{
+        item.select=!item.select
+    }
     emits("change",item)
 }
 </script>

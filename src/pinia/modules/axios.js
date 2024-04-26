@@ -74,7 +74,26 @@ export const useAxiosStore = defineStore('axios', {
      },
      setIsWalletChange(newVal){
         this.isWalletChange+=newVal
-     }
+     },
+     //-------------业务辅助----------------------
+     getTokenByName(name){
+         let token={}
+         this.currentTokens.forEach(item=>{
+             if(item.name==name){
+               token=item
+             }
+         })
+         return token
+     },
+     getTokenByAddress(address){
+      let token={}
+      this.currentTokens.forEach(item=>{
+          if(String(item.address).toLocaleLowerCase()==String(address).toLocaleLowerCase()){
+            token=item
+          }
+      })
+      return token
+  },
   }
 })
 

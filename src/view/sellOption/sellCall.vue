@@ -79,7 +79,7 @@
         <div class="premium-content">
             <div class="title">Strike</div>
             <div class="mul-content">
-                <mul-select v-model:value="data.strikeAssetList"></mul-select>
+                <mul-select :isSingle="true" v-model:value="data.strikeAssetList"></mul-select>
             </div>
         </div>
 

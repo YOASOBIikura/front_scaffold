@@ -29,5 +29,19 @@ function getAddress(_key,_wallet,_salt){
     }
 }
 
+function getVaultMaxSaltAddress(_key,_wallet){
+    let funcHex = new ethers.utils.Interface(["function getVaultMaxSaltAddress(address wallet) external view "])
+    let callData= funcHex.encodeFunctionData("getVaultMaxSaltAddress", [_wallet]) 
+    let returnType={
+          "address":"vault",
+          "uint256":"salt"
+    }
+   return { 
+       key:_key,
+       contract:"@VaultFactory",
+       param:callData,
+       returnType:returnType,
+    }
+}
 
-export {getVaultMaxSalt,getAddress}
+export {getVaultMaxSalt,getAddress,getVaultMaxSaltAddress}
