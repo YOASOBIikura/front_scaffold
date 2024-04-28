@@ -31,4 +31,25 @@ function submitOptionOrder(_info,_writerSignature) {
     } 
 }
 
-export {setSigatureLock,submitOptionOrder}
+/**
+ * 
+    function liquidateOption(uint8 _orderType,uint64 _orderID,uint8 _type,uint256 _incomeAmount,uint256 _slippage) external
+ * 
+ */
+
+function liquidateOption(_orderType,_orderID,_type,_incomeAmount,_slippage) {
+        let axiosStore=useAxiosStore()
+        let funcHex = new ethers.utils.Interface([" function liquidateOption(uint8 _orderType,uint64 _orderID,uint8 _type,uint256 _incomeAmount,uint256 _slippage) external"])
+        let callData= funcHex.encodeFunctionData("liquidateOption", [ _orderType,_orderID, _type,_incomeAmount,_slippage]) 
+        let value=0
+        let target=axiosStore.currentContractData["OptionService"]
+        return {
+            target,
+            value,
+            callData
+        }
+}
+
+
+
+export {setSigatureLock,submitOptionOrder,liquidateOption}

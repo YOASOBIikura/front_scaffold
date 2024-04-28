@@ -1,12 +1,12 @@
 <template>
     <div class="stikePrice" >
-        <span @click="select(item,index)" :class="data.currentSelect==index ?'stikePriceItem active':'stikePriceItem'" v-for="(item,index) in props.dataList" :key="index">
+        <span @click="select(item,index)" :class="currentSelect==index ?'stikePriceItem active':'stikePriceItem'" v-for="(item,index) in props.dataList" :key="index">
            ${{item.price}}
         </span>
     </div>
 </template>
 <script setup>
-import { reactive,watch,onMounted } from "vue";
+import {computed } from "vue";
 const props = defineProps({
     dataList: {
         type:Array,
@@ -19,20 +19,20 @@ const props = defineProps({
         default:{}
     },
 });
-const data = reactive({
-    currentSelect: -1
-});
+
 const emits = defineEmits(["update:value","change"]);
-onMounted(()=>{
+var currentSelect=computed(()=>{
+    let currentIndex=-1
     props.dataList.forEach((item,index)=>{
           if(item.key==props.value.key){
-              data.currentSelect=index
+            currentIndex=index
           }
     })
+    return currentIndex
+     
 })
 
 var select=(item,index)=>{
-      data.currentSelect=index
      emits("update:value",item)
      emits("change",item)
 }

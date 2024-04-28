@@ -93,8 +93,11 @@ Axios.prototype.request=async function(option){
     }
     //处理请求头
     for(let k in this.headers){
+        if(!option.headers){
+            option.headers={}
+        }
         if(!option.headers[k]){
-          option.headers[k]=this.headers[k]
+            option.headers[k]=this.headers[k]
         }
    
     }

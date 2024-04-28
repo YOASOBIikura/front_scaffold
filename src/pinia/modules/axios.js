@@ -29,12 +29,14 @@ export const useAxiosStore = defineStore('axios', {
      //第一次初始化
      initAxios(chainBlockCallProvider,chainBlockSendProvider,wallet){
          this.axios= new Axios({
-            httpUrl:"https://ethgo-polygon.fly.dev",
+            httpUrl:"http://192.168.3.31:8000",
             chainBlockCallProvider:chainBlockCallProvider,
             chainBlockSendProvider:chainBlockSendProvider,
             safeBlock:6,
             loop:5,
-            headers:{},
+            headers:{
+              "Content-Type":"application/json"
+            },
             wallet:wallet
          })
          setInterceptors(this.axios)

@@ -121,12 +121,14 @@ import {createVaultService,getMulVaultR,maxSaltVaultR} from "@/apiHandle/vault"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {issue,redeem} from "@/callData/bundler/issuanceModule"
 import {submitOptionOrder} from "@/callData/bundler/optionModule"
+import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 const axiosStore=useAxiosStore()
 const data = reactive({
     detailCollapse: false, // 是否折叠详情
     underlyingAmount: BigNumber.from("0"),
     underlyingAssetBalance:BigNumber.from("0"),
-    currentUnderlyingAsset:{}
+    currentUnderlyingAsset:{},
+    btnLock:false,//按钮锁
 });
 
 //-------------初始化相关---------------------
@@ -195,10 +197,21 @@ var buyCall=async ()=>{
    let bundlerHash= await sendTxToBundler(maxSaltVault,salt,ops)
    console.log("bundlerHash",bundlerHash)
     //接触按钮锁
-    if(!bundlerHash.status){
-        // data.btnLock=false
-        return
-    }
+    // if(!bundlerHash.status){
+    //     data.btnLock=false
+    //     return
+    // }
+    // //起弹窗
+    // data.txHash=bundlerHash.hash
+    // data.isOpen=true
+    // //等待交易结果
+    // let result=  await getBundlerTxResult(bundlerHash.hash)
+    // data.txResult=result
+    // console.log(result)
+    // if(result.status){
+    //     data.btnLock=false
+    //     return
+    // }
 }
 
 

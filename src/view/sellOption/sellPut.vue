@@ -2,7 +2,7 @@
     <navigation-bar title="Sell Put Options"></navigation-bar>
     <div class="sellOption">    
         <!-- 选择币种 -->
-        <selectCoin  :dataList="data.strikeAssetList" v-model:value="data.currentStrikeAsset" ></selectCoin>
+        <selectCoin @change="underlyingChange"  :dataList="data.strikeAssetList" v-model:value="data.currentStrikeAsset" ></selectCoin>
         
         <!-- put 下的锁定币种 -->
         <div  class="lock-token-content">
@@ -34,31 +34,17 @@
         </inputValue>
        </div> 
 
-       
-        <!-- 到期时间 -->
-        <div class="expiry-data-content">
-            <div class="title">Expiry Date</div>
-            <div>
-                <expiry-date-slider
-                    class="expiry-date"
-                    :expiryDataList="data.expiryDataList" 
-                    v-model:value="data.currentExpiryDataKey"
-                    @changeAfterReturnTime="changeExpiry"
-                ></expiry-date-slider>
-            </div>
-        </div>   
-           
-       
+              
        <!-- 行权价格 -->
-        <div class="strike-price-content">
+       <div class="strike-price-content">
             <div class="strike-title">
                 <div class="title">Strike Price</div>
                 <div class="current-price">
                     <div class="call-price">
                         <span>Market Price</span>
-                        <span style="font-weight: bold;"> ${{data.currentPrice}}</span>
+                        <span style="font-weight: bold;"> ${{data.marketPrice}}</span>
                     </div>
-                    <refresh ></refresh>
+                    <refresh @change="strikePriceChange"></refresh>
                 </div>
             </div>
             <div class="strike">
@@ -68,6 +54,22 @@
         </div>
 
 
+        <!-- 到期时间 -->
+        <div class="expiry-data-content">
+            <div class="title">Expiry Date</div>
+            <div>
+                <expiry-date-slider
+                    class="expiry-date"
+                    :dataList="data.expiryDataList"
+                    v-model:value="data.currentExpiryDataValue"
+                    @change="changeExpiry"
+                ></expiry-date-slider>
+            </div>
+        </div>   
+           
+
+
+
         <!-- 价格 -->
         <div class="price-content">
             <div class="price-title">
@@ -75,9 +77,9 @@
                 <div class="current-price">
                     <div class="price">
                         <span>Deribit Price</span>
-                        <span style="font-weight: bold;"> $3100</span>
+                        <span style="font-weight: bold;"> ${{ data.premiumPrice }}</span>
                     </div>
-                    <refresh @change="getMarketPrice"></refresh>
+                    <refresh @change="strikePriceChange"></refresh>
                 </div>
             </div>
             <inputValue 
@@ -131,8 +133,9 @@ import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import {getVaultApi} from "@/api/vaultFactory"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import { BigNumber, ethers } from "ethers";
-import {setSigatureLockApi,sign712OrderApi} from "@/api/optionModule"
+import {setSigatureLockApi,sign712OrderApi,getStrikeApi,createOrderApi} from "@/api/optionModule"
 import {balanceOfApi} from "@/api/token"
+import {getPriceByPriceOracleApi} from "@/api/priceOracle"
 const router=useRouter()
 const route=useRoute()
 const axiosStore= useAxiosStore()
@@ -144,35 +147,10 @@ const data=reactive({
    premiumAssetList:[],//权力金资产
    liquidationWay:[],//清算方式数组  
    currentPrice:BigNumber.from("2200"),//当前抵押资产价格
-   currentStrikePrice:     {
-        key:0,
-        price:"2900",
-      },//行权价
- 
-   strikePrice:[
-      {
-        key:0,
-        price:"2900",
-      },
-      {
-        key:1,
-        price:"3000" 
-      },
-      {
-         key:2,
-         price:"3100"
-      }
-   ],
-   expiryDataList:{
-      1:1,
-      2:2,
-      3:3,
-      4:7,
-      5:14,
-      6:21,
-      7:30
-   },
-   currentExpiryDataKey:2,
+   currentStrikePrice: {},//行权价
+   strikePrice:[], //行权价列表
+   expiryDataList:[],//到期日列表
+   currentExpiryDataKey:{},//到期日选中值
    currentExpiryData:BigNumber.from("0"),
    //---------------
    vault:"", //vault地址
@@ -192,9 +170,6 @@ var underlyingAssetBalance=computed(()=>{
 })
 
 //----------普通处理方法--------------------
-var getMarketPrice=()=>{
-
-}
 var selectLockAsset=async (value)=>{
      data.underlyingAssetList.forEach(item=>{ 
           item.select=false
@@ -205,10 +180,17 @@ var selectLockAsset=async (value)=>{
 }
 
 
-const changeExpiry = (date) => {
-    console.log("到期日",date,data.currentExpiryData);
-    data.currentExpiryData=BigNumber.from(parseInt(date/1000))
+const changeExpiry = (item) => {;
+    data.currentExpiryData=BigNumber.from(parseInt(item.timestamp/1000))
+    data.premiumPrice=item.premiumPrice
 }
+
+
+var strikePriceChange=async (item)=>{
+   console.log(item,"ppp")
+   await handleDerbitPriceAndExpiryData()
+}
+
 
 
 //-----------初始化相关-------------------
@@ -225,9 +207,6 @@ var init=async () => {
     if(axiosStore.isConnect==1){
       return
     }
-    // 处理到期时间
-    let day= data.expiryDataList[data.currentExpiryDataKey]   
-    data.currentExpiryData= BigNumber.from(parseInt((new Date().getTime()+day*24*60*60*1000)/1000))  
 
     //处理抵押资产列表  put情况下下 这里是usdc usdt
     let underlyingAssetData=axiosStore?.optionBusiness?.strikeAssets||[]
@@ -301,12 +280,96 @@ var getVault=async function(){
 var underlyingChange=async ()=>{
      let balance=await  balanceOf(data.currentUnderlyingAsset.address,data.vault)
      data.underlyingAssetBalance=balance
+     await getMarketPrice()
      console.log("抵押资产余额",data.currentUnderlyingAsset,balance)
 }
 
 var balanceOf=async (underlyingAsset,wallet)=> {
     let balanceResponse= await balanceOfApi(underlyingAsset,wallet)
     return balanceResponse.message.balance
+}
+
+
+//获取行权价列表
+var getStrikePrice=async ()=>{
+     let marketPrice=data.marketPrice
+     //做参数数据处理
+     let basePrice=parseInt(marketPrice/100)
+     let startPrice=(basePrice+1)*100
+     let priceRange=[]
+     for(let i=0;i<8;i++){
+        priceRange.push(`${startPrice-100*i}`)
+     }
+    console.log(priceRange,"----sss")
+     let priceResponse= await getStrikeApi(route.query.asset,"call",priceRange,marketPrice)
+     let strikePrice=[]
+     console.log("priceResponse",priceResponse)
+     for(let i=0;i<8;i++){
+        if(priceResponse.data){
+            let key=startPrice-i*100
+                if(key && priceResponse?.data[`${key}`]?.length >0){
+                    let dataList=[]
+                     priceResponse?.data[`${key}`].forEach(item=>{
+                         let obj={
+                            "date": item.date,
+                            "timestamp": item.timestamp,
+                            "strike_price": item.strike_price,
+                            "mark_price": item.mark_price,
+                            "model_price": item.model_price
+                         }
+                         dataList.push(obj)
+                    })
+                    let result={
+                    key:i,
+                    price:String(key),
+                    data:dataList,
+                }
+                strikePrice.push(result) 
+            }
+        }
+     }
+     data.strikePrice=strikePrice
+     data.currentStrikePrice=strikePrice[0]||{}
+     console.log(data.strikePrice,"----ss",data.currentStrikePrice)
+     await handleDerbitPriceAndExpiryData()
+     
+}
+
+//处理derbit价格 和 日期列表
+var handleDerbitPriceAndExpiryData=async ()=>{
+     let currentStrikePrice= data.currentStrikePrice || {}
+     //处理日期
+     let expiryDataList=[]
+     currentStrikePrice?.data?.forEach((item,index)=>{
+         let nowTime=parseInt(new Date().getTime() /1000) 
+         let day=Math.ceil((item.timestamp-nowTime)/(60*60*24))
+         let obj={
+              key:index,
+              day:day,
+              timestamp:item.timestamp*1000,
+              premiumPrice:Number(data.marketPrice *item["mark_price"]).toFixed(2),
+              date:item.date
+         }
+         expiryDataList.push(obj)
+     })
+     //日期组件所需数据
+     data.currentExpiryDataValue=expiryDataList[0]
+     data.currentExpiryData=BigNumber.from(parseInt(data.currentExpiryDataValue.timestamp/1000))
+     data.expiryDataList=expiryDataList
+     //处理权力金
+    //  data.currentPremiumFee=expiryDataList[data.currentExpiryDataValue]
+     data.premiumPrice=data.currentExpiryDataValue.premiumPrice || 0
+     console.log(data.currentExpiryDataValue,"真实数据",expiryDataList)
+}
+
+
+//获取市场价
+var getMarketPrice=async ()=>{
+   let underlyingAssetPrice= await  getPriceByPriceOracleApi(data.currentStrikeAsset.address,axiosStore.remark.usdToken)
+   underlyingAssetPrice=underlyingAssetPrice?.message?.price ||BigNumber.from("0")
+   data.marketPrice=(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
+   console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
+   await getStrikePrice()
 }
 
 //---------------上链业务相关部分---------------
@@ -320,7 +383,10 @@ var sendTx=async ()=>{
             isPremum++
           }
       })
-      if(isPremum==0) return
+      if(isPremum==0) {
+        console.error("未选择权力金资产")
+        return
+      }
      //清算方式选择
      let isLiquidationWay=0
       data.liquidationWay.forEach(item=>{
@@ -328,7 +394,10 @@ var sendTx=async ()=>{
               isLiquidationWay++
           }
       })
-      if(isLiquidationWay==0) return
+      if(isLiquidationWay==0) {
+        console.error("未选择清算方式")
+        return
+      }
       await checkUpdateGignature(data.vault,data.currentStrikeAsset.address)
 }
 
@@ -370,20 +439,26 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
     console.log("signatureInfo",signatureInfo)
     let signatureResponse= await sign712OrderApi(axiosStore.chainId,axiosStore.currentContractData["OptionModule"],signatureInfo)
     console.log("signature",signatureResponse)
+    if(!signatureResponse.status){
+       console.error("用户拒绝签名",signatureResponse)
+       return
+   }
 
-   //是否触发链上签名
-   let isNextStep=signatureResponse.status
-   if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0")) && isNextStep){
+   if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
         //触发上链签名
        let resetSigature= await  setSigatureLockApi(_vault,0,underlyingAsset,currentTimestamp)
-       isNextStep=resetSigature.message.status || false
+       if(!resetSigature.message.status){
+          console.error("取消老订单失败")
+          return
+       }
    }
    //更新签名到中心化服务器
-   if(isNextStep){
-      let response=await storeSingature(signatureInfo,signature.message)
-      console.log("流程完成",response)
-   }
 
+    let response=await storeSingature(signatureInfo,signatureResponse.message)
+    if(!response){
+       console.error("存储数据到中心化服务器失败")   
+    }
+    //流程完成 弹窗
    
 }
 
@@ -400,7 +475,7 @@ var handleStrikeAsset=async ()=>{
    let underlyingAsset=data.currentUnderlyingAsset //usdc
    console.log(underlyingAsset,"当前抵押资产")
    let underlyingAssetPrice=ethers.utils.parseUnits("1",18) //获取usdc的价格
-   let strikePrice=ethers.utils.parseUnits("3400",18) //获取行权价
+   let strikePrice=ethers.utils.parseUnits(data.currentStrikePrice.price,18) //行权价
    // 1usdc价格*eth的精度 / 行权价
    let amount=underlyingAssetPrice.mul(ethers.utils.parseUnits("1",data.currentStrikeAsset.decimals)).div(strikePrice)
    let strikeAmounts=[amount]
@@ -439,10 +514,14 @@ var handlePremiumAsset=async ()=>{
    let underlyingAssetPrice=ethers.utils.parseUnits("1",18) //获取usdc的价格
    console.log("当前抵押资产 权力金",underlyingAsset,underlyingAssetPrice)
 
-   let value=ethers.utils.parseUnits("20",18) //期权费用 带精度
+   let value=BigNumber.from("0")  //权力金费用 带18精度
+    if(data.currentPremiumFee.eq(BigNumber.from("0"))){
+       value=ethers.utils.parseUnits(`${data.premiumPrice}`,18)   
+    }else{
+        //currentPremiumFee 已经带精度了
+        value=data.currentPremiumFee 
+    }
    let strikePrice=ethers.utils.parseUnits(data.currentStrikePrice.price,18)   //行权价 带精度
-
-
    let underlyPremiumUsd=underlyingAssetPrice.mul(value).div(strikePrice)  //1usdc 该支付的期权费
     console.log("premium,期权费,行权价,该支付的期权费",value,strikePrice,underlyPremiumUsd)
     //把期权费转换成usdt的数量
@@ -470,7 +549,7 @@ var handleLiquidation=()=>{
       }
    })
    if(liquidateModes.length==2){
-      liquidateModes=[2]
+      liquidateModes=[0]
    }
    return liquidateModes
 }
@@ -478,7 +557,24 @@ var handleLiquidation=()=>{
 
 // 存储签名数据到中心化服务器
 var storeSingature=async ()=>{
-
+    let premium="0"  
+    if(data.currentPremiumFee.toNumber()==0){
+        premium=String(data.premiumPrice)
+    }else{
+        premium=(data.currentPremiumFee.div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100)
+    }
+  let orederInfo={
+    "writer_wallet": axiosStore.currentAccount,
+    "writer_vault": data.vault,
+    "sign_data": signData,
+    "sign":signature,
+    "strike_price": data.currentStrikePrice.price,
+    "option_premium": String(premium),
+    "option_date":data.currentExpiryDataValue.date,
+    "derbit_price":data.premiumPrice,
+    "market_price":data.marketPrice
+  }
+  await createOrderApi(orederInfo)
 }
 
 </script>

@@ -31,7 +31,11 @@ async function httpRequest(_this,option){
 
  
     for(let key in option.headers){
-        xhr.setRequestHeader(encodeURIComponent(key),encodeURIComponent(option.headers[key]));
+        if(option.method=="get" || option.method == "delete"){
+            xhr.setRequestHeader(encodeURIComponent(key),encodeURIComponent(option.headers[key]));
+        }else{
+            xhr.setRequestHeader(key,option.headers[key]);
+        }
     }
     //发送请求
     !data? xhr.send(): xhr.send(data);

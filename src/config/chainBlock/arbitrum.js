@@ -100,11 +100,11 @@ let optionBusiness={
     liquidation:[
         {     
            label:"Cash Settlement",
-           value:0
+           value:1
         },
         {
            label:"Asset Delivery",
-           value:1 
+           value:2 
         }
    ]//清算方式
 }

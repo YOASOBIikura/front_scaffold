@@ -22,7 +22,7 @@
                     </div>
                   </div>
           </div>
-           <div class="contains padding" v-if="false">
+           <div class="contains padding" v-if="true">
               <submitOrder v-for="(item) in 2" :key="item"  @liquidation="liquidationTx"></submitOrder> 
             </div>   
             <!-- empty -->
@@ -44,12 +44,18 @@ import protfolioSort from "@/components/protfolio/protfolioSort.vue"
 import liquidation from "@/components/protfolio/liquidation.vue"
 import buyOptionEmpty from "@/components/utils/buyOptionEmpty.vue"
 import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
+import {liquidateOption} from "@/callData/bundler/optionModule"
+import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {reactive} from "vue"
   let data=reactive({
     activeKey:"listing",
     isOpenSelect:false,
     isOpenSort:false,
-    isOpenLiquidation:false
+    isOpenLiquidation:false,
+    orderList:[{
+        
+    }],
+    btnLock:false,//按钮锁
   })
 
   //条件筛选
@@ -62,10 +68,37 @@ import {reactive} from "vue"
   }
 
   // 清算
-  var liquidationTx=()=>{
+  var liquidationTx=async ()=>{
     console.log(121123223)
-      data.isOpenLiquidation=true
+      data.isOpenLiquidation=true  
+      let ops=[]
+  //_orderType,_orderID,_type,_incomeAmount,_slippage
+  ops.push(liquidateOption())
+  console.log(maxSalt,"---")
+  let bundlerHash= await sendTxToBundler(maxSaltVault,salt,ops) 
+    console.log("bundlerHash",bundlerHash)
+    //接触按钮锁
+    if(!bundlerHash.status){
+        data.btnLock=false
+        return
+    }
+    //起弹窗
+    data.txHash=bundlerHash.hash
+    data.isOpen=true
+    //等待交易结果
+    let result=  await getBundlerTxResult(bundlerHash.hash)
+    data.txResult=result
+    console.log(result)
+    if(result.status){
+        data.btnLock=false
+        return
+    }
   }
+
+//-------------上链请求-----------------------
+
+
+
 </script>
 
 <style lang="less" >
