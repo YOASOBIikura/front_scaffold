@@ -116,7 +116,7 @@
             class="pay-btn"
             >Confirm</a-button>
     </div>
-
+    <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
 </template>
 <script setup>
 import inputValue from "@/components/utils/inputValue.vue"
@@ -136,6 +136,7 @@ import { BigNumber, ethers } from "ethers";
 import {setSigatureLockApi,sign712OrderApi,getStrikeApi,createOrderApi} from "@/api/optionModule"
 import {balanceOfApi} from "@/api/token"
 import {getPriceByPriceOracleApi} from "@/api/priceOracle"
+import { message } from 'ant-design-vue';
 const router=useRouter()
 const route=useRoute()
 const axiosStore= useAxiosStore()
@@ -146,7 +147,7 @@ const data=reactive({
    currentStrikeAsset:{},//当前行权资产
    premiumAssetList:[],//权力金资产
    liquidationWay:[],//清算方式数组  
-   currentPrice:BigNumber.from("2200"),//当前抵押资产价格
+   currentPrice:BigNumber.from("0"),//当前抵押资产价格
    currentStrikePrice: {},//行权价
    strikePrice:[], //行权价列表
    expiryDataList:[],//到期日列表
@@ -156,7 +157,8 @@ const data=reactive({
    vault:"", //vault地址
    underlyingAssetBalance:BigNumber.from("0"), //真实数量
    underlyingAmount:BigNumber.from("0"),//抵押数量
-   currentPremiumFee:BigNumber.from("2200"),
+   currentPremiumFee:BigNumber.from("0"),
+   loading:false
 })
 //---------计算属性-----------------
 //显示的抵押资产余额
@@ -188,7 +190,9 @@ const changeExpiry = (item) => {;
 
 var strikePriceChange=async (item)=>{
    console.log(item,"ppp")
+   data.loading=true
    await handleDerbitPriceAndExpiryData()
+   data.loading=false
 }
 
 
@@ -207,7 +211,7 @@ var init=async () => {
     if(axiosStore.isConnect==1){
       return
     }
-
+    data.loading=true
     //处理抵押资产列表  put情况下下 这里是usdc usdt
     let underlyingAssetData=axiosStore?.optionBusiness?.strikeAssets||[]
     let underlyingAssetList=[]
@@ -264,6 +268,7 @@ var init=async () => {
          return
     }
     await underlyingChange()
+    data.loading=false
 }
 
 
@@ -278,9 +283,11 @@ var getVault=async function(){
   return vaultResponse.message.vault
 }
 var underlyingChange=async ()=>{
+     data.loading=true
      let balance=await  balanceOf(data.currentUnderlyingAsset.address,data.vault)
      data.underlyingAssetBalance=balance
      await getMarketPrice()
+     data.loading=false
      console.log("抵押资产余额",data.currentUnderlyingAsset,balance)
 }
 
@@ -365,16 +372,22 @@ var handleDerbitPriceAndExpiryData=async ()=>{
 
 //获取市场价
 var getMarketPrice=async ()=>{
+    data.loading=true
    let underlyingAssetPrice= await  getPriceByPriceOracleApi(data.currentStrikeAsset.address,axiosStore.remark.usdToken)
    underlyingAssetPrice=underlyingAssetPrice?.message?.price ||BigNumber.from("0")
    data.marketPrice=(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
    console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
    await getStrikePrice()
+   data.loading=false
 }
 
 //---------------上链业务相关部分---------------
 var sendTx=async ()=>{
     console.log(data.underlyingAmount,"data.underlyingAmount",data.currentStrikePrice)
+    if(data.underlyingAmount.eq(BigNumber.from("0"))){
+        message.warning("please input underlyingAmount")
+         return
+     } 
     //  return
     //权力金资产为空时 
       let isPremum=0
@@ -384,7 +397,8 @@ var sendTx=async ()=>{
           }
       })
       if(isPremum==0) {
-        console.error("未选择权力金资产")
+        // console.error("未选择权力金资产")
+        message.warning("please select premium")
         return
       }
      //清算方式选择
@@ -395,10 +409,12 @@ var sendTx=async ()=>{
           }
       })
       if(isLiquidationWay==0) {
-        console.error("未选择清算方式")
+        // console.error("未选择清算方式")
+        message.warning("please select liquidation")
+
         return
       }
-      await checkUpdateGignature(data.vault,data.currentStrikeAsset.address)
+      await checkUpdateGignature(data.vault,data.currentUnderlyingAsset.address)
 }
 
 
@@ -440,7 +456,7 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
     let signatureResponse= await sign712OrderApi(axiosStore.chainId,axiosStore.currentContractData["OptionModule"],signatureInfo)
     console.log("signature",signatureResponse)
     if(!signatureResponse.status){
-       console.error("用户拒绝签名",signatureResponse)
+        message.error("user refused to sign")     
        return
    }
 
@@ -448,18 +464,21 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
         //触发上链签名
        let resetSigature= await  setSigatureLockApi(_vault,0,underlyingAsset,currentTimestamp)
        if(!resetSigature.message.status){
-          console.error("取消老订单失败")
+          message.error("cacel old offer fail")
           return
        }
    }
    //更新签名到中心化服务器
 
     let response=await storeSingature(signatureInfo,signatureResponse.message)
-    if(!response){
-       console.error("存储数据到中心化服务器失败")   
+    console.log("response 中心化服务器",response)
+    if(!response.message){
+        message.error("offer submit fail")
+        return  
     }
     //流程完成 弹窗
-   
+    message.success("submit offer success")
+    router.push({path:"/protfolio"})
 }
 
 
@@ -556,14 +575,35 @@ var handleLiquidation=()=>{
 
 
 // 存储签名数据到中心化服务器
-var storeSingature=async ()=>{
+var storeSingature=async (signData,signature)=>{
     let premium="0"  
-    if(data.currentPremiumFee.toNumber()==0){
+    if(data.currentPremiumFee.toString()==0){
         premium=String(data.premiumPrice)
     }else{
         premium=(data.currentPremiumFee.div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100)
     }
+
+  //处理bigNumber问题
+  signData.expirationDate=signData.expirationDate.toString()
+  signData.total=signData.total.toString()
+  signData.timestamp=signData.timestamp.toString()
+  let strikeAmounts=[]
+  signData.strikeAmounts.forEach(item=>{
+    strikeAmounts.push(item.toString())
+  })
+  signData.strikeAmounts=strikeAmounts
+
+  let premiumFees=[]
+  signData.premiumFees.forEach(item=>{
+    premiumFees.push(item.toString())
+  })
+
+  signData.premiumFees=premiumFees
+
+  //----
   let orederInfo={
+    "chain_id":String(axiosStore.chainId),
+    "underlying_symbol":String(data.currentStrikeAsset.name).toLocaleUpperCase(),
     "writer_wallet": axiosStore.currentAccount,
     "writer_vault": data.vault,
     "sign_data": signData,
@@ -574,7 +614,7 @@ var storeSingature=async ()=>{
     "derbit_price":data.premiumPrice,
     "market_price":data.marketPrice
   }
-  await createOrderApi(orederInfo)
+  return await createOrderApi(orederInfo)
 }
 
 </script>

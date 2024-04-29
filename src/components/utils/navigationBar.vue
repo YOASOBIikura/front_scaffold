@@ -40,7 +40,7 @@ var goRoute=()=>{
      top: 0px;
      left: 0px;
      background-color: var(--bg-color-page);
-     z-index: 1000;
+     z-index: 998;
      .icon{
         width: 24px;
         height: 24px;

@@ -25,7 +25,7 @@
         v-if="options.length > 0"
       >
         <swiper-slide
-          v-for="(item, index) in options"
+          v-for="(item, index) in props.options"
           :key="'swiper-select-' + index"
         >
           <div class="option" v-if="activeText">

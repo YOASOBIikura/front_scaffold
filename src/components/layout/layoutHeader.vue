@@ -12,7 +12,7 @@
         </div>
         <div v-else>
             <div class="account-btn" @click="connectWallet">
-                <img class="account-img" src="@/assets/images/accountDemo.png"/>
+                <img class="account-img" :src="axiosStore.remark.chainIncon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M13 6L8 11L3 6" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round"/>
                 </svg>
@@ -23,28 +23,17 @@
 <script setup>
 import { useModalStore } from '@/pinia/modules/modal';
 import { useAxiosStore } from "@/pinia/modules/axios";
-import { onMounted,ref,watch,computed } from "vue";
+import { onMounted,ref,watch,computed,reactive} from "vue";
+
 //钱包链接
 let modalStore= useModalStore();
 const axiosStore = useAxiosStore();
-// let isWalletConnect = ref(false);
-/**
- * 连接钱包
- */
 const connectWallet = () => {
     modalStore.modal.open();
 }
-
-let isWalletConnect = computed(() => {
+var isWalletConnect = computed(() => {
     return axiosStore.isConnect !== 1;
 })
-
-watch(() => axiosStore.isConnect,
-    (val) => {
-        isWalletConnect.value = val;
-    }
-)
-
 </script>
 <style lang="less" scoped>
 .layout-header{
@@ -58,7 +47,7 @@ watch(() => axiosStore.isConnect,
     padding: 12px;
     justify-content: space-between;
     align-items: center;
-    z-index: 1000;
+    z-index: 998;
     // opacity: 0.5;
     .logo{
         height: 30px;
@@ -74,6 +63,7 @@ watch(() => axiosStore.isConnect,
         .account-img{
             width: 24px;
             height: 24px;
+            border-radius: 50%;
         }
     }
 

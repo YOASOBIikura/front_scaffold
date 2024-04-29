@@ -3,6 +3,7 @@ import usdtPng from "@/assets/images/token-usdt.png"
 import usdcPng from "@/assets/images/usdc.png"
 import wbtcPng from "@/assets/images/wbtc.png"
 import maticPng from "@/assets/images/polygon.png"
+import chainIconPng from "@/assets/images/polygon.png"
 let contractData={
     "EntryPoint": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
     "DiamondCutFacet": "0x988eBf9b4aC63926AFEe513FA3d70e2efAcfe373",
@@ -35,7 +36,9 @@ let remark={
     usdToken:"0x0000000000000000000000000000000000000001",
     ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     priceDecimals:18,
-    gasSymbol:"matic"
+    gasSymbol:"matic",
+    chainIcon:chainIconPng
+
 }
 
 let bundlerUrl="https://ethgo-polygon.fly.dev"
@@ -133,8 +136,8 @@ let tokens=[
      isShowAsset:true,
      isAble:true,
      type:1,
-     isSellPut:true,
-     isSellCall:true,
+     isSellPut:false,
+     isSellCall:false,
     },
     {
     name:"ETH",

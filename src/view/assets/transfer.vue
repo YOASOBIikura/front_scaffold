@@ -60,6 +60,7 @@
         :txResult="data.txResult">
         </assetTranfer>
     </div>
+    <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
 </template>
 <script setup>
 import navigationBar from "@/components/utils/navigationBar.vue"
@@ -79,6 +80,7 @@ import {issue,redeem} from "@/callData/bundler/issuanceModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
 import {createVaultService} from "@/apiHandle/vault"
+import { message } from 'ant-design-vue';
 
 
 const axiosStore= useAxiosStore()
@@ -98,7 +100,8 @@ const data=reactive({
     txResult:{},
     //----状态锁-----
     btnLock:false,
-    issueMode:0
+    issueMode:0,
+    loading:false
 })
 // -------------计算属性----------------
 var walletBalance=computed(()=>{
@@ -151,6 +154,7 @@ var handleBalance=async ()=>{
     if(axiosStore.isConnect==1){
        return
     }
+    data.loading=true
     let walletBalance=BigNumber.from("0")
     let vaultBalance=BigNumber.from("0")
      if(data.tokenInfo.isGasToken){
@@ -170,6 +174,7 @@ var handleBalance=async ()=>{
      }
      data.walletBalanceValue=walletBalance
      data.vaultBalanceValue=vaultBalance
+     data.loading=false
 
      console.log("余额", data.walletBalanceValue, data.vaultBalanceValue)
 }
@@ -179,11 +184,13 @@ var transferTx=async ()=>{
     console.log(data.optionNumber,"optionNumber")
     
     if( data.issueMode>=2 && data.type=="issue"){
-        console.log("申购错误")
+        message.warning("issue mode error")
+        // console.log("申购错误")
         return
     }
    
     if(data.optionNumber.eq(BigNumber.from("0"))){
+        message.warning("please input")
         return
     }
     if(axiosStore.isConnect==1){
@@ -210,6 +217,7 @@ var sendTx=async ()=>{
     //授权交易
     let approveStatus= await approveTx(data.tokenInfo.isGasToken,token,vault,transferAmount)
     if(!approveStatus){
+        message.error("approve fail")
         data.btnLock=false
         return
     }

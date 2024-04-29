@@ -7,6 +7,7 @@
     --bg-color-container-active: #000000; /* 主要容器背景active，次要页面层级背景active */
     --bg-color-warn:#AB822820;
     --bg-color-unActive:#F7F7F7;
+    --bg-color-loading:#0000003f;
 
 
     /* 分割线 */

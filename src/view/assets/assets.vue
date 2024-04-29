@@ -18,8 +18,12 @@
         <div class="contains">
            <assetOption  :tokenInfo="item" v-for="(item,index) in data.tokenList" :key="index" :issueMode="data.issueMode"></assetOption>  
         </div>
+        
 
     </div>
+
+
+    <a-spin v-if="data.loading" class="aSpin" tip="Loading..." :delay="50"> </a-spin>
 </template>
 <script setup>
 import assetHeader from "@/components/assets/assetHeader.vue"
@@ -41,7 +45,9 @@ const data=reactive({
      totalAsset:0,
      totalWallet:0,
      totalVault:0,
-     issueMode:0
+     issueMode:0,
+     //----
+     loading:false
 })
 // 生命周期
 onMounted(async ()=>{
@@ -58,6 +64,7 @@ var init=async ()=>{
    if(axiosStore.isConnect==1){
       return
    }
+   data.loading=true
    //处理币种信息
    await hanleToken()
    //请求处理页面
@@ -66,6 +73,7 @@ var init=async ()=>{
    await handlePrice()
    //计算总价值
    await handleValue()
+   data.loading=false
    console.log("tokenList",data.tokenList)
 }
 
@@ -238,4 +246,5 @@ var handlePrice=async ()=>{
          box-sizing: border-box;  
       }
    }
+
 </style>

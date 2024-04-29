@@ -3,6 +3,8 @@ import usdtPng from "@/assets/images/token-usdt.png"
 import usdcPng from "@/assets/images/usdc.png"
 import wbtcPng from "@/assets/images/wbtc.png"
 
+import chainIconPng from "@/assets/images/arbitrum.png"
+
 let contractData={
     "EntryPoint": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
     "DiamondCutFacet": "0x462482E07D7b2AfFAD9d934544bfFB24Dbcb019A",
@@ -34,7 +36,8 @@ let remark={
     usdToken:"0x0000000000000000000000000000000000000001",
     ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     priceDecimals:18,
-    gasSymbol:"Eth"
+    gasSymbol:"Eth",
+    chainIcon:chainIconPng
 }
 
 let optionBusiness={

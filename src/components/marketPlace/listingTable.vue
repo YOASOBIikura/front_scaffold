@@ -1,5 +1,5 @@
 <template>
-    <div v-if="dataSource.length > 0">
+
         <a-table
                 :dataSource="dataSource" 
                 :columns="columns"
@@ -8,16 +8,17 @@
                 :scroll="{ x: 1100,y: 'calc(100vh - 570px)'}"
         >
         <template #bodyCell="{ column, record }">
+            <div @click="changeItem(record)">
             <!-- owner -->
             <template v-if="column.key === 'owner'">
                 <div class="owner-item">
                     <div class="img-content">
                         <img class="owner" src="@/assets/images/test1.png" />
-                        <img class="network" src="@/assets/images/solana.png"/>
+                        <img class="network" :src="record.chainIcon"/>
                     </div>
                     <div class="owner-info">
                         <div class="name">{{record.owner}}</div>
-                        <div class="network">solana</div>
+                        <div class="network">{{ record.netWork }}</div>
                     </div>
                 </div>
             </template>
@@ -46,9 +47,9 @@
             <!-- Amount -->
             <template v-if="column.key === 'amount'">
                 <div class="amount">
-                    <img class="token" src="@/assets/images/eth.png"/>
-                    <div>{{record.amount}}</div>
-                    <div class="total-amount">/500</div>
+                    <img class="token" :src="record.underlyingAsset.img"/>
+                    <div>{{record.unUsed}}</div>
+                    <div class="total-amount">/{{record.total}}</div>
                 </div>
             </template>
 
@@ -56,21 +57,14 @@
             <template v-if="column.key === 'payWith'">
                 <div class="pay-with">
                     <!-- 币种图片在这里替换 -->
-                    <img src="@/assets/images/usdc.png" class="token"/>
-                    <img src="@/assets/images/usdt.png" class="token"/>
-                    <div class="token-label" v-if="record.payWith.length > 1">
-                        Both
-                    </div>
-                    <div class="token-label" v-else>
-                        {{record.payWith[0]}}
-                    </div>
+                    <img v-for="(item,index) in record.premiumAsset" :key="index" :src="item.img" class="token"/>
                 </div>
             </template>
 
             <!-- accept -->
             <template v-if="column.key === 'accept'">
                 <div class="accept">
-                    {{record.accept}}
+                    {{record.liquidate}}
                 </div>
             </template>
 
@@ -95,31 +89,29 @@
                     <img src="@/assets/images/copy.png" class="copy-img"/>
                 </div>
             </template>
+        </div>
         </template>
+
         </a-table>
-    </div>
-    <div v-else class="no-listing">
-        <div class="empty-img">
-            <img src="@/assets/images/empty.png"/>
-        </div>
-        <div class="empty-info">Let’s start writing your options</div>
-        <div class="add-option-btn" v-if="listingType == 'My'">
-            <a-button 
-                shape="round" 
-                type="primary"
-                @click="connectWallet"
-                >
-            <img class="" src="@/assets/images/add.png" />
-            Write Options</a-button>
-        </div>
-    </div>
+
 </template>
 <script setup>
+import { useRouter,useRoute} from "vue-router";
+const router=useRouter()
 const props = defineProps({
   dataSource: {type: Array, default: []},
   columns: Array,
-  listingType: {type: String, default: "All"}
 });
+
+var changeItem=(item)=>{
+   console.log(item,"----sss")
+   if(item.orderType=="call"){
+    router.push({path:"buyCall",query:{id:item.id}})
+   }else{
+    router.push({path:"buyPut",query:{id:item.id}})
+
+   }
+}
 
 </script>
 <style scoped lang="less">
@@ -164,6 +156,7 @@ const props = defineProps({
             right: -2px;
             bottom: 4px;
             width: 12px;
+            border-radius: 50%;
         }
     }
     .owner-info{
@@ -178,6 +171,8 @@ const props = defineProps({
             font-size: 12px;
             color: var(--text-color-second);
             line-height: 12px;
+            border-radius: 50%;
+
         }
     }
 }

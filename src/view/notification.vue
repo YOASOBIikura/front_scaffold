@@ -1,6 +1,6 @@
 <template>
     <div class="notification">
-        notification
+        <a-spin tip="Loading..."> </a-spin>
     </div>
 </template>
 

@@ -108,6 +108,7 @@ import {useAxiosStore} from "@/pinia/modules/axios"
 import {issue} from "@/callData/bundler/issuanceModule"
 import {submitOptionOrder} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
+import {getOrderApi} from "@/api/optionModule"
 const axiosStore=useAxiosStore()
 const data = reactive({
     detailCollapse:false,
@@ -156,6 +157,10 @@ var init=async()=>{
     if(axiosStore.isConnect==1){
       return
     }
+    //获取订单信息
+    await getOrder()
+
+
     // 处理抵押资产
     let underlyingAssetData="0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
     data.currentUnderlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(underlyingAssetData))) 
@@ -188,7 +193,10 @@ var init=async()=>{
 }
 
 //----------------请求----------------------
-
+var getOrder=async ()=>{
+   let response= await getOrderApi("662f86f8ecfa91fa648fad76")
+   console.log("response",response)
+}
 //------------上链业务相关------------------
 var buyCall=async ()=>{
    let ops=[]

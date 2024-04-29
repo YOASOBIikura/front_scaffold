@@ -3,11 +3,11 @@
       <a-tabs class="protfolio-tabs" v-model:activeKey="data.activeKey">
         <!-- listing -->
         <a-tab-pane key="listing" tab="My Listings">
-          <div class="contains" v-if="true">
+          <div class="contains" v-if="false">
             <pendingOrder v-for="(item) in 5" :key="item"></pendingOrder>
           </div>    
 
-          <writeOptionEmpty class="empty" v-else ></writeOptionEmpty>
+          <writeOptionEmpty :isSignal="false" :text="`You don't currenty have options`" class="empty" v-else ></writeOptionEmpty>
         </a-tab-pane>
         <!-- options -->
         <a-tab-pane key="options" tab="My Options" force-render >
@@ -46,7 +46,10 @@ import buyOptionEmpty from "@/components/utils/buyOptionEmpty.vue"
 import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
 import {liquidateOption} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
-import {reactive} from "vue"
+import {getMyOfferApi} from "@/api/protfolio"
+import {useAxiosStore} from "@/pinia/modules/axios"
+import {reactive,computed,watch,onMounted} from "vue"
+const axiosStore= useAxiosStore()
   let data=reactive({
     activeKey:"listing",
     isOpenSelect:false,
@@ -66,8 +69,25 @@ import {reactive} from "vue"
   var sortCondition=()=>{
     data.isOpenSort=true
   }
+//-------------初始化-----------------
+onMounted(async ()=>{
+   await init()
+})
+//处理监听事件
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+   await  init()
+})
 
-  // 清算
+var init=async()=>{
+  await getOrderList()
+}
+//--------数据查询-----------
+var getOrderList=async ()=>{
+   let orderResponse= await getMyOfferApi(axiosStore.chainId,axiosStore.currentAccount)
+   console.log("orderResponse",orderResponse)
+}
+//-------------上链请求-----------------------
+//清算交易
   var liquidationTx=async ()=>{
     console.log(121123223)
       data.isOpenLiquidation=true  
@@ -95,7 +115,6 @@ import {reactive} from "vue"
     }
   }
 
-//-------------上链请求-----------------------
 
 
 
