@@ -46,7 +46,7 @@ import buyOptionEmpty from "@/components/utils/buyOptionEmpty.vue"
 import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
 import {liquidateOption} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
-import {getMyOfferApi} from "@/api/protfolio"
+import {getOrderApi} from "@/api/protfolio"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {reactive,computed,watch,onMounted,ref} from "vue"
 const axiosStore= useAxiosStore()
@@ -84,7 +84,7 @@ var init=async()=>{
 }
 //--------数据查询-----------
 var getOrderList=async (page = 1)=>{
-   let orderResponse= await getMyOfferApi("",axiosStore.chainId,axiosStore.currentAccount,page);
+   let orderResponse= await getOrderApi("",axiosStore.chainId,axiosStore.currentAccount,page);
    let orderList = [];
    orderResponse?.data?.forEach((item) => {
     let netWork=""
