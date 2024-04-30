@@ -117,7 +117,7 @@ import repayType from "@/components/buyOption/repayType.vue";
 import detailsInfo from "@/components/buyOption/detailsInfo.vue";
 
 import navigationBar from "@/components/utils/navigationBar.vue";
-import {createVaultService,getMulVaultR,maxSaltVaultR} from "@/apiHandle/vault"
+import {createVaultService,getMulVaultR} from "@/apiHandle/vault"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {issue,redeem} from "@/callData/bundler/issuanceModule"
 import {submitOptionOrder} from "@/callData/bundler/optionModule"

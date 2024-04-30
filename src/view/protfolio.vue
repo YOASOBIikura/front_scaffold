@@ -83,7 +83,7 @@ var init=async()=>{
 }
 //--------数据查询-----------
 var getOrderList=async ()=>{
-   let orderResponse= await getMyOfferApi(axiosStore.chainId,axiosStore.currentAccount)
+   let orderResponse= await getMyOfferApi("",axiosStore.chainId,axiosStore.currentAccount)
    console.log("orderResponse",orderResponse)
 }
 //-------------上链请求-----------------------

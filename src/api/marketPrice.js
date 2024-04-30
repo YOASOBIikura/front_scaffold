@@ -22,7 +22,7 @@ function getMarketPriceApi(_chainId,_orderType,_assetSymbol){
      });
 }
 
-//获取offer
+//获取offer  
 function getMarketOfferApi(_chainId,_orderType,_assetSymbol,_strikeprice,_optionDate,_wallet){
     return useAxiosStore().axios({
         mode:"http", //chainBlockCall  http  chainBlockSend  sign  unSign  
