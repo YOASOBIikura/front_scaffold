@@ -4,7 +4,7 @@
             <img src="@/assets/images/settlement_icon_1.png"/>
             <div class="data">
                 <div class="item-title">Exercise for asset delivery</div>
-                <div class="item-info">Pay 3,100 USDT to get 1 ETH</div>
+                <div class="item-info">Pay {{payStrikeAmount}} {{props.strikeAsset.name}} to get {{ newUnderlyingAmount }} {{props.asset.name}}</div>
             </div>
         </div>
         <div class="item">
@@ -24,7 +24,47 @@
     </div>
 </template>
 <script setup>
+import {reactive,defineProps,computed}  from "vue"
+import {useAxiosStore} from "@/pinia/modules/axios"
+import { BigNumber,ethers } from "ethers";
 
+const props=defineProps({
+    asset:{
+        type:Object,
+        require:true,
+        default:{}
+    },
+    underlyingAmount:{
+        type:Object,
+        require:true,
+        default:{}
+    },
+    strikeAsset:{
+        type:Object,
+        require:true,
+        default:{}          
+    },
+    strikeAmount:{
+        type:Object,
+        require:true,
+        default:{}      
+    }
+})
+
+var payStrikeAmount=computed(()=>{
+    if(!BigNumber.isBigNumber(props.strikeAmount) || !props.strikeAsset.decimals){
+        return 0
+    }
+    let newAmount= props.strikeAmount.mul(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-2)).div(ethers.utils.parseUnits("1",props.strikeAsset.decimals))
+    return newAmount.toNumber()/100
+})
+
+var newUnderlyingAmount=computed(()=>{
+    if(!BigNumber.isBigNumber(props.underlyingAmount) || !props.asset.decimals){
+        return 0
+    }
+     return BigNumber.from(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-2)).toNumber()/100
+})
 </script>
 <style scoped lang="less">
 .title{

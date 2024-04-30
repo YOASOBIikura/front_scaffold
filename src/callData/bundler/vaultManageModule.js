@@ -18,8 +18,8 @@ function setVaultModule(_vault,_modules,_status){
 // setVaultType
 function setVaultType(_vault,_vaultType){
     let axiosStore=useAxiosStore()
-    let funcHex = new ethers.utils.Interface(["setVaultType(address _vault,uint256 _vaultType)"])
-    let callData= funcHex.encodeFunctionData("setVaultType", [ _vault,_vaultType]) 
+    let funcHex = new ethers.utils.Interface(["function setVaultType(address _vault,uint256 _vaultType)"])
+    let callData= funcHex.encodeFunctionData("setVaultType", [_vault,_vaultType]) 
     let value=0
     let target=axiosStore.currentContractData["VaultManageModule"]
     return {

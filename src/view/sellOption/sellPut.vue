@@ -136,6 +136,7 @@ import { BigNumber, ethers } from "ethers";
 import {setSigatureLockApi,sign712OrderApi,getStrikeApi,createOrderApi} from "@/api/optionModule"
 import {balanceOfApi} from "@/api/token"
 import {getPriceByPriceOracleApi} from "@/api/priceOracle"
+import {getWalletBalanceApi} from "@/api/utils"
 import { message } from 'ant-design-vue';
 const router=useRouter()
 const route=useRoute()
@@ -284,15 +285,21 @@ var getVault=async function(){
 }
 var underlyingChange=async ()=>{
      data.loading=true
-     let balance=await  balanceOf(data.currentUnderlyingAsset.address,data.vault)
+     let balance=await  balanceOf(data.currentUnderlyingAsset.isGasToken,data.currentUnderlyingAsset.address,data.vault)
      data.underlyingAssetBalance=balance
      await getMarketPrice()
      data.loading=false
      console.log("抵押资产余额",data.currentUnderlyingAsset,balance)
 }
 
-var balanceOf=async (underlyingAsset,wallet)=> {
-    let balanceResponse= await balanceOfApi(underlyingAsset,wallet)
+var balanceOf=async (isGasToken,underlyingAsset,wallet)=> {
+    let balanceResponse
+    if(isGasToken){
+        balanceResponse= await  getWalletBalanceApi(wallet)
+        console.log("balanceResponse",balanceResponse)
+        return balanceResponse.message 
+    }      
+    balanceResponse= await balanceOfApi(underlyingAsset,wallet)
     return balanceResponse.message.balance
 }
 
@@ -300,12 +307,15 @@ var balanceOf=async (underlyingAsset,wallet)=> {
 //获取行权价列表
 var getStrikePrice=async ()=>{
      let marketPrice=data.marketPrice
+     let priceInterval=data.currentUnderlyingAsset.priceInterval
      //做参数数据处理
-     let basePrice=parseInt(marketPrice/100)
-     let startPrice=(basePrice+1)*100
+     let basePrice=parseInt(marketPrice/priceInterval)
+     let startPrice=(basePrice+1)*priceInterval
      let priceRange=[]
      for(let i=0;i<8;i++){
-        priceRange.push(`${startPrice-100*i}`)
+        //处理js小数问题
+        let newPrice=(startPrice-priceInterval*i).toFixed(2)
+        priceRange.push(`${newPrice*100/100}`)
      }
     console.log(priceRange,"----sss")
      let priceResponse= await getStrikeApi(route.query.asset,"call",priceRange,marketPrice)
@@ -313,7 +323,7 @@ var getStrikePrice=async ()=>{
      console.log("priceResponse",priceResponse)
      for(let i=0;i<8;i++){
         if(priceResponse.data){
-            let key=startPrice-i*100
+            let key=startPrice-i*priceInterval
                 if(key && priceResponse?.data[`${key}`]?.length >0){
                     let dataList=[]
                      priceResponse?.data[`${key}`].forEach(item=>{

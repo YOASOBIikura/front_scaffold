@@ -291,6 +291,7 @@ var buyCall=async ()=>{
     font-size: 16px;
     font-weight: bold;
     margin-top: 8px;
+    margin-bottom: 24px;
     .date-img{
         width: 24px;
         margin-right: 6px;

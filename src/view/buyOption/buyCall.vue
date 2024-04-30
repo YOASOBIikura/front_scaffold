@@ -36,7 +36,7 @@
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
         :decimals="data.currentUnderlyingAsset.decimals"
-        @blur="blurChange"
+        @input="inputChange"
         
         >
              <div class="slotBalance">
@@ -77,10 +77,27 @@
             </div>
 
             <div v-if="data.detailCollapse">
-                <details-info :dataInfo="data.detailsInfoData"></details-info>
-                <description :dataInfo="data.descriptionData"></description>
-                <settlement :dataInfo="data.settlementData"></settlement>
-                <repay-type :dataInfo="data.repayTypeData"></repay-type>          
+                <details-info 
+                :dataInfo="data.detailsInfoData" 
+                :marketPrice="data.currentUnderlyingPrice">
+            </details-info>
+                <description 
+                :orderType="'Call'"
+                :asset="data.currentUnderlyingAsset" 
+                :premiumAsset="data.currentPremiumAsset"
+                :underlyingAmount="data.underlyingAmount"        
+                 ></description>
+                <settlement 
+                :asset="data.currentUnderlyingAsset" 
+                :strikePrice="data.remarkInfo.strikePrice"
+                :marketPrice="data.currentUnderlyingPrice"
+                ></settlement>
+                <repay-type 
+                 :asset="data.currentUnderlyingAsset" 
+                 :underlyingAmount="data.underlyingAmount"        
+                 :strikeAsset="data.currentStrikeAsset"
+                 :strikeAmount="data.cuurentStrikeAmount"
+                ></repay-type>          
             </div>
        </div>
     </div>
@@ -90,7 +107,7 @@
             type="primary"
             class="pay-btn"
             @click="buyCall"
-            >Pay 10 USDT</a-button>
+            >Pay {{ data.currentPremiumAsset.premium }} {{data.currentPremiumAsset.name}}</a-button>
     </div>
 
      
@@ -118,6 +135,7 @@ import { useRouter,useRoute} from "vue-router";
 import { message } from 'ant-design-vue';
 import {getPriceByPriceOracleApi} from "@/api/priceOracle"
 import {getMulTokenBalance} from "@/apiHandle/token"
+import {setVaultType} from "@/callData/bundler/vaultManageModule"
 const route=useRoute()
 const router=useRouter()
 const axiosStore=useAxiosStore()
@@ -125,20 +143,23 @@ const data = reactive({
     detailCollapse:true,
     currentUnderlyingAsset:{},
     premiumAssetList:[],
+    currentPremiumAsset:{},//当前的行权资产
     currentStrikeAsset:{},//当前行权资产
+    currentUnderlyingPrice:"0",//当前抵押资产价格
+    cuurentStrikeAmount:BigNumber.from("0"),
     signatureInfo:{}, //签名源信息
     signature:"",//签名信息
     remarkInfo:{},//补充信息  
     //-----
     underlyingAmount: BigNumber.from("0"), //抵押数量
-    underlyingAssetBalance:ethers.utils.parseUnits("300",18),//
+    underlyingAssetBalance:BigNumber.from("0"),//
     btnLock:false,//按钮锁
 
     //下级组件信息
     detailsInfoData:{},
     descriptionData:{},
-    settlementData:{},
-    repayTypeData:{}
+    repayTypeData:{},
+
 });
 
 //---------计算属性-----------------
@@ -151,6 +172,7 @@ var underlyingAssetBalance=computed(()=>{
      console.log(data.underlyingAssetBalance,"=s==s===ss")
      return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
 })
+
 
 
 var dateShow=computed(()=>{
@@ -178,15 +200,19 @@ var selectPremium=(item)=>{
           item.select=false
       })
       item.select=true
+      data.currentPremiumAsset=item
 }
 
-var blurChange=async (item)=>{
+var inputChange=async (value)=>{
+      console.log(data.underlyingAmount,"触发修改值",value)
+    //   data.underlyingAmount=value
       let premiumFees=data.signatureInfo?.premiumFees||[]
-
+    
       data.premiumAssetList?.forEach((item,index)=>{
-        let premium=(data.underlyingAmount.mul(BigNumber.from(premiumFees[index])).div(ethers.utils.parseUnits("1",item.decimals)).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber())/100
+        let premium=(value.mul(BigNumber.from(premiumFees[index])).div(ethers.utils.parseUnits("1",item.decimals)).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber())/100
+        console.log("修改权力金",premium)
         item["premium"]=premium
-      })
+      }) 
 }
 
 
@@ -204,7 +230,8 @@ var init=async()=>{
     }
     //获取订单信息
     await getOrder()
-
+    
+ 
 
     // 处理抵押资产
     let underlyingAssetData=data.signatureInfo.underlyingAsset || ""
@@ -230,14 +257,18 @@ var init=async()=>{
          token["balanceShow"]=(balanceList[index].div(ethers.utils.parseUnits("1",token.decimals-2)).toNumber())/100
          token["select"]=false
          token["premium"]=BigNumber.from("0")
+         token["signPremiumFeesIndex"]=index
          if(index==0){
             token["select"]=true
          }
          premiumAssetList.push(token)
     })
+    data.currentPremiumAsset=premiumAssetList[0] || {}
     data.premiumAssetList=premiumAssetList
 
 
+   //获取抵押资产价格
+    data.currentUnderlyingPrice=  await getPrice(data.currentUnderlyingAsset.address)
 
 
     //取得0号vault
@@ -252,11 +283,9 @@ var getOrder=async ()=>{
    let signInfo={}
    let signature=""
    let remarkInfo={}
+   let strikeAmount=BigNumber.from("0")
    //下级组件信息
    let detailsInfoData={}
-   let descriptionData={}
-   let settlementData={}
-   let repayTypeData={}
    response?.forEach(item=>{
        signInfo={
         orderType:0,
@@ -302,6 +331,9 @@ var getOrder=async ()=>{
        let underlyingAssetToken=axiosStore.getTokenByAddress(item["underlying_asset"])
        let total=(BigNumber.from(item["total"]).div(ethers.utils.parseUnits("1",underlyingAssetToken.decimals-2)).toNumber())/100
        let used=(BigNumber.from(item["used"]).div(ethers.utils.parseUnits("1",underlyingAssetToken.decimals-2)).toNumber())/100
+
+
+
        detailsInfoData={
           derbitPrice:item["derbit_price"],
           liquidateWay:liquidate,
@@ -314,20 +346,20 @@ var getOrder=async ()=>{
           writerVault:item["writer_vault"],
           wallet:item["writer_wallet"],
        }
+      
+       strikeAmount=BigNumber.from(item["strike_amounts"][0])
 
-       descriptionData={
-          underlyingAssetToken:underlyingAssetToken,
-          
-       }
+        //处理能够购买的余额
+        data.underlyingAssetBalance=BigNumber.from(item["total"]).sub(BigNumber.from(item["used"]))
+       
    })
    data.signatureInfo=signInfo
    data.signature=signature
    data.remarkInfo=remarkInfo
    console.log("signInfo",signInfo)
    data.detailsInfoData=detailsInfoData
-   data.descriptionData=descriptionData
-   data.settlementData=settlementData
-   data.repayTypeData=repayTypeData
+   data.cuurentStrikeAmount=strikeAmount
+  
    
 }
 //------------上链业务相关------------------
@@ -347,10 +379,15 @@ var buyCall=async ()=>{
    //创建vault
    let createVaultData=createVaultService(maxSaltVault)
    ops=ops.concat(createVaultData)
+   //设置vaultType
+   ops.push(setVaultType(maxSaltVault,BigNumber.from("7")))
    //从0号vault申购
-   let asset=[]
-   let amount=[]
-   ops.push(issue(mainVault,mainVault,asset,amount))  
+   let asset=[data.currentPremiumAsset.address]
+   let premiumFee=data.signatureInfo?.premiumFees[data.currentPremiumAsset.signPremiumFeesIndex]
+   let premium=data.underlyingAmount.mul(premiumFee).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals))
+   let amount=[premium]
+   console.log(maxSaltVault,mainVault,asset,amount,"======")
+   ops.push(issue(maxSaltVault,mainVault,asset,amount))  
    //权利金选择
    let premiumSelet=0
    data?.premiumAssetList.forEach((item,index)=>{
@@ -402,7 +439,9 @@ var getPrice=async (_masterToken)=>{
 }
 //查询货币余额
 var getTokenBalance=async (tokenList)=>{
-    return await getMulTokenBalance(axiosStore.currentAccount,tokenList)
+    let balanceList= await getMulTokenBalance(data.remarkInfo.writerVault,tokenList)
+    console.log("balanceList",balanceList)
+    return balanceList
 }
 
 
@@ -444,6 +483,7 @@ var getTokenBalance=async (tokenList)=>{
         width: 36px;
         position: relative;
         display: inline-block;
+        border-radius: 50%;
         &:first-child{
             margin-right: -8px;
             z-index: 6;
@@ -489,6 +529,7 @@ var getTokenBalance=async (tokenList)=>{
     font-size: 16px;
     font-weight: bold;
     margin-top: 8px;
+    margin-bottom: 24px;
     .date-img{
         width: 24px;
         margin-right: 6px;
@@ -560,16 +601,13 @@ var getTokenBalance=async (tokenList)=>{
         position: relative;
         display: flex;
         .item{
-            border: 1px solid var(--component-border);
+            border: 2px solid var(--border-color);
             height: 70px;
             width: 50%;
             border-radius: 8px;
             padding: 16px 12px;
-            border:2px solid #00000000;
             box-sizing: border-box;
-            &.active{
-                border: 2px solid var(--bg-color-container-active);
-            }
+          
             .token{
                 color: var(--text-color-primary);
                 font-size: 16px;
@@ -585,6 +623,9 @@ var getTokenBalance=async (tokenList)=>{
                 color: var(--text-color-second);
                 font-size: 14px;
             }
+        }
+        .active{
+                border: 2px solid var(--bg-color-container-active);
         }
     }
 }

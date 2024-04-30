@@ -54,10 +54,25 @@ let chainInfo={
 
 
 let optionBusiness={
-    underlyingAssets:[{
+    underlyingAssets:[
+        {
+            name:"MATIC",
+            address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+            priceInterval:0.1,
+            isGasToken:true,
+            decimals:18,
+            img:maticPng,
+            assetType:0,
+            isSellPut:true,
+            isSellCall:true,
+           },
+        
+        {
             name:"ETH",
             img:ethPng,
             address:"0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+            priceInterval:100,
+            isGasToken:false,
             decimals:18,
             assetType:1,
             isSellPut:true,
@@ -67,6 +82,8 @@ let optionBusiness={
             name:"WBTC",
             img:wbtcPng,
             address:"0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+            priceInterval:100,
+            isGasToken:false,
             decimals:8,
             assetType:1,
             isSellPut:true,
@@ -79,6 +96,7 @@ let optionBusiness={
             name:"USDC",
             img:usdcPng,
             address:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+            isGasToken:false,
             decimals:6,
             assetType:1,
             isSellPut:true,
@@ -88,6 +106,7 @@ let optionBusiness={
             name:"USDT",
             img:usdtPng,
             address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            isGasToken:false,
             decimals:6,
             assetType:1,
             isSellPut:true,
@@ -100,6 +119,7 @@ let optionBusiness={
             name:"USDT",
             img:usdtPng,
             address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+            isGasToken:false,
             decimals:6,
             assetType:1,
             isSellPut:true,
@@ -109,6 +129,7 @@ let optionBusiness={
             name:"USDC",
             img:usdcPng,
             address:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+            isGasToken:false,
             decimals:6,
             assetType:1,
             isSellPut:true,
@@ -137,8 +158,8 @@ let tokens=[
      isShowAsset:true,
      isAble:true,
      type:1,
-     isSellPut:false,
-     isSellCall:false,
+     isSellPut:true,
+     isSellCall:true,
     },
     {
     name:"ETH",

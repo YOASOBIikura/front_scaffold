@@ -4,11 +4,14 @@
                 <div class="product-img">
                     <div class="absolute-data">
                         <div class="you">You</div>
-                        <div class="writer">Call Option Writer</div>
+                        <div class="writer">{{props.orderType}} Option Writer</div>
                         <div class="premium">Pay Premium</div>
-                        <div class="pay-amount">10 <img src="@/assets/images/usdt.png" /></div>
-                        <div class="lock">Lock ETH</div>
-                        <div class="lock-amount">1 <img src="@/assets/images/eth.png"/></div>
+                        <div class="pay-amount">{{props.premiumAsset.premium}} <img :src="props.premiumAsset.img" /></div>
+                        <div class="lock">Lock {{ props.asset.name }}</div>
+                        <div class="lock-amount">
+                            {{assetShow}}
+                            <img  :src="props.asset.img"/>
+                        </div>
                     </div>
                     <img src="@/assets/images/product.png" />
                 </div>
@@ -16,16 +19,50 @@
 
 </template>
 <script setup>
-import {reactive,defineProps}  from "vue"
+import {reactive,defineProps,computed}  from "vue"
 import {useAxiosStore} from "@/pinia/modules/axios"
+import { BigNumber, ethers } from "ethers";
 const axiosStore=useAxiosStore()
 const props=defineProps({
-    dataInfo:{
+    orderType:{
+       type:String,
+       require:true,
+       default:"Call"
+    },
+    asset:{
+        type:Object,
+        require:true,
+        default:{}
+    },
+    premiumAsset:{
+        type:Object,
+        require:true,
+        default:{}
+    },
+    underlyingAmount:{
         type:Object,
         require:true,
         default:{}
     }
 })
+//计算属性
+var premiumFee=computed(()=>{
+    let fee=""
+   props.premiumAssetList.forEach(item=>{
+      if(item.select){
+        fee=item.premium
+      }
+   })
+   return fee
+})
+
+var assetShow=computed(()=>{
+    if(!props.asset.decimals){
+         return 0
+    }
+     return BigNumber.from(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-2)).toNumber()/100
+})
+
 </script>
 <style scoped lang="less">
 .title{
@@ -95,6 +132,7 @@ const props=defineProps({
                     img{
                         width: 12px;
                         vertical-align: bottom;
+                        border-radius: 50%;
                     }
                 }
             }

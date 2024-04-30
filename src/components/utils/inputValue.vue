@@ -60,7 +60,8 @@ var max=()=>{
     emits("inputMax",props.value,data.inputShow)
 }
 var inputValue= (input)=>{
-    let value = numberLimitations(input.target.value);
+    // let value = numberLimitations(input.target.value);
+    let value=input.target.value
     if(props.isMax && BigNumber.from("0").eq(BigNumber.from(props.maxValue))){
         value=BigNumber.from("0")
     }else{

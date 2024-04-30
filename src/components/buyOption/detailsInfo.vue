@@ -18,7 +18,7 @@
                     </div>
                     <div class="value-row">
                         <div class="title">MarketPrice</div>
-                        <div class="value">${{props.dataInfo.marketPrice}}</div>
+                        <div class="value">${{newMarketPrice}}</div>
                     </div>
                     <div class="value-row">
                         <div class="title">Strike Price</div>
@@ -50,15 +50,27 @@
 
 </template>
 <script setup>
-import {reactive,defineProps}  from "vue"
+import {reactive,defineProps,computed}  from "vue"
 import {useAxiosStore} from "@/pinia/modules/axios"
+import { BigNumber,ethers } from "ethers";
 const axiosStore=useAxiosStore()
 const props=defineProps({
     dataInfo:{
         type:Object,
         require:true,
         default:{}
+    },
+    marketPrice:{
+        type:[Object,String,Number],
+        require:true,
+        default:{}
     }
+})
+var newMarketPrice=computed(()=>{
+    if(!BigNumber.isBigNumber(props.marketPrice)){
+        return 0
+    }
+    return  BigNumber.from(props.marketPrice).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100
 })
 const data=reactive({})
 </script>
