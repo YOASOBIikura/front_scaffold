@@ -3,7 +3,7 @@
       <a-tabs class="protfolio-tabs" v-model:activeKey="data.activeKey">
         <!-- listing -->
         <a-tab-pane key="listing" tab="My Listings">
-          <div class="contains" v-if="data.orderList.length > 0">
+          <div class="contains" ref="containsRef" v-if="data.orderList.length > 0" @scroll="pandingOrderHandleScroll">
             <pendingOrder v-for="(item) in data.orderList" :key="item" :orderData="item"></pendingOrder>
           </div>    
 
@@ -48,7 +48,7 @@ import {liquidateOption} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {getMyOfferApi} from "@/api/protfolio"
 import {useAxiosStore} from "@/pinia/modules/axios"
-import {reactive,computed,watch,onMounted} from "vue"
+import {reactive,computed,watch,onMounted,ref} from "vue"
 const axiosStore= useAxiosStore()
   let data=reactive({
     activeKey:"listing",
@@ -57,7 +57,10 @@ const axiosStore= useAxiosStore()
     isOpenLiquidation:false,
     orderList:[],
     btnLock:false,//按钮锁
+    orderPage: 1,
+    scrollLoadLock: false // 滚动加载锁
   })
+const containsRef = ref(null)
 
   //条件筛选
   var selectCondition=()=>{
@@ -77,12 +80,11 @@ watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
 })
 
 var init=async()=>{
-  await getOrderList()
+  await getOrderList(data.orderPage)
 }
 //--------数据查询-----------
-var getOrderList=async ()=>{
-   let orderResponse= await getMyOfferApi("",axiosStore.chainId,axiosStore.currentAccount)
-   console.log("orderResponse",orderResponse);
+var getOrderList=async (page = 1)=>{
+   let orderResponse= await getMyOfferApi("",axiosStore.chainId,axiosStore.currentAccount,page);
    let orderList = [];
    orderResponse?.data?.forEach((item) => {
     let netWork=""
@@ -97,7 +99,6 @@ var getOrderList=async ()=>{
         premiumAssets.push(JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(token))))  
     });
     //处理清算方式
-
     let liquidate=""
     switch(Number(item["liquidate_modes"][0])){
         case 0:
@@ -128,14 +129,36 @@ var getOrderList=async ()=>{
     }
     orderList.push(obj);
    });
-   data.orderList = orderList;
-   console.log(data.orderList);
+   if(page == 1){
+    data.orderList = orderList;
+   } else {
+    data.orderList = data.orderList.concat(orderList);
+   }
+   if(orderList.length == 0){
+      data.orderPage -= 1;
+      data.scrollLoadLock = true;
+   }
+   console.log(page, data.orderList, orderList);
 
 }
+
+// 滚动加载监听滚动条
+var pandingOrderHandleScroll = () => {
+  if(data.scrollLoadLock){
+    return;
+  }
+  const container = containsRef.value
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+    data.orderPage += 1;
+    getOrderList(data.orderPage)
+  }
+}
+
+
+
 //-------------上链请求-----------------------
 //清算交易
   var liquidationTx=async ()=>{
-    console.log(121123223)
       data.isOpenLiquidation=true  
       let ops=[]
   //_orderType,_orderID,_type,_incomeAmount,_slippage

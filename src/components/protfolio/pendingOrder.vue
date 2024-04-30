@@ -120,9 +120,14 @@ const networkImgSrc = computed(() => {
   return JSON.parse(JSON.stringify(axiosStore.remark?.chainIcon));
 });
 var editOption = () => {
-  console.log(optionTypeShow.value);
   let routerName = `/sell${optionTypeShow.value}`;
-  router.push({ path: routerName });
+  router.push({ 
+    path: routerName,
+    query: {
+        asset:props.orderData.underlyingAsset.name,
+        id: props.orderData.id
+    }
+   });
 };
 </script>
 
