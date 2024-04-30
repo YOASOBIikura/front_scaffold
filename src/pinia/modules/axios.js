@@ -29,7 +29,7 @@ export const useAxiosStore = defineStore('axios', {
      //第一次初始化
      initAxios(chainBlockCallProvider,chainBlockSendProvider,wallet){
          this.axios= new Axios({
-            httpUrl:"http://192.168.100.173:8000",
+            httpUrl:"https://cdapiv2.fly.dev",
             chainBlockCallProvider:chainBlockCallProvider,
             chainBlockSendProvider:chainBlockSendProvider,
             safeBlock:6,

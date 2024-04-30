@@ -60,22 +60,54 @@ var max=()=>{
     emits("inputMax",props.value,data.inputShow)
 }
 var inputValue= (input)=>{
-    let value=input.target.value
+    let value = numberLimitations(input.target.value);
     if(props.isMax && BigNumber.from("0").eq(BigNumber.from(props.maxValue))){
         value=BigNumber.from("0")
     }else{
-            if(value!=""){
-                value=ethers.utils.parseUnits(String(value),props.decimals)
-                if(props.isMax && value.mul(ethers.utils.parseUnits("1",2)).div(props.maxValue).gte(BigNumber.from("99"))){
-                    value=props.maxValue       
-                } 
-            }else{
-                value=BigNumber.from("0")
-            }
+        if(value!=""){
+            value=ethers.utils.parseUnits(String(value),props.decimals)
+            if(props.isMax && value.mul(ethers.utils.parseUnits("1",2)).div(props.maxValue).gte(BigNumber.from("99"))){
+                value=props.maxValue       
+            } 
+        }else{
+            value=BigNumber.from("0")
+        }
     }
     handleValue(value)
     emits("change",value)
     emits("update:value",value)
+}
+
+// 数字限制
+var numberLimitations = (str) => {
+    let bis = "";
+    let reservedBits = (props.decimals !== undefined && props.decimals !== null) ? props.decimals : 18;
+    for (let i = 0; i < reservedBits; i++) {
+        bis += "\\d";
+    }
+    let num = str;
+    let position = '';
+    if (num.startsWith('-') && props.hasMinus) {
+        position = "-";
+        num = num.substring(1, num.length);
+    }
+    let regx = /[^\d\.]/g;
+    if (props.decimals === 0) {
+        regx = /[^\d]/g;
+    }
+    // 正数限制
+    let tempVal = num.replace(regx, "");
+    let Regex = new RegExp(`^(-)*(\\d+)\\.(${bis}).*$`);
+    num = tempVal
+        .replace(Regex, "$1$2.$3")
+        .replace(".", "$#$")
+        .replace(/\./g, "")
+        .replace("$#$", ".");
+    if (position === '-') {
+        num = position + num;
+    }
+    console.log(num);
+    return num;
 }
 
 var handleValue=(value)=>{
