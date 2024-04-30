@@ -3,8 +3,8 @@
       <a-tabs class="protfolio-tabs" v-model:activeKey="data.activeKey">
         <!-- listing -->
         <a-tab-pane key="listing" tab="My Listings">
-          <div class="contains" v-if="false">
-            <pendingOrder v-for="(item) in 5" :key="item"></pendingOrder>
+          <div class="contains" v-if="data.orderList.length > 0">
+            <pendingOrder v-for="(item) in data.orderList" :key="item" :orderData="item"></pendingOrder>
           </div>    
 
           <writeOptionEmpty :isSignal="false" :text="`You don't currenty have options`" class="empty" v-else ></writeOptionEmpty>
@@ -55,9 +55,7 @@ const axiosStore= useAxiosStore()
     isOpenSelect:false,
     isOpenSort:false,
     isOpenLiquidation:false,
-    orderList:[{
-        
-    }],
+    orderList:[],
     btnLock:false,//按钮锁
   })
 
@@ -84,7 +82,55 @@ var init=async()=>{
 //--------数据查询-----------
 var getOrderList=async ()=>{
    let orderResponse= await getMyOfferApi("",axiosStore.chainId,axiosStore.currentAccount)
-   console.log("orderResponse",orderResponse)
+   console.log("orderResponse",orderResponse);
+   let orderList = [];
+   orderResponse?.data?.forEach((item) => {
+    let netWork=""
+    switch(item["chain_id"]){
+      case "137":netWork="polygon";break;
+      case "1":netWork="ethereum";break;
+      case "42161":netWork="arbitrum";break;
+    }
+    // 处理可还款资产
+    let premiumAssets = [];
+    item["premium_assets"].forEach((token) => {
+        premiumAssets.push(JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(token))))  
+    });
+    //处理清算方式
+
+    let liquidate=""
+    switch(Number(item["liquidate_modes"][0])){
+        case 0:
+        liquidate="Cash Settlement/Asset Delivery";
+        break;
+        case 1:
+        liquidate="Cash Settlement"
+          break;
+        case 2:
+        liquidate="Asset Delivery"
+          break     
+    }
+    let underlyingAsset = JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.underlying_asset)));
+    let obj = {
+      id:item.id,
+      orderType:item["option_type"]==0?'call':'put',
+      total: item.total,
+      netWork: netWork,
+      strikePrice: item.strike_price,
+      premiumAssets: premiumAssets,
+      createDate: item.create_time*1000,
+      expirationDate: item.expiration_date*1000,
+      used: item.used,
+      underlyingAsset: underlyingAsset,
+      liquidate: liquidate,
+      premiumPrice: item.option_premium ?  item.option_premium: item.derbit_price, // 期权费
+
+    }
+    orderList.push(obj);
+   });
+   data.orderList = orderList;
+   console.log(data.orderList);
+
 }
 //-------------上链请求-----------------------
 //清算交易
