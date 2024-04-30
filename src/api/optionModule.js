@@ -114,18 +114,6 @@ function createOrderApi(info){
      });
 }
 
-//获取订单
-
-function getOrderApi(id){
-    return  useAxiosStore().axios({
-        mode:"http", //chainBlockCall  http  chainBlockSend  sign  unSign  
-        target:`/option/${id}` ,// chainBlock 时是合约地址   http时是url
-        loop:1,//填5 尝试5次   infinite 无限
-        // method:"get" //请求方式  http时 填get   rpc 填方法
-        method:"put",
-        data:{}
-     });
-}
 
 
-export {setSigatureLockApi,sign712OrderApi,liquidateOptionApi,getStrikeApi,createOrderApi,getOrderApi}
+export {setSigatureLockApi,sign712OrderApi,liquidateOptionApi,getStrikeApi,createOrderApi}

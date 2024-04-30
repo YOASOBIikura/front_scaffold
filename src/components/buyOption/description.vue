@@ -16,7 +16,16 @@
 
 </template>
 <script setup>
-
+import {reactive,defineProps}  from "vue"
+import {useAxiosStore} from "@/pinia/modules/axios"
+const axiosStore=useAxiosStore()
+const props=defineProps({
+    dataInfo:{
+        type:Object,
+        require:true,
+        default:{}
+    }
+})
 </script>
 <style scoped lang="less">
 .title{

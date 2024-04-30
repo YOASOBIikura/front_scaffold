@@ -37,7 +37,9 @@ let remark={
     ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     priceDecimals:18,
     gasSymbol:"Eth",
-    chainIcon:chainIconPng
+    chainIcon:chainIconPng,
+    chainName:"Arbitrum"
+
 }
 
 let optionBusiness={

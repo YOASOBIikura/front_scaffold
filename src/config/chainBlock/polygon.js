@@ -37,7 +37,8 @@ let remark={
     ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     priceDecimals:18,
     gasSymbol:"matic",
-    chainIcon:chainIconPng
+    chainIcon:chainIconPng,
+    chainName:"Polygon"
 
 }
 

@@ -1,7 +1,7 @@
 <template>
     <div class="inputValue">
         <div class="input-content">
-           <input type="text" v-model="data.inputShow"   @input="inputValue"  class="input">
+           <input type="text" v-model="data.inputShow"   @input="inputValue"  @blur="blurChange" class="input">
            <span class="suffix">{{ props.symbol}}</span>
         </div>
 
@@ -53,7 +53,7 @@ const data=reactive({
 onMounted(()=>{
     handleValue(props.value)
 })
-const emits=defineEmits(["update:value","inputMax","change"])
+const emits=defineEmits(["update:value","inputMax","input","blur"])
 var max=()=>{
     handleValue(props.maxValue)
     emits("update:value",props.maxValue)
@@ -74,7 +74,7 @@ var inputValue= (input)=>{
             }
     }
     handleValue(value)
-    emits("change",value)
+    emits("input",value)
     emits("update:value",value)
 }
 
@@ -82,6 +82,10 @@ var handleValue=(value)=>{
     data.inputShow=String(BigNumber.from(value).div(ethers.utils.parseUnits("1",props.decimals-2)).toNumber()/100)
 }
 
+
+var blurChange=()=>{
+   emits("blur",props.value)
+}
 
 </script>
 

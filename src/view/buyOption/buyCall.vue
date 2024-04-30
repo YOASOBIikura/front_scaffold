@@ -16,16 +16,16 @@
                 <img src="@/assets/images/price-up.png" class="img"/>
             </div>
             <div class="price up">
-                $3100
+                ${{data.remarkInfo.strikePrice}}
             </div>
         </div>
         <!-- 日期显示 -->
         <div class="date-content">
             <img src="@/assets/images/date-icon.png" class="date-img"/>
             <div>
-                <span>27 Feb 24</span>
+                <span>{{data.remarkInfo.optionDate}}</span>
                 <span>·</span>
-                <span>28d 18h 30m</span>
+                <span>{{dateShow}}</span>
             </div>
         </div>
         <!-- 数字输入框 -->
@@ -35,7 +35,10 @@
         :isApproximate="true"
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
-        :decimals="data.currentUnderlyingAsset.decimals">
+        :decimals="data.currentUnderlyingAsset.decimals"
+        @blur="blurChange"
+        
+        >
              <div class="slotBalance">
                  <span></span>
                  <span>{{underlyingAssetBalance}}</span>
@@ -46,10 +49,10 @@
         <div class="underly-assets-content">
             <div class="title-row">
                 <div class="title">Pay Premium With</div>
-                <div class="info">
+                <!-- <div class="info">
                     <span>Premium per ETH </span>
                     <span>$10</span>
-                </div>
+                </div> -->
             </div>
             <div class="select-content">
                 <div @click="selectPremium(item)" :class="item.select?'item active':'item'" v-for="(item,index) in data.premiumAssetList" :key="index">
@@ -58,7 +61,7 @@
                         <span>{{ item.premium }}{{item.name}}</span>
                     </div>
                     <div class="balance">
-                        Balance:{{item.balance}}
+                        Balance:{{item.balanceShow}}
                     </div>
                 </div>
             </div>
@@ -72,11 +75,12 @@
                         <img src="@/assets/images/arrow_close.png" v-else/>
                     </span>
             </div>
+
             <div v-if="data.detailCollapse">
-                <details-info></details-info>
-                <description></description>
-                <settlement></settlement>
-                <repay-type></repay-type>          
+                <details-info :dataInfo="data.detailsInfoData"></details-info>
+                <description :dataInfo="data.descriptionData"></description>
+                <settlement :dataInfo="data.settlementData"></settlement>
+                <repay-type :dataInfo="data.repayTypeData"></repay-type>          
             </div>
        </div>
     </div>
@@ -85,6 +89,7 @@
         <a-button 
             type="primary"
             class="pay-btn"
+            @click="buyCall"
             >Pay 10 USDT</a-button>
     </div>
 
@@ -108,21 +113,32 @@ import {useAxiosStore} from "@/pinia/modules/axios"
 import {issue} from "@/callData/bundler/issuanceModule"
 import {submitOptionOrder} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
-import {getOrderApi} from "@/api/optionModule"
+import {getOrderApi} from "@/api/protfolio"
+import { useRouter,useRoute} from "vue-router";
+import { message } from 'ant-design-vue';
+import {getPriceByPriceOracleApi} from "@/api/priceOracle"
+import {getMulTokenBalance} from "@/apiHandle/token"
+const route=useRoute()
+const router=useRouter()
 const axiosStore=useAxiosStore()
 const data = reactive({
-    detailCollapse:false,
+    detailCollapse:true,
     currentUnderlyingAsset:{},
     premiumAssetList:[],
     currentStrikeAsset:{},//当前行权资产
-    signatureInfo:{},
-    signature:"",
-    signatureInfoShow:{},
-    
+    signatureInfo:{}, //签名源信息
+    signature:"",//签名信息
+    remarkInfo:{},//补充信息  
     //-----
     underlyingAmount: BigNumber.from("0"), //抵押数量
-    underlyingAssetBalance:BigNumber.from("0"),//
+    underlyingAssetBalance:ethers.utils.parseUnits("300",18),//
     btnLock:false,//按钮锁
+
+    //下级组件信息
+    detailsInfoData:{},
+    descriptionData:{},
+    settlementData:{},
+    repayTypeData:{}
 });
 
 //---------计算属性-----------------
@@ -136,12 +152,41 @@ var underlyingAssetBalance=computed(()=>{
      return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
 })
 
+
+var dateShow=computed(()=>{
+      let  date= data.signatureInfo?.expirationDate || 0
+      if(date==0){
+        return `0d 0h 0m`
+      }
+      //当前时间
+      let nowTime=parseInt(new Date().getTime() /1000)
+      //剩余时间
+      let residualTime= date-nowTime
+      //天 
+      let day=parseInt(residualTime/(24*60*60))
+      //小时
+      let hour=parseInt((residualTime-day*24*60*60)/3600)
+      //分
+      let minute  =parseInt((residualTime-day*24*60*60-hour*3600)/60) 
+      console.log(residualTime,date,nowTime,"当前时间",day,hour,minute)
+
+      return `${day}d ${hour}h ${minute}m`
+})
 //-------------方法---------------------
 var selectPremium=(item)=>{
       data.premiumAssetList.forEach(item=>{
           item.select=false
       })
       item.select=true
+}
+
+var blurChange=async (item)=>{
+      let premiumFees=data.signatureInfo?.premiumFees||[]
+
+      data.premiumAssetList?.forEach((item,index)=>{
+        let premium=(data.underlyingAmount.mul(BigNumber.from(premiumFees[index])).div(ethers.utils.parseUnits("1",item.decimals)).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber())/100
+        item["premium"]=premium
+      })
 }
 
 
@@ -162,20 +207,27 @@ var init=async()=>{
 
 
     // 处理抵押资产
-    let underlyingAssetData="0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
+    let underlyingAssetData=data.signatureInfo.underlyingAsset || ""
     data.currentUnderlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(underlyingAssetData))) 
 
     //行权资产
-    let currentStrikeAsset=["0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"]
+    let currentStrikeAsset=data.signatureInfo.strikeAssets ||[]
     data.currentStrikeAsset=JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(currentStrikeAsset[0])))
 
     //处理权力金资产 
-    let premiumAssetData=["0xc2132D05D31c914a87C6611C10748AEb04B58e8F","0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"]
+    let premiumAssetData=data.signatureInfo.premiumAssets || []
+    let balanceList=[]
+    //获取余额
+    if(premiumAssetData.length>0){
+        balanceList=await getTokenBalance(premiumAssetData)
+    }
+    //处理数据
     let premiumAssetList=[]
     premiumAssetData.forEach((item,index)=>{
          let token= axiosStore.getTokenByAddress(item)
          token=JSON.parse(JSON.stringify(token))
-         token["balance"]=BigNumber.from("0")
+         token["balance"]=balanceList[index]
+         token["balanceShow"]=(balanceList[index].div(ethers.utils.parseUnits("1",token.decimals-2)).toNumber())/100
          token["select"]=false
          token["premium"]=BigNumber.from("0")
          if(index==0){
@@ -185,7 +237,7 @@ var init=async()=>{
     })
     data.premiumAssetList=premiumAssetList
 
-    
+
 
 
     //取得0号vault
@@ -194,11 +246,98 @@ var init=async()=>{
 
 //----------------请求----------------------
 var getOrder=async ()=>{
-   let response= await getOrderApi("662f86f8ecfa91fa648fad76")
+   let response= await getOrderApi(route.query.id,axiosStore.chainId,"")
    console.log("response",response)
+   response=response?.data || []
+   let signInfo={}
+   let signature=""
+   let remarkInfo={}
+   //下级组件信息
+   let detailsInfoData={}
+   let descriptionData={}
+   let settlementData={}
+   let repayTypeData={}
+   response?.forEach(item=>{
+       signInfo={
+        orderType:0,
+        underlyingAsset:item["underlying_asset"],
+        underlyingAssetType:item["underlying_asset_type"],
+        underlyingNftID:item["underlying_nft_id"],
+        expirationDate:item["expiration_date"],
+        total:item["total"],
+        timestamp:item["timestamp"],
+        liquidateModes:item["liquidate_modes"],
+        strikeAssets:item["strike_assets"],
+        strikeAmounts:item["strike_amounts"],
+        premiumAssets:item["premium_assets"],
+        premiumFees:item["premium_fees"]
+       }
+       signature=item.sign
+
+       remarkInfo={
+          chainId:item["chain_id"],
+          writerVault:item["writer_vault"],
+          wallet:item["writer_wallet"],
+          uesd:item["used"],
+          status:item["status"],
+          premiumFeeUsd:item["option_premium"],
+          marketPrice:item["market_price"],
+          derbitPrice:item["derbit_price"],
+          optionDate:item["option_date"],
+          strikePrice:item["strike_price"]
+       }
+       let liquidate=""
+          switch(Number(item["liquidate_modes"][0])){
+             case 0:
+             liquidate="Both";
+             break;
+             case 1:
+             liquidate="Cash Settlement"
+               break;
+             case 2:
+             liquidate="Asset Delivery"
+                break     
+          }
+       //处理子信息
+       let underlyingAssetToken=axiosStore.getTokenByAddress(item["underlying_asset"])
+       let total=(BigNumber.from(item["total"]).div(ethers.utils.parseUnits("1",underlyingAssetToken.decimals-2)).toNumber())/100
+       let used=(BigNumber.from(item["used"]).div(ethers.utils.parseUnits("1",underlyingAssetToken.decimals-2)).toNumber())/100
+       detailsInfoData={
+          derbitPrice:item["derbit_price"],
+          liquidateWay:liquidate,
+          marketPrice:item["market_price"],
+          optionDate:item["option_date"],
+          strikePrice:item["strike_price"],
+          unUsed: total-used,
+          total:total,
+          underlyingAssetToken:underlyingAssetToken,
+          writerVault:item["writer_vault"],
+          wallet:item["writer_wallet"],
+       }
+
+       descriptionData={
+          underlyingAssetToken:underlyingAssetToken,
+          
+       }
+   })
+   data.signatureInfo=signInfo
+   data.signature=signature
+   data.remarkInfo=remarkInfo
+   console.log("signInfo",signInfo)
+   data.detailsInfoData=detailsInfoData
+   data.descriptionData=descriptionData
+   data.settlementData=settlementData
+   data.repayTypeData=repayTypeData
+   
 }
 //------------上链业务相关------------------
+//买操作上链
 var buyCall=async ()=>{
+   if(data.signature==""){
+       message.warning("order data error")
+      return
+   }
+   //-----------------------------
    let ops=[]
    let vaultData= await getMulVaultR([0,"maxSalt"])
    let maxSaltVault=vaultData["maxSalt"]?.vault
@@ -212,55 +351,59 @@ var buyCall=async ()=>{
    let asset=[]
    let amount=[]
    ops.push(issue(mainVault,mainVault,asset,amount))  
+   //权利金选择
+   let premiumSelet=0
+   data?.premiumAssetList.forEach((item,index)=>{
+       if(item.select){
+          premiumSelet=index
+       }
+   })
    //业务处理
    let info={
         strikeSelect:0,
         holder:maxSaltVault,
         liquidateSelect:0,
-        writer:signatureInfo.writer,
+        writer:data.remarkInfo.writerVault,
         recipient:mainVault,
-        premiumSelet:0,
+        premiumSelet:premiumSelet,
         underlyingAmount:data.underlyingAmount,
-        signature:{
-            orderType:0,
-            underlyingAsset:"",
-            underlyingAssetType:0,
-            underlyingNftID:0,
-            expirationDate:0,
-            total:1,
-            timestamp:3,
-            liquidateModes:[],
-            strikeAssets:[],
-            strikeAmounts:[],
-            premiumAssets:[],
-            premiumFees:[]
-        }
+        signature:data.signatureInfo
    }
-   let writerSignature=""
-//    ops.push(submitOptionOrder(info,writerSignature))
-//    console.log(vault,salt,ops)
+   console.log("订单信息",info)
+   let writerSignature=data.signature
+   ops.push(submitOptionOrder(info,writerSignature))
    //取vault下标
    console.log(maxSalt,"---")
-//    let bundlerHash= await sendTxToBundler(maxSaltVault,salt,ops)
-//    console.log("bundlerHash",bundlerHash)
-    //接触按钮锁
-    // if(!bundlerHash.status){
-    //     data.btnLock=false
-    //     return
-    // }
-    // //起弹窗
-    // data.txHash=bundlerHash.hash
-    // data.isOpen=true
-    // //等待交易结果
-    // let result=  await getBundlerTxResult(bundlerHash.hash)
-    // data.txResult=result
-    // console.log(result)
-    // if(result.status){
-    //     data.btnLock=false
-    //     return
-    // }
+   let bundlerHash= await sendTxToBundler(maxSaltVault,maxSalt,ops)
+   console.log("bundlerHash",bundlerHash)
+    // 接触按钮锁
+    if(!bundlerHash.status){
+        data.btnLock=false
+        return
+    }
+    //起弹窗
+    data.txHash=bundlerHash.hash
+    data.isOpen=true
+    //等待交易结果
+    let result=  await getBundlerTxResult(bundlerHash.hash)
+    data.txResult=result
+    console.log("交易结果",result)
+    if(result.status){
+        data.btnLock=false
+        return
+    }
 }
 
+//查询货币价格
+var getPrice=async (_masterToken)=>{
+    let underlyingAssetPrice=await getPriceByPriceOracleApi(_masterToken,axiosStore.remark.usdToken)
+    underlyingAssetPrice=underlyingAssetPrice?.message?.price ||BigNumber.from("0")
+    return underlyingAssetPrice
+}
+//查询货币余额
+var getTokenBalance=async (tokenList)=>{
+    return await getMulTokenBalance(axiosStore.currentAccount,tokenList)
+}
 
 
 </script>
@@ -412,11 +555,12 @@ var buyCall=async ()=>{
     .select-content{
         margin-top: 8px;
         border-radius: 8px;
-        border: 1px solid var(--component-border);
+   
         width: 100%;
         position: relative;
         display: flex;
         .item{
+            border: 1px solid var(--component-border);
             height: 70px;
             width: 50%;
             border-radius: 8px;

@@ -4,55 +4,63 @@
                     <div class="account-row">
                         <div class="account">
                             <img src="@/assets/images/test1.png" class="account-img"/>
-                            SuperSell
+                            {{`${String(props.dataInfo.wallet).substring(0,4)}..${String(props.dataInfo.wallet).substring(38)}`}}
                             <img src="@/assets/images/certified.png" class="KYT-img" />
                         </div>
                         <div class="chain">
-                            <img src="@/assets/images/solana.png" class="chain-img"/>
-                            Solana
+                            <img :src="axiosStore.remark.chainIcon" class="chain-img"/>
+                            {{axiosStore.remark.chainName}}
                         </div>
                     </div>
                     <div class="value-row">
-                        <div class="title">Deribit Price</div>
-                        <div class="value">$8</div>
+                        <div class="title">Writer Vault</div>
+                        <div class="value">{{`${String(props.dataInfo.writerVault).substring(0,4)}..${String(props.dataInfo.writerVault).substring(38)}`}}</div>
                     </div>
                     <div class="value-row">
-                        <div class="title">Cash Settlement</div>
+                        <div class="title">MarketPrice</div>
+                        <div class="value">${{props.dataInfo.marketPrice}}</div>
+                    </div>
+                    <div class="value-row">
+                        <div class="title">Strike Price</div>
+                        <div class="value">${{props.dataInfo.strikePrice}}</div>
+                    </div>
+                    <div class="value-row">
+                        <div class="title">Accept</div>
                         <div class="value">
                             <img src="@/assets/images/tick.png" style="width: 12px;margin-right: 2px"/>
-                            Accept
+                            {{props.dataInfo.liquidateWay}}
                         </div>
                     </div>
                     <div class="value-row">
-                        <div class="title">Asset Delivery</div>
-                        <div class="value">3,100 USDT</div>
+                        <div class="title">Expire Date</div>
+                        <div class="value">{{props.dataInfo.optionDate}}</div>
                     </div>
                     <div class="value-row">
                         <div class="title">Vault Balance</div>
                         <div class="value">
-                            <span>10</span>
-                            <span class="total-amount">/500 </span>
-                            <span>ETH</span>
+                            <span>{{props.dataInfo.unUsed}}</span>
+                            <span class="total-amount">/{{props.dataInfo.total}} </span>
+                            <span>{{props.dataInfo?.underlyingAssetToken?.name}}</span>
                         </div>
                     </div>
-                    <div class="value-row">
-                        <div class="title">Valid Date</div>
-                        <div class="value">11 Feb 24-29 Feb 24</div>
-                    </div>
-                    <div class="value-row">
-                        <div class="title">Market Price</div>
-                        <div class="value">$3,000</div>
-                    </div>
-                    <div class="value-row">
-                        <div class="title">Price Source</div>
-                        <div class="value">Chainlink</div>
-                    </div>
+
+              
 
             </div>
 
 </template>
 <script setup>
-
+import {reactive,defineProps}  from "vue"
+import {useAxiosStore} from "@/pinia/modules/axios"
+const axiosStore=useAxiosStore()
+const props=defineProps({
+    dataInfo:{
+        type:Object,
+        require:true,
+        default:{}
+    }
+})
+const data=reactive({})
 </script>
 <style scoped lang="less">
 .title{
@@ -83,6 +91,7 @@
             .chain{
                 font-size: 14px;
                 .chain-img{
+                    border-radius: 50%;
                     width: 16px;
                     vertical-align: sub;
                 }
