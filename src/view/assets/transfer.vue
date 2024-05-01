@@ -59,6 +59,13 @@
         :decimals="data.tokenInfo.decimals"
         :txResult="data.txResult">
         </assetTranfer>
+        <transferLoading 
+            v-model:isOpen="data.transferLoadingData.open"
+            :status="data.transferLoadingData.status"
+            :hash="data.transferLoadingData.hash"
+            :nextPage="data.transferLoadingData.nextPage"
+            :transferName="data.transferLoadingData.transferName"
+        ></transferLoading>
     </div>
     <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
 </template>
@@ -81,6 +88,7 @@ import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
 import {createVaultService} from "@/apiHandle/vault"
 import { message } from 'ant-design-vue';
+import transferLoading from "@/components/utils/transferLoading.vue"
 
 
 const axiosStore= useAxiosStore()
@@ -101,7 +109,18 @@ const data=reactive({
     //----状态锁-----
     btnLock:false,
     issueMode:0,
-    loading:false
+    loading:false,
+    transferLoadingData: {
+        open: false,
+        status: "pending",
+        hash: "",
+        nextPage: {
+            path: "/protfolio",
+            query: {},
+            name: "my protfolio"
+        },
+    transferName: "Transfer in progress"
+    }
 })
 // -------------计算属性----------------
 var walletBalance=computed(()=>{
@@ -197,7 +216,8 @@ var transferTx=async ()=>{
        return
     }
     console.log("进入页面尝试")
-    data.isOpen=true
+    // data.isOpen=true
+    data.transferLoadingData.open = true;
     await sendTx()
 }
 
@@ -237,16 +257,20 @@ var sendTx=async ()=>{
     console.log("bundlerHash",bundlerHash)
     //接触按钮锁
     if(!bundlerHash.status){
-        data.btnLock=false
+        // data.btnLock=false
+        data.transferLoadingData.hash = "";
+        data.transferLoadingData.status = "faild";
         return
     }
     //起弹窗
     data.txHash=bundlerHash.hash
-    data.isOpen=true
+    // data.isOpen=true
+    data.transferLoadingData.open = true
     //等待交易结果
-    let result=  await getBundlerTxResult(bundlerHash.hash)
-    data.txResult=result
-    console.log(result)
+    let result=  await getBundlerTxResult(bundlerHash.hash);
+    // data.txResult=result
+    data.transferLoadingData.status = "success";
+    data.transferLoadingData.hash = bundlerHash.hash;
     if(result.status){
         data.btnLock=false
         return

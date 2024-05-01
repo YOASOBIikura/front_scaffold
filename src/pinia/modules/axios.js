@@ -17,6 +17,7 @@ export const useAxiosStore = defineStore('axios', {
     currentTokens:[],// 当前tokenList
     remark:{},//辅助额外信息
     optionBusiness:{},
+    chainInfo: {}, // 当前链的信息相关数据
 
    //--是否触发钱包相关事件--
    isWalletChange:1,
@@ -55,6 +56,7 @@ export const useAxiosStore = defineStore('axios', {
             this.currentTokens=polygon.tokens
             this.remark=polygon.remark
             this.optionBusiness=polygon.optionBusiness
+            this.chainInfo = polygon.chainInfo
             break
           case 42161:
              this.currentContractData=arbitrum.contractData
@@ -62,6 +64,7 @@ export const useAxiosStore = defineStore('axios', {
              this.currentTokens=arbitrum.tokens
              this.remark=arbitrum.remark
              this.optionBusiness=arbitrum.optionBusiness
+             this.chainInfo = arbitrum.chainInfo
              break;       
       }
      },

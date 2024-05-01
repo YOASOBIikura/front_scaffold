@@ -33,6 +33,7 @@
       <protfolioFilter v-model:isOpen="data.isOpenSelect"></protfolioFilter>
       <protfolioSort v-model:isOpen="data.isOpenSort"></protfolioSort>
       <liquidation v-model:isOpen="data.isOpenLiquidation"></liquidation>
+    
     </div>
 </template>
 
@@ -58,7 +59,7 @@ const axiosStore= useAxiosStore()
     orderList:[],
     btnLock:false,//按钮锁
     orderPage: 1,
-    scrollLoadLock: false // 滚动加载锁
+    scrollLoadLock: false, // 滚动加载锁
   })
 const containsRef = ref(null)
 
