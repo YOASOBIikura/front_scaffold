@@ -9,27 +9,28 @@
         :placement="'bottom'"   
         :open="props.isOpen"  
         @close="closeDrawer"
+        :maskClosable="canClose"
     >
         <template v-slot:title>
              <div class="transfer-title">
                  <span class="title">{{props.transferName}}</span>
-                 <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
+                 <img v-if="canClose"  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
              </div>
         </template>
         <div class="loading-content">
-            <div class="loading" v-if="!transferSuccess">
+            <div class="loading" v-if="props.status === 'pending'">
                 <img src="@/assets/images/loading.png" class="loading-img animation"/>
                 <div class="loading-title">{{ props.transferName }}</div>
                 <div class="loading-info">Your transfer is underway and will be completed in 22-30minutes. Once completed, your token balance will be automatically updated.</div>
             </div>
-            <div class="loading" v-else>
+            <div class="loading" v-else-if="props.status === 'success'">
                 <img src="@/assets/images/loading-success.png" class="loading-img"/>
                 <div class="success-title">Your transaction is successfully completed</div>
                 <a-button 
                     type="primary" 
                     class="btn-go"
                     @click="goToNextPage"
-                >Go to my  portfolio</a-button>
+                >Go to {{props.nextPage.name}}</a-button>
                 <a-button class="btn-view" @click="viewOnScan">View on Arbiscan</a-button>
             </div>
 
@@ -50,17 +51,22 @@ const props=defineProps({
        default:false
    },
    // 交易hash
-   transferHash: {
+   hash: {
         type: String,
         default: ""
    },
-   // 跳转的下一个页面
+   status: {
+        type: String,
+        default: "pending" // pending/faild/success
+   },
+   // 跳转的下一个页面参数
    nextPage: {
         type: Object,
         require: true,
         default: {
             path: "",
-            query: {}
+            query: {},
+            name: ""
         }
    },
    // 交易的名称，用于显示
@@ -71,24 +77,38 @@ const props=defineProps({
    }
 });
 const router = useRouter();
-const transferSuccess = computed(() => {
-    // return props.transferHash && props.transferHash !== "";
-    return true;
+
+// 弹窗是否可以关闭
+const canClose = computed(() => {
+    return props.status !== "pending";
 })
 
 const emits=defineEmits(["update:isOpen"])
 
 var closeDrawer=()=>{
+    if(!canClose){
+        return
+    }
    emits("update:isOpen",false)
 }
 
 var viewOnScan = () => {
-    console.log(axiosStore);
+    console.log(axiosStore.chainInfo.explorerUrl);
+    let scanUrl = JSON.parse(JSON.stringify(axiosStore.chainInfo.explorerUrl));
+    let chainId = JSON.parse(JSON.stringify(axiosStore.chainId));
+    switch(chainId){
+        case 137:  window.open(`${scanUrl}/tx/${props.hash}`); break;
+        case 42161: window.open(`${scanUrl}/${props.hash}`); break;
+    }
+   
 }
 
 // 去下一个页面
 var goToNextPage = () => {
-    router.push(props.nextPage)
+    router.push({
+        path: props.nextPage.path,
+        query: props.nextPage?.query ? props.nextPage?.query : {}
+    });
 }
 
 </script>

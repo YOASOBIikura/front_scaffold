@@ -33,9 +33,7 @@
       <protfolioFilter v-model:isOpen="data.isOpenSelect"></protfolioFilter>
       <protfolioSort v-model:isOpen="data.isOpenSort"></protfolioSort>
       <liquidation v-model:isOpen="data.isOpenLiquidation"></liquidation>
-      <transferLoading 
-        v-model:isOpen="data.loadingOpen" 
-      ></transferLoading>
+    
     </div>
 </template>
 
@@ -52,7 +50,6 @@ import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {getOrderApi} from "@/api/protfolio"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {reactive,computed,watch,onMounted,ref} from "vue"
-import  transferLoading  from "@/components/utils/transferLoading.vue"
 const axiosStore= useAxiosStore()
   let data=reactive({
     activeKey:"listing",
@@ -63,7 +60,6 @@ const axiosStore= useAxiosStore()
     btnLock:false,//按钮锁
     orderPage: 1,
     scrollLoadLock: false, // 滚动加载锁
-    loadingOpen: true // TODO
   })
 const containsRef = ref(null)
 
