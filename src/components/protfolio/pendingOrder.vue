@@ -3,9 +3,9 @@
     <div class="pendingOrder-header">
       <div class="top">
         <div class="top-left">
-          <img class="network" :src="props.orderData?.underlyingAsset?.img" />
+          <img class="network" :src="props?.orderData?.orderType == 'put'? props.orderData?.strikeAsset.img : props.orderData?.underlyingAsset?.img" />
           <span class="text"
-            >{{ props.orderData?.underlyingAsset.name }}
+            >{{ props?.orderData?.orderType == 'put' ? props.orderData?.strikeAsset.name :  props.orderData?.underlyingAsset.name }}
             {{ optionTypeShow }} Options Vault</span
           >
         </div>
@@ -39,7 +39,7 @@
             <span class="pre">{{ remainderShow }}</span>
             <span class="end"
               >/{{ props.orderData.total
-              }}{{ props.orderData?.underlyingAsset.name }}</span
+              }}{{   props.orderData?.underlyingAsset.name }}</span
             >
           </p>
           <div class="progress">
@@ -93,6 +93,7 @@ const router = useRouter();
 const data = reactive({});
 const optionTypeShow = computed(() => {
   let type = props.orderData.orderType;
+
   return type.slice(0, 1).toUpperCase() + type.slice(1);
 });
 const premiumNameShow = computed(() => {
@@ -121,10 +122,16 @@ const networkImgSrc = computed(() => {
 });
 var editOption = () => {
   let routerName = `/sell${optionTypeShow.value}`;
+  let asset=""
+  if(optionTypeShow == 'call'){
+    asset=props.orderData.underlyingAsset.name
+  }else{
+    asset=props.orderData.strikeAsset.name
+  }
   router.push({ 
     path: routerName,
     query: {
-        asset:props.orderData.underlyingAsset.name,
+        asset:asset,
         id: props.orderData.id
     }
    });

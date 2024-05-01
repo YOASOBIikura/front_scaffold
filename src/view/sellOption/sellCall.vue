@@ -350,12 +350,14 @@ var handleDerbitPriceAndExpiryData=async ()=>{
          expiryDataList.push(obj)
      })
      //日期组件所需数据
-     data.currentExpiryDataValue=expiryDataList[0]
-     data.currentExpiryData=BigNumber.from(parseInt(data.currentExpiryDataValue.timestamp/1000))
-     data.expiryDataList=expiryDataList
-     //处理权力金
-    //  data.currentPremiumFee=expiryDataList[data.currentExpiryDataValue]
-     data.premiumPrice=data.currentExpiryDataValue.premiumPrice || 0
+     if(expiryDataList.length>0){
+        data.currentExpiryDataValue=expiryDataList[0]
+        data.currentExpiryData=BigNumber.from(parseInt(data.currentExpiryDataValue.timestamp/1000))
+        data.expiryDataList=expiryDataList
+        //处理权力金
+        //  data.currentPremiumFee=expiryDataList[data.currentExpiryDataValue]
+        data.premiumPrice=data.currentExpiryDataValue.premiumPrice || 0
+     }
      console.log(data.currentExpiryDataValue,"真实数据",expiryDataList)
 }
 
@@ -372,6 +374,12 @@ var getMarketPrice=async ()=>{
 }
 //---------------上链业务相关部分---------------
 var sendTx=async ()=>{
+    if(data.strikePrice.length==0){
+        message.warning("invalid strikePrice")
+        return
+    }
+
+
      //抵押数量为0 
     //  if(data.underlyingAmount.eq(BigNumber.from("0"))){
     //     message.warning("please input underlyingAmount")
@@ -458,10 +466,9 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
        message.error("user refused to sign")     
        return
    }
-
    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
         //触发上链签名
-       let resetSigature= await  setSigatureLockApi(_vault,0,underlyingAsset,currentTimestamp)
+       let resetSigature= await  setSigatureLockApi(data.vault,0,underlyingAsset,currentTimestamp)
        if(!resetSigature.message.status){
         //   console.error("取消老订单失败")
            message.error("cacel old offer fail")

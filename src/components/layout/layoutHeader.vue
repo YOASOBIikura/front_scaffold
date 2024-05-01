@@ -12,7 +12,7 @@
         </div>
         <div v-else>
             <div class="account-btn" @click="connectWallet">
-                <img class="account-img" :src="axiosStore.remark.chainIncon">
+                <img class="account-img" :src="axiosStore.remark.chainIcon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
                     <path d="M13 6L8 11L3 6" stroke="#8E8E8E" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="round"/>
                 </svg>

@@ -11,7 +11,7 @@
             <img src="@/assets/images/settlement_icon_2.png"/>
             <div class="data">
                 <div class="item-title">Exercise for cash settlement</div>
-                <div class="item-info">Get net profit in ETH</div>
+                <div class="item-info">Get net profit in {{props.asset.name}}</div>
             </div>
         </div>
         <div class="item">

@@ -307,7 +307,7 @@ var balanceOf=async (isGasToken,underlyingAsset,wallet)=> {
 //获取行权价列表
 var getStrikePrice=async ()=>{
      let marketPrice=data.marketPrice
-     let priceInterval=data.currentUnderlyingAsset.priceInterval
+     let priceInterval=data.currentStrikeAsset.priceInterval
      //做参数数据处理
      let basePrice=parseInt(marketPrice/priceInterval)
      let startPrice=(basePrice+1)*priceInterval
@@ -370,12 +370,15 @@ var handleDerbitPriceAndExpiryData=async ()=>{
          expiryDataList.push(obj)
      })
      //日期组件所需数据
-     data.currentExpiryDataValue=expiryDataList[0]
-     data.currentExpiryData=BigNumber.from(parseInt(data.currentExpiryDataValue.timestamp/1000))
-     data.expiryDataList=expiryDataList
+     if(expiryDataList.length>0){
+        data.currentExpiryDataValue=expiryDataList[0]
+        data.currentExpiryData=BigNumber.from(parseInt(data.currentExpiryDataValue.timestamp/1000))
+        data.expiryDataList=expiryDataList
+    
      //处理权力金
     //  data.currentPremiumFee=expiryDataList[data.currentExpiryDataValue]
      data.premiumPrice=data.currentExpiryDataValue.premiumPrice || 0
+    }
      console.log(data.currentExpiryDataValue,"真实数据",expiryDataList)
 }
 
@@ -394,6 +397,12 @@ var getMarketPrice=async ()=>{
 //---------------上链业务相关部分---------------
 var sendTx=async ()=>{
     console.log(data.underlyingAmount,"data.underlyingAmount",data.currentStrikePrice)
+
+    if(data.strikePrice.length==0){
+        message.warning("invalid strikePrice")
+        return
+    }
+
     if(data.underlyingAmount.eq(BigNumber.from("0"))){
         message.warning("please input underlyingAmount")
          return
@@ -472,7 +481,7 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
 
    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
         //触发上链签名
-       let resetSigature= await  setSigatureLockApi(_vault,0,underlyingAsset,currentTimestamp)
+       let resetSigature= await  setSigatureLockApi(data.vault,1,underlyingAsset,currentTimestamp)
        if(!resetSigature.message.status){
           message.error("cacel old offer fail")
           return

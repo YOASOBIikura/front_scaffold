@@ -64,15 +64,12 @@
                 </listing-table>  
 
               <write-option-empty 
-                v-if="isShowWriteEmpty" 
+                class="empty" 
+                v-if="isShowWriteEmpty"
                 :text="'Let’s start writing your options'" 
                 :asset="data.currentUnderlyingAsset.name" 
                 :orderType="data.currentOrderType[0]"  
-                class="empty" ></write-option-empty>
-
-
-
-   
+                ></write-option-empty>
         </div>
     </div>
 
@@ -142,7 +139,7 @@ const data=reactive({
 })
 //-------------计算属性------------
 var isShowWriteEmpty=computed(()=>{
-     return data.orderList.length==0 && data.currentListing==`My`
+     return data.orderList.length==0 
 })
 //-------------初始化----------------------
 onMounted(async()=>{
@@ -372,10 +369,13 @@ var getOrderList=async ()=>{
       max-height: 340px;
       overflow: auto;
       margin-top: 16px;
-      .empty{
-         margin-top: 20%;
-      }
+ 
     }
+    .empty{
+         margin-top: 50%;
+         transform: translateY(-50%);
+
+      }
 }
 
 

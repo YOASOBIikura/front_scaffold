@@ -27,7 +27,7 @@
                     <div class="value-row">
                         <div class="title">Accept</div>
                         <div class="value">
-                            <img src="@/assets/images/tick.png" style="width: 12px;margin-right: 2px"/>
+                            <!-- <img src="@/assets/images/tick.png" style="width: 12px;margin-right: 2px"/> -->
                             {{props.dataInfo.liquidateWay}}
                         </div>
                     </div>

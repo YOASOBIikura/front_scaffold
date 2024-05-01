@@ -2,8 +2,8 @@
     <div class="writeOptionEmpty" >
             <img class="icon" src="@/assets/images/empty.png" alt="">
             <span class="text">{{ props.text }}</span>
-            <span v-if="props.isSignal" class="btn" @click="goRoute">Write an Option</span>
-            <div v-else>
+            <span v-if="props.isSignal==1" class="btn" @click="goRoute">Write an Option</span>
+            <div v-else-if="props.isSignal==2">
                <span class="btn2" @click="goRoute('call')">Write Call Option</span>
                <span class="btn2" @click="goRoute('put')">Write Put Option</span>
             </div>
@@ -32,8 +32,8 @@ const props=defineProps({
       default:""
      },
      isSignal:{
-      type:Boolean,
-      default:true
+      type:Number,
+      default:1
      }
 })
 var goRoute=(item)=>{

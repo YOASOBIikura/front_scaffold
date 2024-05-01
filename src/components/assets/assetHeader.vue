@@ -33,7 +33,7 @@ const props=defineProps({
      }
 })
 var goLogout=()=>{
-     router.push({path:"/logout"})
+    //  router.push({path:"/logout"})
 }
 </script>
 <style lang="less" scoped>

@@ -88,6 +88,7 @@
                 :underlyingAmount="data.underlyingAmount"        
                  ></description>
                 <settlement 
+                :orderType="'call'"
                 :asset="data.currentUnderlyingAsset" 
                 :strikePrice="data.remarkInfo.strikePrice"
                 :marketPrice="data.currentUnderlyingPrice"
@@ -209,7 +210,7 @@ var inputChange=async (value)=>{
       let premiumFees=data.signatureInfo?.premiumFees||[]
     
       data.premiumAssetList?.forEach((item,index)=>{
-        let premium=(value.mul(BigNumber.from(premiumFees[index])).div(ethers.utils.parseUnits("1",item.decimals)).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber())/100
+        let premium=(value.mul(BigNumber.from(premiumFees[index])).div(ethers.utils.parseUnits("1",item.decimals)).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber())/100
         console.log("修改权力金",premium)
         item["premium"]=premium
       }) 
@@ -318,7 +319,7 @@ var getOrder=async ()=>{
        let liquidate=""
           switch(Number(item["liquidate_modes"][0])){
              case 0:
-             liquidate="Both";
+             liquidate="Asset Delivery/Cash Settlement";
              break;
              case 1:
              liquidate="Cash Settlement"

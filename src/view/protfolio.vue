@@ -7,11 +7,11 @@
             <pendingOrder v-for="(item) in data.orderList" :key="item" :orderData="item"></pendingOrder>
           </div>    
 
-          <writeOptionEmpty :isSignal="false" :text="`You don't currenty have options`" class="empty" v-else ></writeOptionEmpty>
+          <writeOptionEmpty :isSignal="3" :text="`You don't currenty have options`" class="empty" v-else ></writeOptionEmpty>
         </a-tab-pane>
         <!-- options -->
         <a-tab-pane key="options" tab="My Options" force-render >
-          <div class="select" v-if="true">
+          <div class="select" v-if="true" >
                   <span class="text">9 Options</span>
                   <div class="list">
                     <div class="list-one">
@@ -22,11 +22,11 @@
                     </div>
                   </div>
           </div>
-           <div class="contains padding" v-if="true">
+           <div class="contains padding" v-if="true" @scroll="submitOrderScroll">
               <submitOrder v-for="(item) in 2" :key="item"  @liquidation="liquidationTx"></submitOrder> 
             </div>   
             <!-- empty -->
-            <buyOptionEmpty class="empty"  v-else></buyOptionEmpty>   
+            <writeOptionEmpty :isSignal="2" :text="`You don't currenty have options`" class="empty" v-else ></writeOptionEmpty>
         </a-tab-pane>      
       </a-tabs>
       <!-- dialog -->
@@ -35,6 +35,8 @@
       <liquidation v-model:isOpen="data.isOpenLiquidation"></liquidation>
     
     </div>
+
+    <a-spin v-if="data.loading" class="aSpin" tip="Loading..." :delay="100"> </a-spin>
 </template>
 
 <script setup>
@@ -43,13 +45,13 @@ import submitOrder from "@/components/protfolio/submitOrder.vue"
 import protfolioFilter from "@/components/protfolio/protfolioFilter.vue"
 import protfolioSort from "@/components/protfolio/protfolioSort.vue"
 import liquidation from "@/components/protfolio/liquidation.vue"
-import buyOptionEmpty from "@/components/utils/buyOptionEmpty.vue"
 import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
 import {liquidateOption} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {getOrderApi} from "@/api/protfolio"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {reactive,computed,watch,onMounted,ref} from "vue"
+import { BigNumber, ethers } from "ethers"
 const axiosStore= useAxiosStore()
   let data=reactive({
     activeKey:"listing",
@@ -60,6 +62,10 @@ const axiosStore= useAxiosStore()
     btnLock:false,//按钮锁
     orderPage: 1,
     scrollLoadLock: false, // 滚动加载锁
+
+
+    //---
+    loading:false
   })
 const containsRef = ref(null)
 
@@ -81,7 +87,9 @@ watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
 })
 
 var init=async()=>{
+  data.loading=true
   await getOrderList(data.orderPage)
+  data.loading=false
 }
 //--------数据查询-----------
 var getOrderList=async (page = 1)=>{
@@ -112,17 +120,23 @@ var getOrderList=async (page = 1)=>{
         liquidate="Asset Delivery"
           break     
     }
-    let underlyingAsset = JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.underlying_asset)));
+    let  underlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.underlying_asset)));
+    let  strikeAsset=JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.strike_assets[0])))
+    let  total=BigNumber.from(item.total).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
+    let  used=BigNumber.from(item.used).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
+
+    
     let obj = {
       id:item.id,
       orderType:item["option_type"]==0?'call':'put',
-      total: item.total,
+      total:total,
       netWork: netWork,
       strikePrice: item.strike_price,
       premiumAssets: premiumAssets,
       createDate: item.create_time*1000,
       expirationDate: item.expiration_date*1000,
-      used: item.used,
+      used:used,
+      strikeAsset:strikeAsset,
       underlyingAsset: underlyingAsset,
       liquidate: liquidate,
       premiumPrice: item.option_premium ?  item.option_premium: item.derbit_price, // 期权费
@@ -153,6 +167,10 @@ var pandingOrderHandleScroll = () => {
     data.orderPage += 1;
     getOrderList(data.orderPage)
   }
+}
+
+var submitOrderScroll=()=>{
+    console.log("滚动22")
 }
 
 
