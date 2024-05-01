@@ -58,9 +58,9 @@
     <div class="pendingOrder-bottom">
       <div class="bottom-left">
         <p class="list-one">
-          <span class="title">Price:</span>
+          <span class="title" style="margin-right: 2px">premium fee: </span>
           <span class="text"
-            >${{ props.orderData.premiumPrice }}·{{ premiumNameShow }}</span
+            > ${{ props.orderData.premiumPrice }}</span
           >
         </p>
         <p class="list-two">

@@ -123,7 +123,7 @@ import repayType from "@/components/buyOption/repayType.vue";
 import detailsInfo from "@/components/buyOption/detailsInfo.vue";
 
 import { BigNumber,ethers } from "ethers";
-import { reactive,onMounted,watch,computed} from "vue"
+import { reactive,onMounted,watch,computed,toRaw} from "vue"
 import inputValue from "@/components/utils/inputValue.vue"
 import navigationBar from "@/components/utils/navigationBar.vue";
 import {createVaultService,getMulVaultR} from "@/apiHandle/vault"
@@ -405,7 +405,7 @@ var buyCall=async ()=>{
         recipient:mainVault,
         premiumSelet:premiumSelet,
         underlyingAmount:data.underlyingAmount,
-        signature:data.signatureInfo
+        signature:toRaw(data.signatureInfo)
    }
    console.log("订单信息",info)
    let writerSignature=data.signature

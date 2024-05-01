@@ -16,6 +16,7 @@ function setSigatureLock(_vault,_orderType,_underlyingAsset,_timestamp) {
 
 
 function submitOptionOrder(_info,_writerSignature) {
+    console.log(_info,_writerSignature,"s=s===ss")
     let axiosStore=useAxiosStore()
     let signatureHex="(uint8 orderType,address underlyingAsset,uint8 underlyingAssetType,uint256 underlyingNftID,uint256 expirationDate,uint256 total,uint256 timestamp,uint8[] liquidateModes,address[] strikeAssets,uint256[] strikeAmounts,address[] premiumAssets,uint256[] premiumFees)"
     let iface=`(uint16 strikeSelect,address holder,uint16 liquidateSelect,address writer,address recipient,uint16 premiumSelet,uint256 underlyingAmount,${signatureHex} signature) _info,bytes _writerSignature`

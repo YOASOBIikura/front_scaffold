@@ -69,14 +69,14 @@ const axiosStore= useAxiosStore()
   })
 const containsRef = ref(null)
 
-  //条件筛选
-  var selectCondition=()=>{
-       data.isOpenSelect=true
-  }
-  //排序
-  var sortCondition=()=>{
-    data.isOpenSort=true
-  }
+//条件筛选
+var selectCondition=()=>{
+      data.isOpenSelect=true
+}
+//排序
+var sortCondition=()=>{
+  data.isOpenSort=true
+}
 //-------------初始化-----------------
 onMounted(async ()=>{
    await init()

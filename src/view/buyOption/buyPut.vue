@@ -124,7 +124,7 @@ import repayType from "@/components/buyOption/repayType.vue";
 import detailsInfo from "@/components/buyOption/detailsInfo.vue";
 
 import { BigNumber,ethers } from "ethers";
-import { reactive,onMounted,watch,computed} from "vue"
+import { reactive,onMounted,watch,computed,toRaw} from "vue"
 import inputValue from "@/components/utils/inputValue.vue"
 import navigationBar from "@/components/utils/navigationBar.vue";
 import {createVaultService,getMulVaultR} from "@/apiHandle/vault"
@@ -397,6 +397,13 @@ var buyCall=async ()=>{
           premiumSelet=index
        }
    })
+//    let liquidateModes=[]
+//    data.signatureInfo["liquidateModes"]?.forEach(item=>{
+//       liquidateModes.push(String(item))
+//     })
+//     data.signatureInfo["liquidateModes"]=liquidateModes
+//     console.log( data.signatureInfo,"-----sss")
+
    //业务处理
    let info={
         strikeSelect:0,
@@ -406,7 +413,7 @@ var buyCall=async ()=>{
         recipient:mainVault,
         premiumSelet:premiumSelet,
         underlyingAmount:data.underlyingAmount,
-        signature:data.signatureInfo
+        signature:toRaw(data.signatureInfo)
    }
    console.log("订单信息",info)
    let writerSignature=data.signature
@@ -449,7 +456,7 @@ var getTokenBalance=async (tokenList)=>{
 
 </script>
 
-<style scope lang="less">
+<style scoped lang="less">
 .buyOption{
     padding: 56px 12px 80px;
     overflow: auto;
