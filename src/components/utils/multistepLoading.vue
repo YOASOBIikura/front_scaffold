@@ -37,7 +37,6 @@
                 type="primary" 
                 class="btn-go"
                 @click="closeDrawer"
-                :disabled="!canClose"
                 v-else
             >Close</a-button>
             

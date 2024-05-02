@@ -266,15 +266,19 @@ var sendTx=async ()=>{
     data.txHash=bundlerHash.hash
     // data.isOpen=true
     data.transferLoadingData.open = true
+    data.transferLoadingData.status = "pending";
     //等待交易结果
     let result=  await getBundlerTxResult(bundlerHash.hash);
     // data.txResult=result
-    data.transferLoadingData.status = "success";
-    data.transferLoadingData.hash = bundlerHash.hash;
-    if(result.status){
-        data.btnLock=false
+   
+    if(!result.status){
+        data.btnLock=false;
+        data.transferLoadingData.status = "faild";
+        data.transferLoadingData.hash = bundlerHash.hash;
         return
     }
+    data.transferLoadingData.status = "success";
+    data.transferLoadingData.hash = bundlerHash.hash;
 }
 
 //授权交易
