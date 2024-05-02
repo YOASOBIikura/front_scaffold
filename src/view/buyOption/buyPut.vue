@@ -112,7 +112,13 @@
             >Pay {{ data.currentPremiumAsset.premium }} {{data.currentPremiumAsset.name}}</a-button>
     </div>
 
-     
+      <singlestepLoading
+        v-model:isOpen="data.transferLoadingData.open"
+        :status="data.transferLoadingData.status"
+        :hash="data.transferLoadingData.hash"
+        :nextPage="data.transferLoadingData.nextPage"
+        :transferName="data.transferLoadingData.transferName"
+     ></singlestepLoading>
     
 </template>
 
@@ -122,6 +128,8 @@ import description from "@/components/buyOption/description.vue";
 import settlement from "@/components/buyOption/settlement.vue";
 import repayType from "@/components/buyOption/repayType.vue";
 import detailsInfo from "@/components/buyOption/detailsInfo.vue";
+import singlestepLoading from "@/components/utils/singlestepLoading.vue"
+
 
 import { BigNumber,ethers } from "ethers";
 import { reactive,onMounted,watch,computed,toRaw} from "vue"
@@ -161,6 +169,19 @@ const data = reactive({
     detailsInfoData:{},
     descriptionData:{},
     repayTypeData:{},
+
+    // loading信息
+    transferLoadingData: {
+        open: false,
+        status: "pending",
+        hash: "",
+        nextPage: {
+            path: "/protfolio",
+            query: {},
+            name: "my protfolio"
+        },
+        transferName: "buy Put"
+    }
 
 });
 
@@ -420,19 +441,25 @@ var buyCall=async ()=>{
    ops.push(submitOptionOrder(info,writerSignature))
    //取vault下标
    console.log(maxSalt,"---")
+   data.transferLoadingData.open = true;
+   data.transferLoadingData.status = "pending";
+   data.transferLoadingData.hash = "";
    let bundlerHash= await sendTxToBundler(maxSaltVault,maxSalt,ops)
    console.log("bundlerHash",bundlerHash)
     // 接触按钮锁
     if(!bundlerHash.status){
         data.btnLock=false
+        data.transferLoadingData.status = 'faild';
+        data.transferLoadingData.hash = bundlerHash.hash;
         return
     }
     //起弹窗
-    data.txHash=bundlerHash.hash
-    data.isOpen=true
+    // data.txHash=bundlerHash.hash
+    // data.isOpen=true
     //等待交易结果
     let result=  await getBundlerTxResult(bundlerHash.hash)
-    data.txResult=result
+    // data.txResult=result
+    data.transferLoadingData.hash = result;
     console.log("交易结果",result)
     if(result.status){
         data.btnLock=false

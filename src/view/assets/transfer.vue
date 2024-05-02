@@ -2,7 +2,7 @@
     <div class="assetsTransfer">
         <navigationBar :title="`Transfer ${data.tokenInfo.name}`">
             <template v-slot:icon>
-                <img  :style="{width: '16px',height: '16px',borderRadius:'50%'}" :src="data.tokenInfo.img" alt="">
+                <img  :style="{width: '16px',height: '16px'}" :src="data.tokenInfo.img" alt="">
             </template>
            
         </navigationBar>
@@ -59,13 +59,13 @@
         :decimals="data.tokenInfo.decimals"
         :txResult="data.txResult">
         </assetTranfer>
-        <transferLoading 
+        <singlestepLoading 
             v-model:isOpen="data.transferLoadingData.open"
             :status="data.transferLoadingData.status"
             :hash="data.transferLoadingData.hash"
             :nextPage="data.transferLoadingData.nextPage"
             :transferName="data.transferLoadingData.transferName"
-        ></transferLoading>
+        ></singlestepLoading>
     </div>
     <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
 </template>
@@ -88,7 +88,7 @@ import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
 import {createVaultService} from "@/apiHandle/vault"
 import { message } from 'ant-design-vue';
-import transferLoading from "@/components/utils/transferLoading.vue"
+import singlestepLoading from "@/components/utils/singlestepLoading.vue"
 
 
 const axiosStore= useAxiosStore()

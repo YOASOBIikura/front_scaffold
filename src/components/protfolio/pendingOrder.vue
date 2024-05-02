@@ -123,7 +123,7 @@ const networkImgSrc = computed(() => {
 var editOption = () => {
   let routerName = `/sell${optionTypeShow.value}`;
   let asset=""
-  if(optionTypeShow == 'call'){
+  if(optionTypeShow.value == 'Call'){
     asset=props.orderData.underlyingAsset.name
   }else{
     asset=props.orderData.strikeAsset.name

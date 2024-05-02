@@ -2,7 +2,7 @@
     <a-drawer
         v-if="props.isOpen" 
         class="tranfer-title"  
-        :height="'500px'"
+        :height="currentHeight"
         :closable="false" 
         :headerStyle="{padding:'0px'}" 
         :bodyStyle="{padding:'0px'}" 
@@ -22,6 +22,12 @@
                 <img src="@/assets/images/loading.png" class="loading-img animation"/>
                 <div class="loading-title">{{ props.transferName }}</div>
                 <div class="loading-info">Your transfer is underway and will be completed in 22-30minutes. Once completed, your token balance will be automatically updated.</div>
+                 <a-button 
+                    type="primary" 
+                    class="btn-go"
+                    disabled
+                >Go to {{props.nextPage.name}}</a-button>
+                <a-button class="btn-view" disabled>View on {{scanName}}</a-button>
             </div>
             <div class="loading" v-else-if="props.status === 'success'">
                 <img src="@/assets/images/loading-success.png" class="loading-img"/>
@@ -31,7 +37,17 @@
                     class="btn-go"
                     @click="goToNextPage"
                 >Go to {{props.nextPage.name}}</a-button>
-                <a-button class="btn-view" @click="viewOnScan">View on Arbiscan</a-button>
+                <a-button class="btn-view" @click="viewOnScan">View on {{scanName}}</a-button>
+            </div>
+            <div class="loading" v-else-if="props.status === 'faild'">
+                <img src="@/assets/images/loading-faild.png" class="loading-img"/>
+                <div class="success-title">Transaction failed.</div>
+                <a-button 
+                    type="primary" 
+                    class="btn-go"
+                    @click="closeDrawer"
+                >Close</a-button>
+                <a-button class="btn-view" @click="viewOnScan">View on {{scanName}}</a-button>
             </div>
 
            
@@ -81,6 +97,18 @@ const router = useRouter();
 // 弹窗是否可以关闭
 const canClose = computed(() => {
     return props.status !== "pending";
+})
+
+const scanName = computed(() => {
+    return JSON.parse(JSON.stringify(axiosStore.chainInfo.explorerName));
+})
+
+const currentHeight = computed(() => {
+    let height = 500;
+    if(props.status === 'pending'){
+        height = 560;
+    }
+    return height;
 })
 
 const emits=defineEmits(["update:isOpen"])

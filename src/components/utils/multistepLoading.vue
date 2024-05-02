@@ -24,19 +24,29 @@
                 <img src="@/assets/images/loading.png" v-if="item.status === 'current'" class="loading-img animation"/>
                 <div class="pending" v-else-if="item.status === 'pending'"></div>
                 <img src="@/assets/images/loading-success.png" v-else-if="item.status === 'success'" class="loading-img"/>
+                <img src="@/assets/images/loading-faild.png" v-else-if="item.status === 'faild'" class="loading-img"/>
             </div>
             <a-button 
                 type="primary" 
                 class="btn-go"
                 @click="goToNextPage"
-                disabled
+                :disabled="!canClose"
+                v-if="!showCloseBtn"
             >Go to {{props.nextPage.name}}</a-button>
+            <a-button 
+                type="primary" 
+                class="btn-go"
+                @click="closeDrawer"
+                :disabled="!canClose"
+                v-else
+            >Close</a-button>
+            
         </div>
     </a-drawer>
 </template>
 <script setup>
 import { reactive,computed } from "vue";
-
+import { useRouter} from "vue-router";
 const props = defineProps({
     isOpen: {
         type: Boolean,
@@ -67,16 +77,51 @@ const props = defineProps({
    },
 })
 
-
-const data = reactive({
-
-});
+const router = useRouter();
+const emits=defineEmits(["update:isOpen"])
 const canClose = computed(() => {
-    return false;
+    let flag = true;
+    for(let i in props.stepList){
+        if(
+            props.stepList[i].status === "pending" || 
+            props.stepList[i].status === "current"
+        ){
+           flag = false 
+        }
+    }
+    return flag;
+});
+
+const showCloseBtn = computed(() => {
+    let flag = false;
+    for(let i in props.stepList){
+        if(
+            props.stepList[i].status === "faild" 
+        ){
+           flag = true 
+        }
+    }
+    return flag;
 });
 const calcHeight = computed(() => {
     return 240 + (props.stepList.length * 55);
-})
+});
+
+
+// 去下一个页面
+var goToNextPage = () => {
+    router.push({
+        path: props.nextPage.path,
+        query: props.nextPage?.query ? props.nextPage?.query : {}
+    });
+}
+
+var closeDrawer=()=>{
+    if(!canClose){
+        return
+    }
+   emits("update:isOpen",false)
+}
 </script>
 <style lang="less" scoped>
 .tranfer-title{

@@ -111,6 +111,13 @@
             >Confirm</a-button>
     </div>
     <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
+
+    <multistepLoading
+        v-model:isOpen="data.loadingData.open"
+        :titleName="data.loadingData.titleName"
+        :nextPage="data.loadingData.nextPage"
+        :stepList="data.loadingData.stepList"
+    ></multistepLoading>
 </template>
 <script setup>
 import inputValue from "@/components/utils/inputValue.vue"
@@ -120,6 +127,9 @@ import navigationBar from "@/components/utils/navigationBar.vue";
 import expiryDateSlider from "@/components/sellOption/expiryDateSlider.vue"
 import refresh from "@/components/utils/refresh.vue"
 import selectCoin from "@/components/utils/selectCoin.vue"
+import multistepLoading from "@/components/utils/multistepLoading.vue";
+
+
 import { reactive,onMounted,computed,watch} from "vue";
 import { useRouter,useRoute} from "vue-router";
 import {getSigatureLock,getUnderlyTotal} from "@/callData/multiCall/optionFacet"
@@ -154,9 +164,19 @@ const data=reactive({
    currentPremiumFee:BigNumber.from("0"),//输入框的期权费
    premiumPrice:BigNumber.from("0"),//deberit期权费
    //-----------------
-   loading:false
+   loading:false,
  
-      
+    // loading信息
+    loadingData: {
+        open: false,
+        nextPage: {
+            path: "/protfolio",
+            query: {},
+            name: "my protfolio"
+        },
+        titleName: "sell Call",
+        stepList: []
+    }
 
 })
 //---------计算属性-----------------
@@ -429,6 +449,8 @@ var sendTx=async ()=>{
 
 // 是否触发更新链上的签名
 var  checkUpdateGignature=async (vault,underlyingAsset)=>{
+    
+
    let time=parseInt(new Date().getTime()/1000)
    let currentTimestamp=BigNumber.from(time)
   //multicall数据
@@ -443,6 +465,19 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
     let premium=await handlePremiumAsset() 
     let strike=await handleStrikeAsset()
     let liquidateModes= handleLiquidation()
+    // loadingData 数据进行构建
+    data.loadingData.stepList = [{name: "Signature Offer Info", status: "current", hash: ""}];
+    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
+        data.loadingData.stepList.push(
+            {name: "Cacel Old Offer", status: "pending", hash: ""}
+        );
+    } 
+    data.loadingData.stepList.push(
+        {name: "Offer Submit", status: "pending", hash: ""}
+    );
+    
+    data.loadingData.open = true;
+
    //进行712签名
     let signatureInfo={
         orderType:0,
@@ -458,35 +493,44 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
         premiumAssets:premium.premiumAssets,
         premiumFees:premium.premiumFees      
     }
+   
     let signatureResponse= await sign712OrderApi(axiosStore.chainId,axiosStore.currentContractData["OptionModule"],signatureInfo)
     console.log("signature",signatureResponse)
    //是否触发链上签名
    if(!signatureResponse.status){
     //    console.error("用户拒绝签名",signatureResponse)
+       data.loadingData.stepList[0].status = "faild";
        message.error("user refused to sign")     
        return
    }
+   data.loadingData.stepList[0].status = "success";
    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
+        data.loadingData.stepList[1].status = "current";
         //触发上链签名
        let resetSigature= await  setSigatureLockApi(data.vault,0,underlyingAsset,currentTimestamp)
        if(!resetSigature.message.status){
         //   console.error("取消老订单失败")
+           data.loadingData.stepList[1].status = "faild";
            message.error("cacel old offer fail")
           return
        }
+       data.loadingData.stepList[1].status = "success";
    }
+   let loadingUpdateIndex = data.loadingData.stepList.length - 1;
+    data.loadingData.stepList[loadingUpdateIndex].status = "current";
    //更新签名到中心化服务器
-
     let response=await storeSingature(signatureInfo,signatureResponse.message)
     console.log("response 中心化服务器",response)
     if(!response.message){
     //    console.error("存储数据到中心化服务器失败")   
+        data.loadingData.stepList[loadingUpdateIndex].status = "faild";
            message.error("offer submit fail")
            return
     }
+    data.loadingData.stepList[loadingUpdateIndex].status = "success";
     //流程完成 弹窗
     message.success("submit offer success")
-    router.push({path:"/protfolio"})
+    // router.push({path:"/protfolio"})
 }
 
 //处理行权资产  //因为行权资产跟权力金资产一样 所以这里做同步处理
