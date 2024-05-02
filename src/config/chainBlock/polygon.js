@@ -49,6 +49,7 @@ let chainInfo={
     name:"polygon",
     currency:"MATIC",
     explorerUrl: 'https://polygonscan.com/',
+    explorerName: 'Polygonscan',
     rpcUrl:"https://polygon.blockpi.network/v1/rpc/public"
 }
 

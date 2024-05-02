@@ -129,6 +129,7 @@ let chainInfo={
     name:"arbitrum",
     currency:"ETH",
     explorerUrl:"https://arbiscan.io/",
+    explorerName: "Arbiscan",
     rpcUrl:"https://arbitrum.blockpi.network/v1/rpc/public"
 }
 
