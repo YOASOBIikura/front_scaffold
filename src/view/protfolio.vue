@@ -3,7 +3,7 @@
       <a-tabs class="protfolio-tabs" v-model:activeKey="data.activeKey">
         <!-- listing -->
         <a-tab-pane key="listing" tab="My Listings">
-          <div class="contains" ref="containsRef" v-if="data.orderList.length > 0" @scroll="pandingOrderHandleScroll">
+          <div class="contains" ref="containsRef" v-if="data.orderList.length > 0 " @scroll="pandingOrderHandleScroll">
             <pendingOrder v-for="(item) in data.orderList" :key="item" :orderData="item"></pendingOrder>
           </div>    
 
@@ -36,7 +36,7 @@
     
     </div>
 
-    <a-spin v-if="data.loading" class="aSpin" tip="Loading..." :delay="100"> </a-spin>
+    <a-spin v-if="data.loading " class="aSpin" tip="Loading..." :delay="100"> </a-spin>
 </template>
 
 <script setup>

@@ -290,7 +290,7 @@ var getOrder=async ()=>{
    let detailsInfoData={}
    response?.forEach(item=>{
        signInfo={
-        orderType:0,
+        orderType:1,
         underlyingAsset:item["underlying_asset"],
         underlyingAssetType:item["underlying_asset_type"],
         underlyingNftID:item["underlying_nft_id"],
@@ -382,7 +382,7 @@ var buyCall=async ()=>{
    let createVaultData=createVaultService(maxSaltVault)
    ops=ops.concat(createVaultData)
    //设置vaultType
-   ops.push(setVaultType(maxSaltVault,BigNumber.from("7")))
+   ops.push(setVaultType(maxSaltVault,BigNumber.from("3")))
    //从0号vault申购
    let asset=[data.currentPremiumAsset.address]
    let premiumFee=data.signatureInfo?.premiumFees[data.currentPremiumAsset.signPremiumFeesIndex]
