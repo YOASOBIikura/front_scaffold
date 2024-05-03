@@ -459,12 +459,16 @@ var buyCall=async ()=>{
     //等待交易结果
     let result=  await getBundlerTxResult(bundlerHash.hash)
     // data.txResult=result
-    data.transferLoadingData.hash = result;
+
     console.log("交易结果",result)
     if(result.status){
+        data.transferLoadingData.status = "faild";
+        data.transferLoadingData.hash = result.message;
         data.btnLock=false
         return
     }
+    data.transferLoadingData.status = "success";
+    data.transferLoadingData.hash = result.message;
 }
 
 //查询货币价格

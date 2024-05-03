@@ -457,6 +457,7 @@ var buyCall=async ()=>{
         data.btnLock=false
         return
     }
+    console.log(result);
     data.transferLoadingData.status = "success";
     data.transferLoadingData.hash = result;
 }
