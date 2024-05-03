@@ -117,6 +117,12 @@
             >Confirm</a-button>
     </div>
     <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
+    <multistepLoading
+        v-model:isOpen="data.loadingData.open"
+        :titleName="data.loadingData.titleName"
+        :nextPage="data.loadingData.nextPage"
+        :stepList="data.loadingData.stepList"
+    ></multistepLoading>
 </template>
 <script setup>
 import inputValue from "@/components/utils/inputValue.vue"
@@ -126,6 +132,7 @@ import navigationBar from "@/components/utils/navigationBar.vue";
 import expiryDateSlider from "@/components/sellOption/expiryDateSlider.vue"
 import refresh from "@/components/utils/refresh.vue"
 import selectCoin from "@/components/utils/selectCoin.vue"
+import multistepLoading from "@/components/utils/multistepLoading.vue";
 import { reactive,onMounted,computed,watch} from "vue";
 import { useRouter,useRoute} from "vue-router";
 import {getSigatureLock,getUnderlyTotal} from "@/callData/multiCall/optionFacet"
@@ -159,7 +166,19 @@ const data=reactive({
    underlyingAssetBalance:BigNumber.from("0"), //真实数量
    underlyingAmount:BigNumber.from("0"),//抵押数量
    currentPremiumFee:BigNumber.from("0"),
-   loading:false
+   loading:false,
+
+   // loading信息
+    loadingData: {
+        open: false,
+        nextPage: {
+            path: "/protfolio",
+            query: {},
+            name: "my protfolio"
+        },
+        titleName: "sell Put",
+        stepList: []
+    }
 })
 //---------计算属性-----------------
 //显示的抵押资产余额
@@ -455,7 +474,20 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
     //处理对应的数据
     let strike=await handleStrikeAsset()
     let premium=await handlePremiumAsset() 
-    let liquidateModes= handleLiquidation()
+    let liquidateModes= handleLiquidation();
+
+    // loadingData 数据进行构建
+    data.loadingData.stepList = [{name: "Signature Offer Info", status: "current", hash: ""}];
+    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
+        data.loadingData.stepList.push(
+            {name: "Cacel Old Offer", status: "pending", hash: ""}
+        );
+    } 
+    data.loadingData.stepList.push(
+        {name: "Offer Submit", status: "pending", hash: ""}
+    );
+    
+    data.loadingData.open = true;
    //进行712签名
     let signatureInfo={
         orderType:1,
@@ -475,29 +507,37 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
     let signatureResponse= await sign712OrderApi(axiosStore.chainId,axiosStore.currentContractData["OptionModule"],signatureInfo)
     console.log("signature",signatureResponse)
     if(!signatureResponse.status){
-        message.error("user refused to sign")     
+        message.error("user refused to sign")  
+        data.loadingData.stepList[0].status = "faild";   
        return
    }
-
+    data.loadingData.stepList[0].status = "success";
    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
+        data.loadingData.stepList[1].status = "current";
         //触发上链签名
        let resetSigature= await  setSigatureLockApi(data.vault,1,underlyingAsset,currentTimestamp)
        if(!resetSigature.message.status){
+          data.loadingData.stepList[1].status = "faild";
           message.error("cacel old offer fail")
           return
        }
+        data.loadingData.stepList[1].status = "success";
    }
+   let loadingUpdateIndex = data.loadingData.stepList.length - 1;
+    data.loadingData.stepList[loadingUpdateIndex].status = "current";
    //更新签名到中心化服务器
 
     let response=await storeSingature(signatureInfo,signatureResponse.message)
     console.log("response 中心化服务器",response)
     if(!response.message){
+        data.loadingData.stepList[loadingUpdateIndex].status = "faild";
         message.error("offer submit fail")
         return  
     }
+    data.loadingData.stepList[loadingUpdateIndex].status = "success";
     //流程完成 弹窗
     message.success("submit offer success")
-    router.push({path:"/protfolio"})
+    // router.push({path:"/protfolio"})
 }
 
 
