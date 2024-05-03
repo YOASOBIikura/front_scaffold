@@ -453,13 +453,13 @@ var buyCall=async ()=>{
     console.log("交易结果",result)
     if(result.status){
         data.transferLoadingData.status = "faild";
-        data.transferLoadingData.hash = result;
+        data.transferLoadingData.hash = result.message;
         data.btnLock=false
         return
     }
     console.log(result);
     data.transferLoadingData.status = "success";
-    data.transferLoadingData.hash = result;
+    data.transferLoadingData.hash = result.message;
 }
 
 //查询货币价格
