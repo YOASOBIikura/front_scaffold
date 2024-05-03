@@ -15,12 +15,15 @@
         <template v-slot:title>
              <div class="transfer-title">
                  <span class="title">{{props.titleName}}</span>
-                 <img v-if="canClose"  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
              </div>
         </template>
         <div class="loading-content">
-            <div class="loading-row" v-for="item in props.stepList" :key="'loading-' + item.name">
-                {{ item.name }}
+            <div class="loading-row" :class="item.status" v-for="(item,index) in props.stepList" :key="'loading-' + item.name">
+                <span>
+                    <div class="dot"></div>
+                    <div class="line line-down" v-if="index != props.stepList.length - 1"></div>
+                    {{ item.name }}
+                </span>
                 <img src="@/assets/images/loading.png" v-if="item.status === 'current'" class="loading-img animation"/>
                 <div class="pending" v-else-if="item.status === 'pending'"></div>
                 <img src="@/assets/images/loading-success.png" v-else-if="item.status === 'success'" class="loading-img"/>
@@ -130,7 +133,7 @@ var closeDrawer=()=>{
     .transfer-title{
         width: 100%;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         height: 60px;
         padding: 20px 16px;
@@ -146,8 +149,6 @@ var closeDrawer=()=>{
     padding: 20px 12px 0;
     overflow: hidden;
     .loading-row{
-        border: 1px solid var(--component-border);
-        border-radius: 8px;
         padding: 4px 16px;
         margin-top: 16px;
         font-size: 16px;
@@ -155,6 +156,44 @@ var closeDrawer=()=>{
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: relative;
+        .dot{
+            width: 14px;
+            height: 14px;
+            border: 3px solid #DEDEDE;
+            display: inline-block;
+            border-radius: 100%;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .line{
+            width: 2px;
+            height: 47px;
+            background-color: #DEDEDE;
+            position: absolute;
+            left: 22px;
+            &.line-down{
+                bottom: -34px;
+            }
+            
+        }
+        &.success{
+            .dot{
+              border: 5px solid #000000;  
+            }
+            .line{
+                background-color:  #000000;
+            }
+        }
+        &.faild{
+            .dot{
+              border: 5px solid #E37318;  
+            }
+            // .line{
+            //     background-color:  #E37318;
+            // }
+            
+        }
         .loading-img{
             width: 24px;
             height: 24px;
