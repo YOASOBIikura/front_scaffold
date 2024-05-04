@@ -60,11 +60,14 @@ var max=()=>{
     emits("inputMax",props.maxValue,data.inputShow)
 }
 var inputValue= (input)=>{
-    // let value = numberLimitations(input.target.value);
-    let value=input.target.value
+    if(onlyContainsZerosAndDots(input.target.value)){
+        return 
+    }
+    let value = numberLimitations(input.target.value);
+    // let value=input.target.value;
     if(props.isMax && BigNumber.from("0").eq(BigNumber.from(props.maxValue))){
         value=BigNumber.from("0")
-    }else{
+    }else {
         if(value!=""){
             value=ethers.utils.parseUnits(String(value),props.decimals)
             if(props.isMax && value.mul(ethers.utils.parseUnits("1",2)).div(props.maxValue).gte(BigNumber.from("99"))){
@@ -73,10 +76,14 @@ var inputValue= (input)=>{
         }else{
             value=BigNumber.from("0")
         }
-    }
+    } 
     handleValue(value)
     emits("input",value)
     emits("update:value",value)
+}
+
+var onlyContainsZerosAndDots = (str) => {
+    return /^[0.\\.]*$/.test(str);
 }
 
 // 数字限制

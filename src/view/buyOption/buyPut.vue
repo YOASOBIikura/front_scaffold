@@ -494,7 +494,7 @@ var buyCall=async ()=>{
     //等待交易结果
     let result=  await getBundlerTxResult(bundlerHash.hash)
     // data.txResult=result
-    data.transferLoadingData.hash = result;
+
     console.log("交易结果",result)
     if(!result.status){
         data.transferLoadingData.status = "faild";
