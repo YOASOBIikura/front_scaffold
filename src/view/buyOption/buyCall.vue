@@ -36,8 +36,8 @@
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
         :decimals="data.currentUnderlyingAsset.decimals"
-        @input="inputChange"
-        
+        @input="inputChange"   
+        @inputMax="maxChange"
         >
              <div class="slotBalance">
                  <span></span>
@@ -144,6 +144,9 @@ import { message } from 'ant-design-vue';
 import {getPriceByPriceOracleApi} from "@/api/priceOracle"
 import {getMulTokenBalance} from "@/apiHandle/token"
 import {setVaultType} from "@/callData/bundler/vaultManageModule"
+import {getVaultApi} from "@/api/vaultFactory"
+import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
+import {getSigatureLock,getUnderlyTotal} from "@/callData/multiCall/optionFacet"
 const route=useRoute()
 const router=useRouter()
 const axiosStore=useAxiosStore()
@@ -224,16 +227,26 @@ var selectPremium=(item)=>{
       data.currentPremiumAsset=item
 }
 
-var inputChange=async (value)=>{
+var inputChange= (value)=>{
       console.log(data.underlyingAmount,"触发修改值",value)
     //   data.underlyingAmount=value
-      let premiumFees=data.signatureInfo?.premiumFees||[]
+    chandlePremium(value)
+
+}
+
+var maxChange= (value)=>{
+    chandlePremium(value)
+    console.log(value,"max产想你想你想你")
+}
+
+var chandlePremium=(value)=>{
+    let premiumFees=data.signatureInfo?.premiumFees||[]
     
-      data.premiumAssetList?.forEach((item,index)=>{
-        let premium=(value.mul(BigNumber.from(premiumFees[index])).div(ethers.utils.parseUnits("1",item.decimals)).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber())/100
-        console.log("修改权力金",premium)
-        item["premium"]=premium
-      }) 
+    data.premiumAssetList?.forEach((item,index)=>{
+      let premium=(value.mul(BigNumber.from(premiumFees[index])).div(ethers.utils.parseUnits("1",item.decimals)).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber())/100
+      console.log("修改权力金",premium)
+      item["premium"]=premium
+    }) 
 }
 
 
@@ -258,6 +271,9 @@ var init=async()=>{
     let underlyingAssetData=data.signatureInfo.underlyingAsset || ""
     data.currentUnderlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(underlyingAssetData))) 
 
+
+
+
     //行权资产
     let currentStrikeAsset=data.signatureInfo.strikeAssets ||[]
     data.currentStrikeAsset=JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(currentStrikeAsset[0])))
@@ -265,9 +281,11 @@ var init=async()=>{
     //处理权力金资产 
     let premiumAssetData=data.signatureInfo.premiumAssets || []
     let balanceList=[]
-    //获取余额
+    //获取余额(买家)
     if(premiumAssetData.length>0){
-        balanceList=await getTokenBalance(premiumAssetData)
+          //处理余额  获取0号vault
+        let vault=await getVault()
+        balanceList=await getTokenBalance(vault,premiumAssetData)
     }
     //处理数据
     let premiumAssetList=[]
@@ -286,14 +304,12 @@ var init=async()=>{
     })
     data.currentPremiumAsset=premiumAssetList[0] || {}
     data.premiumAssetList=premiumAssetList
-
-
    //获取抵押资产价格
     data.currentUnderlyingPrice=  await getPrice(data.currentUnderlyingAsset.address)
 
 
-    //取得0号vault
-    // await buyCall()
+    //处理能够购买的余额
+    await getUnderlyAssetTotal()
 }
 
 //----------------请求----------------------
@@ -325,6 +341,7 @@ var getOrder=async ()=>{
        signature=item.sign
 
        remarkInfo={
+          total:item["total"],
           chainId:item["chain_id"],
           writerVault:item["writer_vault"],
           wallet:item["writer_wallet"],
@@ -370,10 +387,12 @@ var getOrder=async ()=>{
       
        strikeAmount=BigNumber.from(item["strike_amounts"][0])
 
-        //处理能够购买的余额
-        data.underlyingAssetBalance=BigNumber.from(item["total"]).sub(BigNumber.from(item["used"]))
+
        
    })
+
+
+   //
    data.signatureInfo=signInfo
    data.signature=signature
    data.remarkInfo=remarkInfo
@@ -386,9 +405,28 @@ var getOrder=async ()=>{
 //------------上链业务相关------------------
 //买操作上链
 var buyCall=async ()=>{
+    //处理边界条件
    if(data.signature==""){
        message.warning("order data error")
       return
+   }
+    //抵押数量为0
+  if(data.underlyingAmount.eq(BigNumber.from("0"))){
+     message.warning("please input underlyingAmount")
+     return 
+   }
+   //获取卖家0vault余额
+   let writerBalance=  await getTokenBalance(data.remarkInfo.writerVault,[data.currentUnderlyingAsset.address])
+   if(BigNumber.isBigNumber(writerBalance[0]) && data.underlyingAmount.gte(writerBalance[0])){
+     message.warning("writer Vault balance not enough")
+     return 
+   }
+
+   //检查线上的offer余额是否足够
+   let underkyTotal=await getUnderlyAssetTotal()
+   if(data.underlyingAmount.gte(underkyTotal)){
+     message.warning("offer total not enough")
+     return 
    }
    //-----------------------------
    let ops=[]
@@ -406,6 +444,11 @@ var buyCall=async ()=>{
    let asset=[data.currentPremiumAsset.address]
    let premiumFee=data.signatureInfo?.premiumFees[data.currentPremiumAsset.signPremiumFeesIndex]
    let premium=data.underlyingAmount.mul(premiumFee).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals))
+   //判断买家余额是否足够  
+   if(premium.gte(data.currentPremiumAsset.balance)){
+       message.warning("premium balance not enough")
+       return
+   }
    let amount=[premium]
    console.log(maxSaltVault,mainVault,asset,amount,"======")
    ops.push(issue(maxSaltVault,mainVault,asset,amount))  
@@ -451,14 +494,14 @@ var buyCall=async ()=>{
     let result=  await getBundlerTxResult(bundlerHash.hash)
     // data.txResult=result
     console.log("交易结果",result)
-    if(result.status){
+    if(!result.status){
         data.transferLoadingData.status = "faild";
-        data.transferLoadingData.hash = result;
+        data.transferLoadingData.hash = bundlerHash.hash;
         data.btnLock=false
         return
     }
     data.transferLoadingData.status = "success";
-    data.transferLoadingData.hash = result;
+    data.transferLoadingData.hash = bundlerHash.hash;
 }
 
 //查询货币价格
@@ -468,11 +511,43 @@ var getPrice=async (_masterToken)=>{
     return underlyingAssetPrice
 }
 //查询货币余额
-var getTokenBalance=async (tokenList)=>{
-    let balanceList= await getMulTokenBalance(data.remarkInfo.writerVault,tokenList)
-    console.log("balanceList",balanceList)
+var getTokenBalance=async (account,tokenList)=>{
+    let accountList=[]
+    tokenList.forEach(item=>{
+        accountList.push(account)
+    })
+    let balanceList= await getMulTokenBalance(accountList,tokenList)
+    console.log(account,"balanceList",balanceList)
     return balanceList
 }
+// 获取0号vault
+var getVault=async ()=>{
+   //处理余额  获取0号vault
+   let vault= await getVaultApi(axiosStore.currentAccount,axiosStore.vaultSalt)
+   vault=vault?.message?.vault ||  new Error("vault error")
+   console.log(vault,"当前vault")
+   return vault
+}
+
+//卖单总余额
+var  getUnderlyAssetTotal=async ()=>{
+    let multiCallData=[]
+    multiCallData.push(getUnderlyTotal("getUnderlyTotal",data.remarkInfo.writerVault,0,data.currentUnderlyingAsset.address))  
+    let multiCallResponse=await multiCallObjR(multiCallData)
+    console.log("multiCallResponse",multiCallResponse)   
+    //如果当前时间戳> 链上时间戳   &&  total大于0的情况 则需要去除老的签名    
+    let total=multiCallResponse["getUnderlyTotal"]?.total || BigNumber.from("0")
+
+    //修改值
+    console.log(total,'slslslls')
+    if(BigNumber.from(total).eq(BigNumber.from("0"))){
+        total=BigNumber.from(String(data.remarkInfo.total)) 
+    }
+    data.underlyingAssetBalance=total
+    data.detailsInfoData.unUsed=BigNumber.from(total).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100
+    return total
+}
+
 
 
 </script>

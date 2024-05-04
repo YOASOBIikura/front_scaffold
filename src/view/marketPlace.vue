@@ -250,13 +250,15 @@ var getParamData=async ()=>{
 
 //获取订单
 var getOrderList=async ()=>{
-     let strikePrice=data.expiryParamData[data.currentExpiryValue]?.name
-     let date=data.strikeParamData[data.currentExpiryValue]?.name
+     let strikePrice=data.strikeParamData[data.currentStrikeValue]?.name
+
+     let date=data.expiryParamData [data.currentExpiryValue]?.name
+     console.log(strikePrice,date,"市场参数")
      let wallet=""
      if(data.currentListing=="My"){
          wallet=axiosStore.currentAccount
      }
-     let orderListResponse= await getMarketOfferApi(axiosStore.chainId,data.currentOrderType[0]=="call"?0 : 1,data.currentUnderlyingAsset.name,date,strikePrice,wallet)
+     let orderListResponse= await getMarketOfferApi(axiosStore.chainId,data.currentOrderType[0]=="call"?0 : 1,data.currentUnderlyingAsset.name,strikePrice,date,wallet)
      console.log("orderListResponse",orderListResponse)
      let orderList=[]
      orderListResponse?.data?.forEach(item=>{

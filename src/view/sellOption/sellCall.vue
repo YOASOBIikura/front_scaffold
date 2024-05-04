@@ -401,10 +401,10 @@ var sendTx=async ()=>{
 
 
      //抵押数量为0 
-    //  if(data.underlyingAmount.eq(BigNumber.from("0"))){
-    //     message.warning("please input underlyingAmount")
-    //      return
-    //  } 
+     if(data.underlyingAmount.eq(BigNumber.from("0"))){
+        message.warning("please input underlyingAmount")
+         return
+     } 
      //行权资产列表选择
      let isStrike=0
       data.strikeAssetList.forEach(item=>{
@@ -521,10 +521,10 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
    //更新签名到中心化服务器
     let response=await storeSingature(signatureInfo,signatureResponse.message)
     console.log("response 中心化服务器",response)
-    if(!response.message){
+    if(!response.data){
     //    console.error("存储数据到中心化服务器失败")   
-        data.loadingData.stepList[loadingUpdateIndex].status = "faild";
-           message.error("offer submit fail")
+           data.loadingData.stepList[loadingUpdateIndex].status = "faild";
+           message.error(response.message)
            return
     }
     data.loadingData.stepList[loadingUpdateIndex].status = "success";

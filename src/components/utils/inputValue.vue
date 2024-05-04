@@ -57,7 +57,7 @@ const emits=defineEmits(["update:value","inputMax","input","blur"])
 var max=()=>{
     handleValue(props.maxValue)
     emits("update:value",props.maxValue)
-    emits("inputMax",props.value,data.inputShow)
+    emits("inputMax",props.maxValue,data.inputShow)
 }
 var inputValue= (input)=>{
     // let value = numberLimitations(input.target.value);

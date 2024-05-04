@@ -77,7 +77,7 @@ const props=defineProps({
    },
    // 跳转的下一个页面参数
    nextPage: {
-        type: Object,
+        type: [Object,String],
         require: true,
         default: {
             path: "",

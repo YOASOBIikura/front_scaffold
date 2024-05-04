@@ -8,7 +8,7 @@ function getOrderApi(_optionId,_chainId,_wallet, _page = 1, _pageSize = 10){
         // method:"get" //请求方式  http时 填get   rpc 填方法
         method:"post",
         data:{
-            "option_id": _optionId,
+            "offer_id": _optionId,
             "owner_address": _wallet,
             "chain_id": String(_chainId),
             "page": {

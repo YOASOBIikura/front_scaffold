@@ -529,9 +529,9 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
 
     let response=await storeSingature(signatureInfo,signatureResponse.message)
     console.log("response 中心化服务器",response)
-    if(!response.message){
+    if(!response.data){
         data.loadingData.stepList[loadingUpdateIndex].status = "faild";
-        message.error("offer submit fail")
+        message.error(response.message)
         return  
     }
     data.loadingData.stepList[loadingUpdateIndex].status = "success";
