@@ -1,7 +1,7 @@
 import { useAxiosStore } from "@/pinia/modules/axios";
 
 //获取订单信息 chainId 链id businessType 业务类型 collateralAsset 抵押资产
-function getOrderApi(chainId,businessType,collateralAsset){
+function getOfferApi(chainId,businessType,collateralAsset){
      return  useAxiosStore().axios({
         mode:"http", //chainBlockCall  http  chainBlockSend  sign  unSign  
         target:"/api/orders" ,// chainBlock 时是合约地址   http时是url
@@ -86,5 +86,5 @@ function  createCallOrderApi(callOrder){
 // }
 
 
-export {getOrderApi,getOptionPremiumPriceApi,createCallOrderApi}
+export {getOfferApi,getOptionPremiumPriceApi,createCallOrderApi}
 

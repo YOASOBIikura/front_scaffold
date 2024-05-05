@@ -24,13 +24,15 @@
       <div class="middle">
         <div class="date">
           <span class="title">Valid Date</span>
+
           <div class="show">
             <img class="progress" src="@/assets/images/dateBar.png" alt="" />
             <p class="list">
               <span class="list-one">{{ createDateShow }}</span>
               <span class="list-two">{{ expirationDateShow }}</span>
-            </p>
+            </p>      
           </div>
+
         </div>
 
         <div class="amount">
@@ -80,6 +82,7 @@ import { computed, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { TimeTransformDateWithoutHour } from "@/common/timeFormat";
 import { useAxiosStore } from "@/pinia/modules/axios";
+const axiosStore = useAxiosStore();
 const props = defineProps({
   orderData: {
     type: Object,
@@ -87,7 +90,7 @@ const props = defineProps({
     default: {},
   },
 });
-const axiosStore = useAxiosStore();
+
 
 const router = useRouter();
 const data = reactive({});

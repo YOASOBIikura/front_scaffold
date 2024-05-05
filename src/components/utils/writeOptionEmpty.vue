@@ -14,6 +14,7 @@
 import {defineProps}  from "vue"
 import { useRouter } from 'vue-router';
 import {useAxiosStore} from "@/pinia/modules/axios"
+import { message } from "ant-design-vue";
 const axiosStore= useAxiosStore()
 const router=useRouter()
 const props=defineProps({
@@ -37,6 +38,10 @@ const props=defineProps({
      }
 })
 var goRoute=(item)=>{
+     if(axiosStore.isConnect==1){
+        message.warning("wallet is not connect")
+        return
+     }
      if(item=='call'){
        let asset= axiosStore?.optionBusiness?.underlyingAssets[0]?.name
        if(asset){

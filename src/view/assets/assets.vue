@@ -15,10 +15,11 @@
                   <span class="text">${{ data.totalVault }}</span>
               </p>
         </div>
-        <div class="contains">
-           <assetOption  :tokenInfo="item" v-for="(item,index) in data.tokenList" :key="index" :issueMode="data.issueMode"></assetOption>  
+        <div class="contains" v-if="data.tokenList.length>0">
+           <assetOption   :tokenInfo="item" v-for="(item,index) in data.tokenList" :key="index" :issueMode="data.issueMode"></assetOption>  
+       
         </div>
-        
+        <writeOptionEmpty :isSignal="3" :text="`wallet is not connect`" class="empty" v-else ></writeOptionEmpty>
 
     </div>
 
@@ -28,6 +29,7 @@
 <script setup>
 import assetHeader from "@/components/assets/assetHeader.vue"
 import assetOption from "@/components/assets/assetOption.vue"
+import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
 import {reactive,onMounted,watch,computed} from "vue"
 import {useAxiosStore} from "@/pinia/modules/axios";
 import {getVaultApi} from "@/api/vaultFactory"
@@ -39,6 +41,7 @@ import {balanceOf} from "@/callData/multiCall/token"
 import {getWalletBalanceApi} from "@/api/utils"
 import {getPrice} from "@/callData/multiCall/priceOracle"
 import {getIssueMode} from "@/callData/multiCall/IssuanceFacet"
+
 const axiosStore= useAxiosStore()
 const data=reactive({
      tokenList:[],
@@ -246,5 +249,11 @@ var handlePrice=async ()=>{
          box-sizing: border-box;  
       }
    }
+   .empty{
+        width: 100%;
+        height: auto;
+        margin-top: 50%;
+        transform: translateY(-50%);
+      }
 
 </style>

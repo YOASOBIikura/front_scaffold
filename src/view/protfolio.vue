@@ -1,10 +1,10 @@
 <template>
     <div class="protfolio">
-      <a-tabs class="protfolio-tabs" v-model:activeKey="data.activeKey">
+      <a-tabs class="protfolio-tabs" v-model:activeKey="data.activeKey" @change="tabChange">
         <!-- listing -->
         <a-tab-pane key="listing" tab="My Listings">
-          <div class="contains" ref="containsRef" v-if="data.orderList.length > 0 " @scroll="pandingOrderHandleScroll">
-            <pendingOrder v-for="(item) in data.orderList" :key="item" :orderData="item"></pendingOrder>
+          <div class="contains" ref="containsRef" v-if="data.offerList.length > 0 " @scroll="pandingOrderHandleScroll">
+            <pendingOrder v-for="(item) in data.offerList" :key="item" :orderData="item"></pendingOrder>
           </div>    
 
           <writeOptionEmpty :isSignal="3" :text="`You don't currenty have options`" class="empty" v-else ></writeOptionEmpty>
@@ -22,17 +22,38 @@
                     </div>
                   </div>
           </div>
-           <div class="contains padding" v-if="true" @scroll="submitOrderScroll">
-              <submitOrder v-for="(item) in 2" :key="item"  @liquidation="liquidationTx"></submitOrder> 
+           <div class="contains padding" v-if="data.orderList.length>0" @scroll="submitOrderScroll">
+              <submitOrder 
+              v-for="(item,index) in data.orderList" 
+              :key="index" :dataInfo="item" 
+              :priceList="data.priceList" 
+              @liquidate="liquidate"
+ 
+              ></submitOrder> 
             </div>   
             <!-- empty -->
             <writeOptionEmpty :isSignal="2" :text="`You don't currenty have options`" class="empty" v-else ></writeOptionEmpty>
         </a-tab-pane>      
       </a-tabs>
       <!-- dialog -->
-      <protfolioFilter v-model:isOpen="data.isOpenSelect"></protfolioFilter>
-      <protfolioSort v-model:isOpen="data.isOpenSort"></protfolioSort>
-      <liquidation v-model:isOpen="data.isOpenLiquidation"></liquidation>
+      <protfolioFilter 
+         v-if="data.isOpenSelect"
+         v-model:isOpen="data.isOpenSelect"
+         @confirm="optionConfirm"
+         @reset="optionReset"
+      ></protfolioFilter>
+      <protfolioSort 
+         v-if="data.isOpenSort"
+         v-model:isOpen="data.isOpenSort"
+         @confirm="statusConfirm"
+         @reset="statusReset"         
+         ></protfolioSort>
+      <liquidation 
+      v-model:isOpen="data.isOpenLiquidation"
+      :dataInfo="data.currentOrder"
+      :priceList="data.priceList"
+      @liquidate="exerciseLiquidate"
+      ></liquidation>
     
     </div>
 
@@ -48,34 +69,136 @@ import liquidation from "@/components/protfolio/liquidation.vue"
 import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
 import {liquidateOption} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
-import {getOrderApi} from "@/api/protfolio"
+import {getOfferApi,getOrderApi} from "@/api/protfolio"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {reactive,computed,watch,onMounted,ref} from "vue"
 import { BigNumber, ethers } from "ethers"
+import {getPriceByPriceOracleApi} from "@/api/priceOracle"
+import {getVaultToSaltR} from "@/apiHandle/vault"
+import {getOptionOrderExistR} from "@/apiHandle/optionFacet"
+import {getMulTokenBalance} from "@/apiHandle/token"
+import { message } from "ant-design-vue"
 const axiosStore= useAxiosStore()
   let data=reactive({
-    activeKey:"listing",
+    activeKey:"options",
     isOpenSelect:false,
     isOpenSort:false,
     isOpenLiquidation:false,
-    orderList:[],
+    offerList:[],
     btnLock:false,//按钮锁
     orderPage: 1,
     scrollLoadLock: false, // 滚动加载锁
-
-
+    //------------
+    orderList:[],//订单列表 
+    priceList:{},//价格列表
+    priceAddressList:[],//价格地址列表,
+    currentOrder:{},
+    //筛选条件
+    filterType:[],
+    filterStatus:[],
+    filterSort:0,
     //---
     loading:false
   })
 const containsRef = ref(null)
-
+//----------------------------------
 //条件筛选
 var selectCondition=()=>{
       data.isOpenSelect=true
 }
 //排序
-var sortCondition=()=>{
+var sortCondition=()=>{  
   data.isOpenSort=true
+}
+//操作栏确认
+var optionConfirm=async (_filterType,_filterStatus)=>{
+  data.isOpenSelect=false
+   data.filterStatus=_filterStatus
+   data.filterType=_filterType
+   data.loading=true
+   await getOrderList()
+   data.loading=false
+}
+
+var optionReset=async(_filterType,_filterStatus)=>{
+  data.isOpenSelect=false
+   data.filterStatus=_filterStatus
+   data.filterType=_filterType
+   data.loading=true
+   await getOrderList()
+   data.loading=false
+}
+
+//排序栏确认
+var statusConfirm=async (value)=>{
+  data.isOpenSort=false
+  data.filterSort=value
+   console.log(value)
+   data.loading=true
+   await getOrderList()
+   data.loading=false
+}
+
+var statusReset=async (value)=>{
+   data.isOpenSort=false
+   data.filterSort=value
+   console.log(value)
+   data.loading=true
+   await getOrderList()
+   data.loading=false
+
+}
+// 滚动加载监听滚动条
+var pandingOrderHandleScroll = () => {
+  if(data.scrollLoadLock){
+    return;
+  }
+  const container = containsRef.value
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+    data.orderPage += 1;
+    getOfferList(data.orderPage)
+  }
+}
+
+var submitOrderScroll=()=>{
+    console.log("滚动22")
+}
+
+var tabChange=async ()=>{
+   await initContent()
+}
+
+
+var getDate=(date)=>{
+      if(date==0){
+        return `0d 0h 0m`
+      }
+      //当前时间
+      let nowTime=parseInt(new Date().getTime() /1000)
+      //剩余时间
+      let residualTime= date-nowTime
+      //天 
+      let day=parseInt(residualTime/(24*60*60))
+      //小时
+      let hour=parseInt((residualTime-day*24*60*60)/3600)
+      //分
+      let minute  =parseInt((residualTime-day*24*60*60-hour*3600)/60) 
+      console.log(residualTime,date,nowTime,"当前时间",day,hour,minute)
+
+      return `${day}d ${hour}h ${minute}m`
+}
+
+var timeTransformDateWithoutHour = (time, split= '', isUTC = false) => {
+    let monthEnglish = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+    let date = new Date(time);
+    if(isUTC) {
+      return date.getUTCDate() + split + monthEnglish[date.getUTCMonth()] + split + (date.getUTCFullYear()).toString().substring(2);
+    }
+    return date.getDate() + split + monthEnglish[date.getMonth()] + split + (date.getFullYear()).toString().substring(2);
+}
+var liquidate=(orderInfo)=>{
+  data.currentOrder=orderInfo
+  data.isOpenLiquidation=true
 }
 //-------------初始化-----------------
 onMounted(async ()=>{
@@ -87,14 +210,26 @@ watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
 })
 
 var init=async()=>{
+  await  initContent()
+}
+
+var initContent=async ()=>{
   data.loading=true
-  await getOrderList(data.orderPage)
-  data.loading=false
+    if(data.activeKey=="options"){
+      await getOrderList()
+    }else{
+      await getOfferList()
+    }
+    data.loading=false
+}
+var exerciseLiquidate=async (orderInfo,liquidateType,incomeAmount)=>{
+  await liquidationTx(orderInfo,liquidateType,incomeAmount)
 }
 //--------数据查询-----------
-var getOrderList=async (page = 1)=>{
-   let orderResponse= await getOrderApi("",axiosStore.chainId,axiosStore.currentAccount,page);
-   let orderList = [];
+//offer
+var getOfferList=async (page = 1)=>{
+   let orderResponse= await getOfferApi("",axiosStore.chainId,axiosStore.currentAccount,page);
+   let offerList = [];
    orderResponse?.data?.forEach((item) => {
     let netWork=""
     switch(item["chain_id"]){
@@ -142,69 +277,199 @@ var getOrderList=async (page = 1)=>{
       premiumPrice: item.option_premium ?  item.option_premium: item.derbit_price, // 期权费
 
     }
-    orderList.push(obj);
+    offerList.push(obj);
    });
    if(page == 1){
-    data.orderList = orderList;
+    data.offerList = offerList;
    } else {
-    data.orderList = data.orderList.concat(orderList);
+    data.offerList = data.offerList.concat(offerList);
    }
-   if(orderList.length == 0){
+   if(offerList.length == 0){
       data.orderPage -= 1;
       data.scrollLoadLock = true;
    }
-   console.log(page, data.orderList, orderList);
+   console.log(page, data.offerList, offerList);
 
 }
 
-// 滚动加载监听滚动条
-var pandingOrderHandleScroll = () => {
-  if(data.scrollLoadLock){
-    return;
-  }
-  const container = containsRef.value
-  if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-    data.orderPage += 1;
-    getOrderList(data.orderPage)
-  }
+//订单
+var getOrderList=async ()=>{
+  // _optionId,_chainId,_wallet
+  let orderListResponse=  await getOrderApi("",axiosStore.chainId,axiosStore.currentAccount,data.filterType,data.filterStatus,data.filterSort)
+  console.log(orderListResponse,"orderListResponse")
+  orderListResponse=orderListResponse.data||[]
+  //处理价格列表
+  let priceAddressList=new Set()
+  orderListResponse?.forEach(item=>{
+    priceAddressList.add(String(item["underlying_asset"]).toLocaleLowerCase())
+    priceAddressList.add(String(item["strike_asset"]).toLocaleLowerCase())
+  })
+  priceAddressList=Array.from(priceAddressList)
+ await getPrice(priceAddressList)
+  //查看订单是否存在
+  let orderExist=[]
+  orderListResponse?.forEach(item=>{
+      let obj={
+        orderId:item["order_id_contract"],
+        orderType:item["option_type"],
+      }
+      orderExist.push(obj)
+  })  
+
+  let orderExistResult= await getOptionOrderExist(orderExist)
+ //处理普通数据
+  let orderList=[]
+  orderListResponse?.forEach((item,index)=>{
+      let underlyingAsset=axiosStore.getTokenByAddress(item["underlying_asset"])
+      let strikeAsset=axiosStore.getTokenByAddress(item["strike_asset"])
+
+      let expirationDate=Number(item["expiration_date"])
+      let date=timeTransformDateWithoutHour(expirationDate*1000)
+      let days=`0 Days`
+      if(orderExistResult[index]){   
+         days=getDate(expirationDate)
+      }
+
+      // 当前账号是买家还是卖家
+      let isCurrentHolder=String(axiosStore.currentAccount).toLocaleLowerCase() == String(item["holder_wallet"]).toLocaleLowerCase()
+      let obj={
+         id:item["id"],
+         orderStatus:orderExistResult[index],
+        //  orderStatus:true,
+         expirationDate:expirationDate,
+         days:days,
+         date:date,
+         orderId:item["order_id_contract"],
+         chainName:axiosStore.remark.chainName,
+         chainIcon:axiosStore.remark.chainIcon,
+         orderType:item["option_type"],
+         orderTypeShow:item["option_type"]==0?'Call':'Put',
+         underlyingAsset:underlyingAsset,
+         strikeAsset:strikeAsset,
+         chainId:item["chain_id"],
+         underyingAmount:BigNumber.from(item["underlying_amount"]),
+         underyingAmountShow:BigNumber.from(item["underlying_amount"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100,
+         strikeAmount:BigNumber.from(item["strike_amount"]),
+         writer:item["writer"],
+         writerWallet:item["writer_wallet"],
+         holder:item["holder"],
+         holderWallet:item["holder_wallet"],
+         liquidateMode:item["liquidate_mode"],
+         recipient:item["recipient"],
+         isCurrentHolder:isCurrentHolder
+      }
+      console.log(obj,"objjjsd")
+      orderList.push(obj)
+  })
+  //获取币种市场价格
+  data.orderList=orderList
+
 }
 
-var submitOrderScroll=()=>{
-    console.log("滚动22")
-}
 
 
 
 //-------------上链请求-----------------------
 //清算交易
-  var liquidationTx=async ()=>{
-      data.isOpenLiquidation=true  
-      let ops=[]
-  //_orderType,_orderID,_type,_incomeAmount,_slippage
-  ops.push(liquidateOption())
-  console.log(maxSalt,"---")
-  let bundlerHash= await sendTxToBundler(maxSaltVault,salt,ops) 
-    console.log("bundlerHash",bundlerHash)
-    //接触按钮锁
-    if(!bundlerHash.status){
-        data.btnLock=false
-        return
+var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
+    console.log("orderInfo",orderInfo)
+    //------------数据上链-------------------------
+    data.isOpenLiquidation=false  
+    let orderId=orderInfo.orderId
+    let orderType=orderInfo.orderType
+    let slippage=ethers.utils.parseEther("1")
+    let incomeAmount=0
+
+    let ops=[]
+    //------------处理行权数据--------------------
+   if(liquidateType==2){
+    //利差清算
+    ops.push(liquidateOption(orderType,orderId,2,incomeAmountValue,slippage))
+  }else if(liquidateType==1){
+    //检查0号vault资产是否足够 买家
+    let strikeAmount=orderInfo.underyingAmount.mul(orderInfo.strikeAmount).div(ethers.utils.parseUnits("1",orderInfo?.underlyingAsset?.decimals))
+    let isCheck= await   checkBuyerBalance(orderInfo.recipient,orderInfo.strikeAsset.address,strikeAmount)
+    if(!isCheck){
+       message.warning("vault balance is insufficient to pay strikeAmount")
+       return
     }
-    //起弹窗
-    data.txHash=bundlerHash.hash
-    data.isOpen=true
-    //等待交易结果
-    let result=  await getBundlerTxResult(bundlerHash.hash)
-    data.txResult=result
-    console.log(result)
-    if(result.status){
-        data.btnLock=false
-        return
-    }
+    //实物交割
+    ops.push(liquidateOption(orderType,orderId,1,incomeAmount,slippage))
+  }else{
+    //不行权
+    ops.push(liquidateOption(orderType,orderId,0,incomeAmount,slippage))
   }
 
+  // ---------------处理哪个行权-------------------------
+  let vault=""
+  if(!orderInfo.isCurrentHolder && liquidateType==3){
+    //处理卖家行权
+    vault=orderInfo.writer
+  }else{
+    //处理买家行权
+    vault=orderInfo.holder
+  }
+
+  let salt= await getVaultToSalt(vault)
+  let bundlerHash= await sendTxToBundler(vault,salt,ops) 
+  console.log("bundlerHash",bundlerHash)
 
 
+
+  //接触按钮锁
+  if(!bundlerHash.status){
+      data.btnLock=false
+      return
+  }
+  //起弹窗
+  data.txHash=bundlerHash.hash
+  data.isOpen=true
+  //等待交易结果
+  let result=  await getBundlerTxResult(bundlerHash.hash)
+  data.txResult=result
+  console.log(result)
+  if(result.status){
+      data.btnLock=false
+      return
+  }
+}
+
+
+var getVaultToSalt=async (vault)=>{
+   return await getVaultToSaltR(vault)
+}
+var getPrice=async (assetList)=>{
+  for(let i=0;i<assetList.length;i++){
+    let lowerAddress=String(assetList[i]).toLocaleLowerCase()
+    if(!data.priceAddressList.includes(lowerAddress)){
+      let underlyingAssetPrice= await  getPriceByPriceOracleApi(assetList[i],axiosStore.remark.usdToken)
+      data.priceList[assetList[i]]=underlyingAssetPrice?.message?.price || BigNumber.from("0")
+      data.priceAddressList.push(lowerAddress)
+    }
+  }
+  console.log("价格列表",data.priceAddressList,data.priceList)
+}
+
+//查看当前订单是否存在
+var getOptionOrderExist=async (dataList)=>{
+    if(dataList.length==0){
+      return []
+    }
+    return await getOptionOrderExistR(dataList)
+}
+
+//检查买家0号vault余额是否足够
+var checkBuyerBalance=async (account,asset,strikeAmount)=>{
+    let accountList=[account]
+    let dataList=[asset]
+    let balance=  await getMulTokenBalance(accountList,dataList)
+    console.log(balance)
+    if(balance[0].gte(strikeAmount)){
+           return true
+    }
+
+    return false
+}
 
 </script>
 
@@ -286,7 +551,9 @@ var submitOrderScroll=()=>{
       }
       .empty{
         width: 100%;
-        height: 100%;
+        height: auto;
+        margin-top: 50%;
+        transform: translateY(-50%);
       }
 
   }

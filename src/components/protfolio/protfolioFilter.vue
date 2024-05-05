@@ -13,7 +13,7 @@
             <div class="optionList">
                 <div class="option-item" v-for="item in data.optionList" :key="item.value" >
                     <span class="text">{{ item.label }}</span>
-                    <a-checkbox   :value="item.value">
+                    <a-checkbox  v-model:checked="item.check" @change="optionChange">
                     </a-checkbox>     
                 </div>
             </div>
@@ -22,12 +22,12 @@
             <div class="optionList">
                 <div class="option-item" v-for="item in data.statusList" :key="item.value" >
                     <span class="text">{{ item.label }}</span>
-                    <a-checkbox   :value="item.value">
+                    <a-checkbox   v-model:checked="item.check" @change="statusChange">
                     </a-checkbox>     
                 </div>
             </div>
-            <div class="btn btn1 select">Apply Show 5 Options</div>
-            <div class="btn">Reset</div>
+            <div class="btn btn1 select" @click="confirm">Apply  Options</div>
+            <div class="btn " @click="reset">Reset</div>
         </div>
       </a-drawer>
 </template>
@@ -40,42 +40,88 @@ const props=defineProps({
        default:false
    }
 })
-const emits= defineEmits(["update:isOpen"])
+const emits= defineEmits(["update:isOpen","change","confirm","reset"])
 const data=reactive({
      optionSelectList:[],
      statusSelectList:[],
      optionList:[
         {
          label:"Buy Call Options",
-         value:"0",
+         check:false,
+         value:0,
          },
          {
          label:"Buy Put Options",
-         value:"1",
+         check:false,
+         value:1,
          },
          {
          label:"Sell Call Options",
-         value:"2",
+         check:false,
+         value:2,
          },
          {
           label:"Sell put Options",
-          value:"3",
+          check:false,
+          value:3,
          },         
      ],
      statusList:[
          {
            label:"Open",
-           value:"1", 
+           check:false,
+           value:0, 
          },
          {
            label:"Completed",
-           value:"2"
+           check:false,
+           value:1
          }
-     ]
+     ],
+     statusSelectList:[],
+     optionSelectList:[]
 })
 //关闭弹窗
 var closeDrawer=()=>{
    emits("update:isOpen",false)
+}
+
+var optionChange=()=>{
+   console.log(data.optionList)
+   filter()
+   emits("change",data.optionSelectList,data.statusSelectList)
+}
+
+var statusChange=()=>{
+  console.log(data.statusList)
+  filter()
+  emits("change",data.optionSelectList,data.statusSelectList)
+}
+
+
+var confirm=()=>{
+   emits("confirm",data.optionSelectList,data.statusSelectList)
+}
+
+var reset=()=>{
+   emits("reset",[],[])
+}
+
+var filter=()=>{
+    let optionSelectList=[]
+    let statusSelectList=[] 
+    data.optionList.forEach(item=>{
+        if(item.check){
+          optionSelectList.push(item.value)
+        }
+    })
+    data.statusList.forEach(item=>{
+        if(item.check){
+          statusSelectList.push(item.value)
+        }
+    })
+    data.statusSelectList=statusSelectList
+    data.optionSelectList=optionSelectList
 }
 </script>
 <style lang="less" scoped>

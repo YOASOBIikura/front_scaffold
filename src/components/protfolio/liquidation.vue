@@ -1,60 +1,188 @@
 <template>
-      <a-drawer v-if="props.isOpen"  class="liquidation" height="500px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen">
+      <a-drawer v-if="props.isOpen"  :height="'auto'" class="liquidation"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen">
         <template v-slot:title>
              <div class="filter">
-                 <!-- <img  class="close" src="@/assets/images/close.png" alt="" @click="data.openSortCondition=false"> -->
-                 <span></span>
+                 <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
                  <span class="title">Choose Exercise Method</span>
                  <span></span>
              </div>
         </template>
         <div class="liquidation-body">
-            <div class="settle settle-active">
+            <div 
+            v-if="(props.dataInfo?.liquidateMode == 0 || props.dataInfo?.liquidateMode == 1) && props.dataInfo?.isCurrentHolder" :class="data.currentIndex==0?'settle settle-active':'settle'" @click="data.currentIndex=0">
                 <img class="icon" src="@/assets/images/method1.png" alt="">
                 <p class="info">
                     <span class="text1">Cash settlemnt</span>
-                    <span class="text2">Get 0.23ETH</span>
-                    <span class="text3">≈$898</span>
+                    <span class="text2">{{ cashValue }}</span>
+                    <span class="text3">≈${{ profit }}</span>
                 </p>
                 <span class="status">Recommend</span>
             </div>
 
-            <div class="settle">
+            <div v-if="(props.dataInfo?.liquidateMode == 0 || props.dataInfo?.liquidateMode == 2) && props.dataInfo?.isCurrentHolder" :class="data.currentIndex==1?'settle settle-active':'settle'" @click="data.currentIndex=1">
                 <img class="icon" src="@/assets/images/method2.png" alt="">
                 <p class="info">
                     <span class="text1">Asset Delivery</span>
-                    <span class="text2">Pay 3100USDT to get 1ETH</span>
-                    <span class="text3">≈$898</span>
+                    <span class="text2">{{assetDeliveryShow}}</span>
                 </p>
             </div>
 
-            <div class="warn">
+            <!-- <div class="warn">
                 <img class="icon" src="@/assets/images/warn.png" alt="">
                 <span class="text">Slippage in trading may cause deviations</span>
-            </div>
+            </div> -->
             
 
-            <div class="btn btn1 select">Exercise</div>
-            <div class="btn" @click="closeDrawer">Not Now</div>
+            <div v-if="props.dataInfo?.isCurrentHolder" class="btn btn1 select" @click="liquidate">Exercise</div>
+            <div class="btn" @click="notExercise">Not Exercise</div>
        </div>
       </a-drawer>
 </template>
 <script setup>
-import { reactive,defineProps,defineEmits} from 'vue';
+import { reactive,defineProps,defineEmits,computed} from 'vue';
+import { BigNumber, ethers } from 'ethers';
+import { useAxiosStore } from "@/pinia/modules/axios";
+import { message } from 'ant-design-vue';
+const axiosStore = useAxiosStore();
 const data=reactive({
-
+    currentIndex:0
 })
 const props=defineProps({
    isOpen:{
        type:Boolean,
        require:true,
        default:false
-   }
+   },
+   dataInfo:{
+    type:Object,
+    require:true,
+    default:{}
+   },
+   priceList:{
+      type:Object,
+       require:true,
+       default:{}
+    }
 })
-const emits= defineEmits(["update:isOpen"])
+const emits= defineEmits(["update:isOpen","liquidate"])
 //关闭弹窗
 var closeDrawer=()=>{
    emits("update:isOpen",false)
+}
+
+
+
+var assetDeliveryShow=computed(()=>{
+    let info=""
+    let underlyingAmount=props.dataInfo?.underyingAmount.div(ethers.utils.parseUnits("1",props.dataInfo?.underlyingAsset?.decimals-2)).toNumber()/100
+    let strikeAmount=props.dataInfo?.strikeAmount.mul(props.dataInfo?.underyingAmount).div(ethers.utils.parseUnits("1",props.dataInfo?.strikeAsset?.decimals-2)).div(ethers.utils.parseUnits("1",props.dataInfo?.underlyingAsset?.decimals)).toNumber()/100
+    info=`Pay ${strikeAmount}${props.dataInfo?.strikeAsset?.name} to get ${underlyingAmount}${props.dataInfo?.underlyingAsset?.name}`
+    return info
+})
+
+
+var profit=computed(()=>{
+  return getProfit()
+})
+
+var cashValue=computed(()=>{
+   let value=getCashValue()
+   return `Get ${value}${props.dataInfo?.underlyingAsset?.name}`
+})
+
+
+var getCashValue=()=>{
+    let profitValue=getProfit()
+   let asset=String(props.dataInfo?.underlyingAsset?.address).toLocaleLowerCase()
+   let underlyingPrice=props.priceList[asset]
+   if(!underlyingPrice){
+      return 0
+   }
+   underlyingPrice=underlyingPrice.div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100
+   let value=profitValue/underlyingPrice
+   return value
+}
+
+var getProfit=()=>{
+   //行权价
+   let strikePriceTemp=getStrikePrice()
+   //市场价
+   let narketPriceTemp=getMarketPrice()
+   //价差
+   let spread=0
+   if(props.dataInfo?.orderTypeShow=="Call"){
+      spread=narketPriceTemp-strikePriceTemp
+   }else{
+      spread=strikePriceTemp-narketPriceTemp
+   }
+   if(spread<=0){
+      spread=0
+   }
+   return spread
+}
+
+
+
+var getMarketPrice=()=>{
+   let asset=""
+     if(props.dataInfo?.orderTypeShow=="Call"){
+         asset=String(props.dataInfo?.underlyingAsset?.address).toLocaleLowerCase()
+     }else{
+         asset=String(props.dataInfo?.strikeAsset?.address).toLocaleLowerCase()
+     }
+     let price= props.priceList[asset]
+     if(!price){
+       return 0
+     }
+     price=price.div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100
+     return price
+}
+
+var getStrikePrice=()=>{
+   let  asset=String(props.dataInfo?.strikeAsset?.address).toLocaleLowerCase()
+     let  decimals=props.dataInfo?.strikeAsset?.decimals
+     let amount= props.dataInfo?.strikeAmount
+     let price= props.priceList[asset]
+     if(!price){
+       return 0
+     }
+     return amount.mul(price).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",decimals)).toNumber()/100
+}
+var getProfitAmount=()=>{
+    let profitValue=getCashValue()
+    return ethers.utils.parseUnits(`${profitValue}`,props.dataInfo?.underlyingAsset?.decimals)
+
+}
+
+//----
+var notExercise=()=>{
+    if(!data.dataInfo.isCurrentHolder){
+        let nowTime=parseInt(new Date().getTime())/1000
+        if( data.dataInfo.expirationDate>=nowTime){
+             message.warning("Before the time was up,writer could not liquidate")
+             return
+        }
+    }  
+     data.currentIndex=3
+     liquidate()
+}
+
+
+var liquidate=()=>{
+    let _incomeAmount=getProfitAmount()
+    let liquidateType=1
+     if(data.currentIndex==0){
+        //利差清算
+        liquidateType=2
+     }else if(data.currentIndex==1){
+        //实物交割
+        liquidateType=1
+     }else{
+        //不清算
+        liquidateType=3
+     }
+     console.log("liquidate","----")
+     emits("liquidate",props.dataInfo,liquidateType,_incomeAmount)
 }
 </script>
 <style lang="less" scoped>
@@ -176,14 +304,6 @@ var closeDrawer=()=>{
             color: var(--text-color-active);
         }
       }
-
- 
-
- 
-
-
- 
-
 
 
 </style>

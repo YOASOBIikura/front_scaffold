@@ -119,6 +119,9 @@
         :nextPage="data.transferLoadingData.nextPage"
         :transferName="data.transferLoadingData.transferName"
      ></singlestepLoading>
+
+    <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
+
     
 </template>
 
@@ -140,7 +143,7 @@ import {useAxiosStore} from "@/pinia/modules/axios"
 import {issue} from "@/callData/bundler/issuanceModule"
 import {submitOptionOrder} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
-import {getOrderApi} from "@/api/protfolio"
+import {getOfferApi} from "@/api/protfolio"
 import { useRouter,useRoute} from "vue-router";
 import { message } from 'ant-design-vue';
 import {getPriceByPriceOracleApi} from "@/api/priceOracle"
@@ -183,7 +186,9 @@ const data = reactive({
             name: "my protfolio"
         },
         transferName: "buy Put"
-    }
+    },
+    loading:false
+
 
 });
 
@@ -262,6 +267,7 @@ var init=async()=>{
     if(axiosStore.isConnect==1){
       return
     }
+    data.loading=true
     //获取订单信息
     await getOrder()
     
@@ -307,12 +313,14 @@ var init=async()=>{
     data.currentUnderlyingPrice=  await getPrice(data.currentStrikeAsset.address)
    //处理offer总额
    await getUnderlyAssetTotal()
+   data.loading=false
+
 
 }
 
 //----------------请求----------------------
 var getOrder=async ()=>{
-   let response= await getOrderApi(route.query.id,axiosStore.chainId,"")
+   let response= await getOfferApi(route.query.id,axiosStore.chainId,"")
    console.log("response",response)
    response=response?.data || []
    let signInfo={}

@@ -1,33 +1,34 @@
  <template>
-    <div class="submitOrder">
+    <div class="submitOrder"    >
         <div class="submitOrder-header">
             <div class="top">
                 <div class="top-left">
-                    <img  class="network" src="@/assets/images/arbitrum.png">
-                    <span class="text">Eth Call Options Vault</span>
+                    <img  class="network" :src="props.dataInfo?.underlyingAsset?.img">
+                    <span class="text">{{props.dataInfo?.orderTypeShow=='Call'?props.dataInfo?.underlyingAsset?.name: props.dataInfo?.strikeAsset?.name }} {{  props.dataInfo?.orderTypeShow}} Options Vault</span>
                 </div>
                 <div class="top-right">
-                    <img class="network" src="@/assets/images/arbitrum.png">
-                    <span class="text">Ethereum</span>
+                    <img class="network" :src="props.dataInfo?.chainIcon">
+                    <span class="text">{{props.dataInfo?.chainName  }}</span>
                 </div>
             </div>
 
             <div class="price">
-                <img class="icon" src="@/assets/images/arrow_green.png" alt="">
-                <span class="text">$3100</span>
+                <img v-if="props.dataInfo?.orderTypeShow=='Call'" class="icon" src="@/assets/images/arrow_green.png" alt="">
+                <img v-else class="icon" src="@/assets/images/arrow_red.png" alt="">
+                <span class="text">${{strikePrice}}</span>
             </div>       
 
             <div class="bottom">
                  <div class="bottom-left">
                      <span class="text1">Amount</span>
-                     <span class="text2">1ETH</span>
-                     <span class="text3">$3300</span>
+                     <span class="text2">{{props.dataInfo?.underyingAmountShow  }}{{ props.dataInfo?.underlyingAsset?.name }}</span>
+                     <span class="text3">${{underlyingValue}}</span>
                  </div>   
 
                  <div class="bottom-right">
                      <span class="text1">Valid Date</span>
-                     <span class="text2">27 Days</span>
-                     <span class="text3">26 Feb 24</span>
+                     <span class="text2">{{props.dataInfo?.days}}</span>
+                     <span class="text3">{{props.dataInfo?.date}}</span>
                  </div>
             </div>
         </div>    
@@ -35,42 +36,132 @@
         <div class="submitOrder-bottom">
          <div class="icon-show">
             <img class="icon" src="@/assets/images/token_bg.png" >
-            <img class="icon-inner" src="@/assets/images/token-usdt.png" alt="">
+            <img v-if="props.dataInfo?.orderTypeShow=='Call'" class="icon-inner" :src="props.dataInfo?.strikeAsset?.img" alt="">
+            <img v-else class="icon-inner" :src="props.dataInfo?.underlyingAsset?.img" alt="">
          </div>
            
             <div class="content">
                 <p class="p1">
-                    <span class="title">Strike price</span>
-                    <span class="text">$3100</span>
+                    <span class="title">Market Price</span>
+                    <span class="text">${{marketPrice}}</span>
                 </p>
-                <p class="p2">
+                <p class="p2" v-show="props.dataInfo.orderStatus">
                     <span class="title">Profit</span>
-                    <span class="text">$898</span>
+                    <span class="text">${{profit}}</span>
                 </p>
             </div>
 
-            <div class="btn" @click="liquidation">
+            <div class="btn" @click="liquidation" v-if="props.dataInfo?.orderStatus">
                 Exercise
             </div>
 
           
         </div>
-        <div class="notice">
+        <!-- <div class="notice">
                 <img class="icon" src="@/assets/images/info.png" alt="">
                 <span class="text">You will incur losses if the price rises to $3410 on 26 feb24</span>
-                <!-- <img src="@/assets/images/arrow_close.png" alt=""> -->
-         </div>
+                <img src="@/assets/images/arrow_close.png" alt="">
+         </div> -->
     </div>  
  </template>
 <script setup>
-import { reactive } from 'vue';
-const emits= defineEmits(["liquidation"])
+import { BigNumber, ethers } from 'ethers';
+import { reactive,defineEmits,defineProps,computed} from 'vue';
+import { useAxiosStore } from "@/pinia/modules/axios";
+const axiosStore = useAxiosStore();
+const props=defineProps({
+     dataInfo:{
+       type:Object,
+       require:true,
+       default:{}
+     },
+     priceList:{
+      type:Object,
+       require:true,
+       default:{}
+     }
+})
+const emits= defineEmits(["liquidate"])
 const data=reactive({         
 
 })
+var marketPrice=computed(()=>{
+   return getMarketPrice()
+})
+//抵押价值
+var underlyingValue=computed(()=>{
+     let asset=""
+     let decimals=18
+     if(props.dataInfo?.orderTypeShow=="Call"){
+         asset=String(props.dataInfo?.underlyingAsset?.address).toLocaleLowerCase()
+         decimals=props.dataInfo?.underlyingAsset?.decimals
+     }else{
+         asset=String(props.dataInfo?.strikeAsset?.address).toLocaleLowerCase()
+         decimals=props.dataInfo?.strikeAsset?.decimals
+     } 
+     let price= props.priceList[asset]
+     if(!price){
+       return 0
+     }
+   price= price.mul(props.dataInfo?.underyingAmount).div(ethers.utils.parseUnits("1",decimals)).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100
+   return price
+
+})
+
+var strikePrice=computed(()=>{
+    return getStrikePrice()
+})
+
+var profit=computed(()=>{
+   //行权价
+   let strikePriceTemp=getStrikePrice()
+   //市场价
+   let narketPriceTemp=getMarketPrice()
+   //价差
+   let spread=0
+   if(props.dataInfo?.orderTypeShow=="Call"){
+      spread=narketPriceTemp-strikePriceTemp
+   }else{
+      spread=strikePriceTemp-narketPriceTemp
+   }
+   if(spread<=0){
+      spread=0
+   }
+   return spread
+})
+
+
+var getMarketPrice=()=>{
+   let asset=""
+     if(props.dataInfo?.orderTypeShow=="Call"){
+         asset=String(props.dataInfo?.underlyingAsset?.address).toLocaleLowerCase()
+     }else{
+         asset=String(props.dataInfo?.strikeAsset?.address).toLocaleLowerCase()
+     }
+     let price= props.priceList[asset]
+     if(!price){
+       return 0
+     }
+     price=price.div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100
+     return price
+}
+
+var getStrikePrice=()=>{
+   let  asset=String(props.dataInfo?.strikeAsset?.address).toLocaleLowerCase()
+     let  decimals=props.dataInfo?.strikeAsset?.decimals
+     let amount= props.dataInfo?.strikeAmount
+     let price= props.priceList[asset]
+     if(!price){
+       return 0
+     }
+     return amount.mul(price).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",decimals)).toNumber()/100
+}
+
+
+
+//---------------------------
 var liquidation=()=>{
-   console.log(3333)
-    emits("liquidation")
+    emits("liquidate",props.dataInfo)
 }
 </script>
 <style lang="less" scoped>
@@ -244,7 +335,7 @@ var liquidation=()=>{
                 }
                 .text2{
                    color: var(--text-color-primary);
-                   font-size: 20px;
+                   font-size: 16px;
                    font-weight: 600;
                    margin-bottom: 8px;
                 }
@@ -264,7 +355,7 @@ var liquidation=()=>{
                 }
                 .text2{
                    color: var(--text-color-third);
-                   font-size: 20px;
+                   font-size: 16px;
                    font-weight: 600;
                    margin-bottom: 8px;
                 }
@@ -296,6 +387,7 @@ var liquidation=()=>{
                position: absolute;
                left: 50%;
                top: 50%;
+               border-radius: 50%;
                transform: translateX(-50%) translateY(-50%);
             }
          }

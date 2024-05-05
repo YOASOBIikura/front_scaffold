@@ -52,7 +52,17 @@ var getMulVaultR=async (data)=>{
    return multiCallResponse  
 }
 
+// 获取vault下标
+var getVaultToSaltR=async (vault)=>{
+    let multiCallData=[]
+    let callData= getVaultToSalt("getVaultToSalt",vault)
+    multiCallData.push(callData)
+    let multiCallResponse= await  multiCallObjR(multiCallData)
+    console.log("multiCallResponse",multiCallResponse)
+    return multiCallResponse["getVaultToSalt"]?.salt 
+}
 
 
 
-export {createVaultService,getMulVaultR}
+
+export {createVaultService,getMulVaultR,getVaultToSaltR}
