@@ -3,7 +3,7 @@
       <a-tabs class="protfolio-tabs" v-model:activeKey="data.activeKey" @change="tabChange">
         <!-- listing -->
         <a-tab-pane key="listing" tab="My Listings">
-          <div class="contains" ref="containsRef" v-if="data.offerList.length > 0 " @scroll="pandingOrderHandleScroll">
+          <div class="contains" ref="offerContainsRef" v-if="data.offerList.length > 0 " @scroll="pandingOrderHandleScroll">
             <pendingOrder v-for="(item) in data.offerList" :key="item" :orderData="item"></pendingOrder>
           </div>    
 
@@ -22,7 +22,7 @@
                     </div>
                   </div>
           </div>
-           <div class="contains padding" v-if="data.orderList.length>0" @scroll="submitOrderScroll">
+           <div class="contains padding" ref="orderContainsRef" v-if="data.orderList.length>0" @scroll="submitOrderScroll">
               <submitOrder 
               v-for="(item,index) in data.orderList" 
               :key="index" :dataInfo="item" 
@@ -54,7 +54,13 @@
       ></liquidation>
     
     </div>
-
+    <singlestepLoading 
+          v-model:isOpen="data.transferLoadingData.open"
+          :status="data.transferLoadingData.status"
+          :hash="data.transferLoadingData.hash"
+          :nextPage="data.transferLoadingData.nextPage"
+          :transferName="data.transferLoadingData.transferName"
+    ></singlestepLoading>
     <a-spin v-if="data.loading " class="aSpin" tip="Loading..." :delay="100"> </a-spin>
 </template>
 
@@ -65,6 +71,7 @@ import protfolioFilter from "@/components/protfolio/protfolioFilter.vue"
 import protfolioSort from "@/components/protfolio/protfolioSort.vue"
 import liquidation from "@/components/protfolio/liquidation.vue"
 import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
+import singlestepLoading from "@/components/utils/singlestepLoading.vue"
 import {liquidateOption} from "@/callData/bundler/optionModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {getOfferApi,getOrderApi} from "@/api/protfolio"
@@ -85,7 +92,9 @@ const axiosStore= useAxiosStore()
     offerList:[],
     btnLock:false,//按钮锁
     orderPage: 1,
-    scrollLoadLock: false, // 滚动加载锁
+    offerPage: 1,
+    scrollOfferLoadLock: false, // 滚动加载锁
+    scrollOrderLoadLock: false, // order订单的滚动加载锁
     //------------
     orderList:[],//订单列表 
     priceList:{},//价格列表
@@ -96,9 +105,22 @@ const axiosStore= useAxiosStore()
     filterStatus:[],
     filterSort:0,
     //---
-    loading:false
+    loading:false,
+
+    transferLoadingData: {
+        open: false,
+        status: "pending",
+        hash: "",
+        nextPage: {
+            path: "/protfolio",
+            query: {},
+            name: "my protfolio"
+        },
+      transferName: "Liquidate"
+    }
   })
-const containsRef = ref(null)
+const offerContainsRef = ref(null);
+const orderContainsRef = ref(null);
 //----------------------------------
 //条件筛选
 var selectCondition=()=>{
@@ -148,18 +170,25 @@ var statusReset=async (value)=>{
 }
 // 滚动加载监听滚动条
 var pandingOrderHandleScroll = () => {
-  if(data.scrollLoadLock){
+  if(data.scrollOfferLoadLock){
     return;
   }
-  const container = containsRef.value
+  const container = offerContainsRef.value
   if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
-    data.orderPage += 1;
-    getOfferList(data.orderPage)
+    data.offerPage += 1;
+    getOfferList(data.offerPage)
   }
 }
 
 var submitOrderScroll=()=>{
-    console.log("滚动22")
+  if(data.scrollOrderLoadLock){
+    return;
+  }
+  const container = orderContainsRef.value
+  if (container.scrollTop + container.clientHeight >= container.scrollHeight) {
+    data.orderPage += 1;
+    getOrderList(data.orderPage)
+  }
 }
 
 var tabChange=async ()=>{
@@ -283,17 +312,16 @@ var getOfferList=async (page = 1)=>{
     data.offerList = data.offerList.concat(offerList);
    }
    if(offerList.length == 0){
-      data.orderPage -= 1;
-      data.scrollLoadLock = true;
+      data.offerPage -= 1;
+      data.scrollOfferLoadLock = true;
    }
-   console.log(page, data.offerList, offerList);
 
 }
 
 //订单
-var getOrderList=async ()=>{
+var getOrderList=async (page = 1)=>{
   // _optionId,_chainId,_wallet
-  let orderListResponse=  await getOrderApi("",axiosStore.chainId,axiosStore.currentAccount,data.filterType,data.filterStatus,data.filterSort)
+  let orderListResponse=  await getOrderApi("",axiosStore.chainId,axiosStore.currentAccount,data.filterType,data.filterStatus,data.filterSort,page);
   console.log(orderListResponse,"orderListResponse")
   orderListResponse=orderListResponse.data||[]
   //处理价格列表
@@ -360,7 +388,16 @@ var getOrderList=async ()=>{
       orderList.push(obj)
   })
   //获取币种市场价格
-  data.orderList=orderList
+  
+   if(page == 1){
+    data.orderList=orderList
+   } else {
+    data.orderList = data.orderList.concat(orderList);
+   }
+   if(orderList.length == 0){
+      data.orderPage -= 1;
+      data.scrollOrderLoadLock = true;
+   }
 
 }
 
@@ -370,6 +407,7 @@ var getOrderList=async ()=>{
 //-------------上链请求-----------------------
 //清算交易
 var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
+    data.transferLoadingData.open = true;
     console.log("orderInfo",orderInfo)
     //------------数据上链-------------------------
     data.isOpenLiquidation=false  
@@ -416,6 +454,8 @@ var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
 
   //接触按钮锁
   if(!bundlerHash.status){
+      data.transferLoadingData.hash = "";
+      data.transferLoadingData.status = "faild";
       data.btnLock=false
       return
   }
@@ -428,8 +468,12 @@ var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
   console.log(result)
   if(result.status){
       data.btnLock=false
+       data.transferLoadingData.status = "faild";
+       data.transferLoadingData.hash = result.message;
       return
   }
+  data.transferLoadingData.status = "success";
+  data.transferLoadingData.hash = result.message;
   //修改当前订单状态
   orderInfo.orderStatus=false
 }

@@ -60,6 +60,7 @@
                     :dataSource="data.orderList" 
                     :columns="data.orderTitle"
                     :listingType="data.currentListing"
+                    @scrollBottom="loadMoreOrder"
                 >
                 </listing-table>  
 
@@ -136,6 +137,8 @@ const data=reactive({
      //---------数据----------------
      underlyingAssetList:[], //抵押资产数据
      currentUnderlyingAsset:{},//当前抵押资产
+     marketOfferPage: 1, // offer分页
+     marketOfferLoadLock: false // offer滚动加载锁
 })
 //-------------计算属性------------
 var isShowWriteEmpty=computed(()=>{
@@ -181,6 +184,8 @@ var expiryDateChange=async (item)=>{
     })
     data.strikeParamData=strikeParamData
     //获取订单 
+    data.marketOfferPage = 1;
+    data.marketOfferLoadLock =  false;
     await getOrderList()
    console.log(item,"日期选择")
 }
@@ -188,12 +193,16 @@ var strikeChange=async (item)=>{
     data.currentStrikeValue=item
    console.log(item,"行权价选择")
     //获取订单
+    data.marketOfferPage = 1;
+    data.marketOfferLoadLock =  false;
     await getOrderList()
 }
 var listingChange=async (item)=>{
    console.log(item,"listing",data.currentListing)
 //    data.currentListing=item.key
     //获取订单
+    data.marketOfferPage = 1;
+    data.marketOfferLoadLock =  false;
     await getOrderList()
 
 }
@@ -244,12 +253,13 @@ var getParamData=async ()=>{
     data.currentExpiryValue=0
     data.expiryParamData=expiryParamData
     data.strikeParamData=strikeParamData
-
+    data.marketOfferPage = 1;
+    data.marketOfferLoadLock =  false;
     await getOrderList()
 }
 
 //获取订单
-var getOrderList=async ()=>{
+var getOrderList=async (page=1)=>{
      let strikePrice=data.strikeParamData[data.currentStrikeValue]?.name
 
      let date=data.expiryParamData [data.currentExpiryValue]?.name
@@ -258,7 +268,7 @@ var getOrderList=async ()=>{
      if(data.currentListing=="My"){
          wallet=axiosStore.currentAccount
      }
-     let orderListResponse= await getMarketOfferApi(axiosStore.chainId,data.currentOrderType[0]=="call"?0 : 1,data.currentUnderlyingAsset.name,strikePrice,date,wallet)
+     let orderListResponse= await getMarketOfferApi(axiosStore.chainId,data.currentOrderType[0]=="call"?0 : 1,data.currentUnderlyingAsset.name,strikePrice,date,wallet,page)
      console.log("orderListResponse",orderListResponse)
      let orderList=[]
      orderListResponse?.data?.forEach(item=>{
@@ -313,9 +323,26 @@ var getOrderList=async ()=>{
           }
           orderList.push(obj)
      })
-     data.orderList=orderList
-    
+    //  data.orderList=orderList
+     
+    if(page == 1){
+      data.orderList=orderList
+    } else {
+      data.orderList = data.orderList.concat(orderList);
+    }
+    if(orderList.length == 0){
+        data.marketOfferPage -= 1;
+        data.marketOfferLoadLock = true;
+    }
+}
 
+// 滚动加载更多数据
+var loadMoreOrder = () => {
+  if(data.marketOfferLoadLock){
+    return;
+  }
+  data.marketOfferPage += 1;
+  getOrderList(data.marketOfferPage)
 }
 </script>
 

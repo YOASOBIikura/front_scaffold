@@ -2,7 +2,7 @@
     <div class="assetsTransfer">
         <navigationBar :title="`Transfer ${data.tokenInfo.name}`">
             <template v-slot:icon>
-                <img  :style="{width: '16px',height: '16px',borderRadius:'50%'}" :src="data.tokenInfo.img" alt="">
+                <img  :style="{width: '16px',height: '16px'}" :src="data.tokenInfo.img" alt="">
             </template>
            
         </navigationBar>
@@ -59,6 +59,13 @@
         :decimals="data.tokenInfo.decimals"
         :txResult="data.txResult">
         </assetTranfer>
+        <singlestepLoading 
+            v-model:isOpen="data.transferLoadingData.open"
+            :status="data.transferLoadingData.status"
+            :hash="data.transferLoadingData.hash"
+            :nextPage="data.transferLoadingData.nextPage"
+            :transferName="data.transferLoadingData.transferName"
+        ></singlestepLoading>
     </div>
     <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
 </template>
@@ -81,6 +88,7 @@ import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
 import {createVaultService} from "@/apiHandle/vault"
 import { message } from 'ant-design-vue';
+import singlestepLoading from "@/components/utils/singlestepLoading.vue"
 
 
 const axiosStore= useAxiosStore()
@@ -101,7 +109,18 @@ const data=reactive({
     //----状态锁-----
     btnLock:false,
     issueMode:0,
-    loading:false
+    loading:false,
+    transferLoadingData: {
+        open: false,
+        status: "pending",
+        hash: "",
+        nextPage: {
+            path: "/protfolio",
+            query: {},
+            name: "my protfolio"
+        },
+    transferName: "Transfer in progress"
+    }
 })
 // -------------计算属性----------------
 var walletBalance=computed(()=>{
@@ -197,7 +216,8 @@ var transferTx=async ()=>{
        return
     }
     console.log("进入页面尝试")
-    data.isOpen=true
+    // data.isOpen=true
+    data.transferLoadingData.open = true;
     await sendTx()
 }
 
@@ -237,20 +257,28 @@ var sendTx=async ()=>{
     console.log("bundlerHash",bundlerHash)
     //接触按钮锁
     if(!bundlerHash.status){
-        data.btnLock=false
+        // data.btnLock=false
+        data.transferLoadingData.hash = "";
+        data.transferLoadingData.status = "faild";
         return
     }
     //起弹窗
     data.txHash=bundlerHash.hash
-    data.isOpen=true
+    // data.isOpen=true
+    data.transferLoadingData.open = true
+    data.transferLoadingData.status = "pending";
     //等待交易结果
-    let result=  await getBundlerTxResult(bundlerHash.hash)
-    data.txResult=result
-    console.log(result)
-    if(result.status){
-        data.btnLock=false
+    let result=  await getBundlerTxResult(bundlerHash.hash);
+    // data.txResult=result
+   
+    if(!result.status){
+        data.btnLock=false;
+        data.transferLoadingData.status = "faild";
+       data.transferLoadingData.hash = result.message;
         return
     }
+    data.transferLoadingData.status = "success";
+    data.transferLoadingData.hash = result.message;
 }
 
 //授权交易

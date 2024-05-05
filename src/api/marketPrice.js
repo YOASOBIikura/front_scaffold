@@ -23,7 +23,7 @@ function getMarketPriceApi(_chainId,_orderType,_assetSymbol){
 }
 
 //获取offer  
-function getMarketOfferApi(_chainId,_orderType,_assetSymbol,_strikeprice,_optionDate,_wallet){
+function getMarketOfferApi(_chainId,_orderType,_assetSymbol,_strikeprice,_optionDate,_wallet,_page=1,_pageSize=10){
     return useAxiosStore().axios({
         mode:"http", //chainBlockCall  http  chainBlockSend  sign  unSign  
         target:"/option/market_offer" ,// chainBlock 时是合约地址   http时是url
@@ -32,8 +32,8 @@ function getMarketOfferApi(_chainId,_orderType,_assetSymbol,_strikeprice,_option
         method:"post",
         data:{
              "page": {
-                  "page": 1,
-                  "page_size": 10000
+                  "page": _page,
+                  "page_size": _pageSize
                 },
                 "quote_symbol": String(_assetSymbol).toLocaleUpperCase(),
                 "option_type": _orderType,

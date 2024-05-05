@@ -1,13 +1,14 @@
 <template>
 
         <a-table
+                ref="listingTableRef"
                 :dataSource="dataSource" 
                 :columns="columns"
                 :bordered="false"
                 :pagination="false"
                 :scroll="{ x: 1100,y: 'calc(100vh - 570px)'}"
         >
-        <template #bodyCell="{ column, record }">
+        <template #bodyCell="{ column, record }" >
             <div @click="changeItem(record)">
             <!-- owner -->
             <template v-if="column.key === 'owner'">
@@ -96,12 +97,15 @@
 
 </template>
 <script setup>
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue"
 import { useRouter,useRoute} from "vue-router";
 const router=useRouter()
 const props = defineProps({
   dataSource: {type: Array, default: []},
   columns: Array,
 });
+const listingTableRef = ref(null);
+const emits=defineEmits(["scrollBottom"])
 
 var changeItem=(item)=>{
    console.log(item,"----sss")
@@ -112,6 +116,35 @@ var changeItem=(item)=>{
 
    }
 }
+
+var bodyScroll = () => {
+    let listingTableComponent = listingTableRef;
+    const bodyContainer = listingTableComponent.value.$el.querySelector(".ant-table-body");
+    const bodyPosition = bodyContainer.scrollTop;
+    const isScrollBottom = bodyContainer.scrollHeight - bodyPosition == bodyContainer.clientHeight;
+    if(isScrollBottom){
+        emits("scrollBottom", true);
+    }
+}
+
+onMounted(() => {
+    nextTick(() => {
+        let listingTableComponent = listingTableRef;
+        if(listingTableComponent){
+            const tableContainer = listingTableComponent.value.$el.querySelector(".ant-table-body");
+            tableContainer.addEventListener("scroll", bodyScroll);
+        }
+    });  
+})
+onBeforeUnmount(() => {
+     nextTick(() => {
+        let listingTableComponent = listingTableRef;
+        if(listingTableComponent){
+            const tableContainer = listingTableComponent.value.$el.querySelector(".ant-table-body");
+            tableContainer.removeEventListener("scroll", bodyScroll);
+        }
+    });
+})
 
 </script>
 <style scoped lang="less">
