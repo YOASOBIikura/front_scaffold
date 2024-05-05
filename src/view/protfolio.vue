@@ -432,6 +432,8 @@ var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
       data.btnLock=false
       return
   }
+  //修改当前订单状态
+  orderInfo.orderStatus=false
 }
 
 
