@@ -1,5 +1,5 @@
 <template>
-      <a-drawer v-if="props.isOpen"  class="protfolioSort" height="350px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  >
+      <a-drawer v-show="props.isOpen"  class="protfolioSort" height="350px"  :closable="false" :headerStyle="{padding:'0px'}" :bodyStyle="{padding:'0px'}" :placement="'bottom'"   :open="props.isOpen"  >
         <template v-slot:title>
              <div class="filter">
                  <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
@@ -58,6 +58,7 @@ var confirm=()=>{
    emits("confirm",data.value)
 }
 var reset=()=>{
+   data.value=0
    emits("reset",0)
 }
 

@@ -37,13 +37,11 @@
       </a-tabs>
       <!-- dialog -->
       <protfolioFilter 
-         v-if="data.isOpenSelect"
          v-model:isOpen="data.isOpenSelect"
          @confirm="optionConfirm"
          @reset="optionReset"
       ></protfolioFilter>
       <protfolioSort 
-         v-if="data.isOpenSort"
          v-model:isOpen="data.isOpenSort"
          @confirm="statusConfirm"
          @reset="statusReset"         

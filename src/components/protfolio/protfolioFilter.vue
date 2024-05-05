@@ -1,5 +1,5 @@
 <template>
-     <a-drawer v-if="props.isOpen" height="570px" class="protfolioFilter"  :closable="false" :headerStyle="{padding:'0px'}"  :bodyStyle="{padding:'0px'}"  :placement="'bottom'"   :open="props.isOpen" >
+     <a-drawer v-show="props.isOpen" height="570px" class="protfolioFilter"  :closable="false" :headerStyle="{padding:'0px'}"  :bodyStyle="{padding:'0px'}"  :placement="'bottom'"   :open="props.isOpen" >
         <template v-slot:title>
              <div class="filter">
                  <img  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
@@ -104,6 +104,12 @@ var confirm=()=>{
 }
 
 var reset=()=>{
+   data.optionList.forEach(item=>{
+       item.check=false
+   })
+   data.statusList.forEach(item=>{
+      item.check=false
+   })
    emits("reset",[],[])
 }
 
