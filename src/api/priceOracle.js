@@ -18,4 +18,15 @@ function  getPriceByPriceOracleApi(_masterToken,_quoteToken){
 }
 
 
-export {getPriceByPriceOracleApi}
+function getPriceByServiceApi(_masterSymbol,_quoteSymbol){
+   return  useAxiosStore().axios({
+      mode:"http", 
+      target:"/price_oracle/pyth_price_by_api",
+      method:"get",
+      data:{
+        "token_a_symbol":_masterSymbol,
+        "_token_b_symbol":_quoteSymbol      
+  }});
+}
+
+export {getPriceByPriceOracleApi,getPriceByServiceApi}

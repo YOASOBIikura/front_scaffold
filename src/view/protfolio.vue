@@ -241,6 +241,9 @@ var init=async()=>{
 }
 
 var initContent=async ()=>{
+  if(axiosStore.isConnect==1){
+      return
+  }
   data.loading=true
     if(data.activeKey=="options"){
       await getOrderList()
