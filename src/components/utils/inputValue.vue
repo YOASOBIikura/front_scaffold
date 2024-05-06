@@ -65,7 +65,6 @@ var max=()=>{
 }
 var inputValue= (input)=>{
     let value=input.target.value;
-    console.log(data.inputShow,"value",value,data.preValue)
     //处理字符串等
     const regex = /^\d*\.?\d*$/;
     let isDigit= regex.test(value)
