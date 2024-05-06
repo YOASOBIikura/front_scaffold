@@ -122,7 +122,7 @@ var bodyScroll = () => {
     const bodyContainer = listingTableComponent.value.$el.querySelector(".ant-table-body");
     const bodyPosition = bodyContainer.scrollTop;
     const isScrollBottom = bodyContainer.scrollHeight - bodyPosition == bodyContainer.clientHeight;
-    if(isScrollBottom){
+    if(isScrollBottom && bodyContainer.scrollHeight != bodyContainer.clientHeight){
         emits("scrollBottom", true);
     }
 }

@@ -60,7 +60,7 @@ var max=()=>{
     emits("inputMax",props.maxValue,data.inputShow)
 }
 var inputValue= (input)=>{
-    if(onlyContainsZerosAndDots(input.target.value)){
+    if(onlyContainsZerosAndDots(input.target.value) || input.target.value.indexOf(".") === input.target.value.length - 1){
         return 
     }
     let value = numberLimitations(input.target.value);
