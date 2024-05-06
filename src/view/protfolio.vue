@@ -237,7 +237,6 @@ watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
 })
 
 var init=async()=>{
-  console.log(price,'skskkks')
   await  initContent()
 }
 
