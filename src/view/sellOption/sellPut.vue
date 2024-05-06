@@ -142,7 +142,7 @@ import {useAxiosStore} from "@/pinia/modules/axios"
 import { BigNumber, ethers } from "ethers";
 import {setSigatureLockApi,sign712OrderApi,getStrikeApi,createOrderApi} from "@/api/optionModule"
 import {balanceOfApi} from "@/api/token"
-import {getPriceByPriceOracleApi} from "@/api/priceOracle"
+import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getWalletBalanceApi} from "@/api/utils"
 import { message } from 'ant-design-vue';
 const router=useRouter()
@@ -405,14 +405,23 @@ var handleDerbitPriceAndExpiryData=async ()=>{
 //获取市场价
 var getMarketPrice=async ()=>{
     data.loading=true
-   let underlyingAssetPrice= await  getPriceByPriceOracleApi(data.currentStrikeAsset.address,axiosStore.remark.usdToken)
-   underlyingAssetPrice=underlyingAssetPrice?.message?.price ||BigNumber.from("0")
+  let underlyingAssetPrice=await getPriceByService()
    data.marketPrice=(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
    console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
    await getStrikePrice()
    data.loading=false
 }
+var getPrice=async ()=>{
+    let underlyingAssetPrice=await  getPriceByPriceOracleApi(data.currentUnderlyingAsset.address,axiosStore.remark.usdToken)
+    underlyingAssetPrice=underlyingAssetPrice?.message?.price ||BigNumber.from("0")
+    return underlyingAssetPrice
+}
 
+var getPriceByService=async ()=>{
+    let underlyingAssetPrice= await getPriceByServiceApi(axiosStore.chainId,data.currentUnderlyingAsset.address)
+    underlyingAssetPrice=BigNumber.from(underlyingAssetPrice?.data?.a_price)  || BigNumber.from("0")
+    return underlyingAssetPrice
+}
 //---------------上链业务相关部分---------------
 var sendTx=async ()=>{
     console.log(data.underlyingAmount,"data.underlyingAmount",data.currentStrikePrice)

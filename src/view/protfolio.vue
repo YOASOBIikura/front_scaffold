@@ -237,6 +237,7 @@ watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
 })
 
 var init=async()=>{
+  console.log(price,'skskkks')
   await  initContent()
 }
 
@@ -334,7 +335,7 @@ var getOrderList=async (page = 1)=>{
     priceAddressList.add(String(item["strike_asset"]).toLocaleLowerCase())
   })
   priceAddressList=Array.from(priceAddressList)
- await getPrice(priceAddressList)
+ await getPriceByService(priceAddressList)
   //查看订单是否存在
   let orderExist=[]
   orderListResponse?.forEach(item=>{
@@ -500,7 +501,23 @@ var getPrice=async (assetList)=>{
       data.priceAddressList.push(lowerAddress)
     }
   }
+
+
   console.log("价格列表",data.priceAddressList,data.priceList)
+}
+
+var getPriceByService=async (assetList)=>{
+  for(let i=0;i<assetList.length;i++){
+    let lowerAddress=String(assetList[i]).toLocaleLowerCase()
+    if(!data.priceAddressList.includes(lowerAddress)){
+      let underlyingAssetPrice=  await getPriceByServiceApi(axiosStore.chainId,assetList[i])
+      data.priceList[assetList[i]]=BigNumber.from(underlyingAssetPrice?.data?.a_price)  || BigNumber.from("0")
+      data.priceAddressList.push(lowerAddress)
+    }
+  }
+
+
+
 }
 
 //查看当前订单是否存在

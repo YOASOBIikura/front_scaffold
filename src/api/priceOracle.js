@@ -18,17 +18,19 @@ function  getPriceByPriceOracleApi(_masterToken,_quoteToken){
 }
 
 
-function getPriceByServiceApi(_masterSymbol,_quoteSymbol){
+function getPriceByServiceApi(_chainId,_masterSymbol,_quoteSymbol="",tokeList=[]){
    if(!_quoteSymbol){
       _quoteSymbol=""
    }
    return  useAxiosStore().axios({
       mode:"http", 
-      target:"/price_oracle/pyth_price_by_api",
-      method:"get",
+      target:"/price_oracle/pyth_price",
+      method:"post",
       data:{
-        "token_a_symbol":_masterSymbol,
-        "_token_b_symbol":_quoteSymbol      
+        "chain_id":_chainId,
+        "token_a_addr":_masterSymbol,
+        "token_b_addr":_quoteSymbol,
+        "token_list":tokeList   
   }});
 }
 

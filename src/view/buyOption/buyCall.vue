@@ -142,7 +142,7 @@ import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {getOfferApi} from "@/api/protfolio"
 import { useRouter,useRoute} from "vue-router";
 import { message } from 'ant-design-vue';
-import {getPriceByPriceOracleApi} from "@/api/priceOracle"
+import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getMulTokenBalance} from "@/apiHandle/token"
 import {setVaultType} from "@/callData/bundler/vaultManageModule"
 import {getVaultApi} from "@/api/vaultFactory"
@@ -308,7 +308,7 @@ var init=async()=>{
     data.currentPremiumAsset=premiumAssetList[0] || {}
     data.premiumAssetList=premiumAssetList
    //获取抵押资产价格
-    data.currentUnderlyingPrice=  await getPrice(data.currentUnderlyingAsset.address)
+    data.currentUnderlyingPrice=  await getPriceByService(data.currentUnderlyingAsset.address)
 
 
     //处理能够购买的余额
@@ -514,6 +514,12 @@ var getPrice=async (_masterToken)=>{
     let underlyingAssetPrice=await getPriceByPriceOracleApi(_masterToken,axiosStore.remark.usdToken)
     underlyingAssetPrice=underlyingAssetPrice?.message?.price ||BigNumber.from("0")
     return underlyingAssetPrice
+}
+
+var getPriceByService=async (_masterToken)=>{
+    let underlyingAssetPrice= await getPriceByServiceApi(axiosStore.chainId,_masterToken)
+    underlyingAssetPrice=BigNumber.from(underlyingAssetPrice?.data?.a_price)  || BigNumber.from("0")
+     return underlyingAssetPrice
 }
 //查询货币余额
 var getTokenBalance=async (account,tokenList)=>{

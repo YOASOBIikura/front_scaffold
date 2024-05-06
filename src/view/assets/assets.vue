@@ -41,7 +41,7 @@ import {balanceOf} from "@/callData/multiCall/token"
 import {getWalletBalanceApi} from "@/api/utils"
 import {getPrice} from "@/callData/multiCall/priceOracle"
 import {getIssueMode} from "@/callData/multiCall/IssuanceFacet"
-
+import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 const axiosStore= useAxiosStore()
 const data=reactive({
      tokenList:[],
@@ -73,7 +73,8 @@ var init=async ()=>{
    //请求处理页面
    await handleBalance()
    //获取价格
-   await handlePrice()
+   // await handlePrice()
+   await handlePriceByService()
    //计算总价值
    await handleValue()
    data.loading=false
@@ -193,6 +194,20 @@ var handlePrice=async ()=>{
        item.tokenPrice=multiCallResponse[item.name]?.price || BigNumber.from(0)
    })
    console.log("getPrice",multiCallResponse)
+}
+
+
+var handlePriceByService=async ()=>{
+     let tokenAddrList=[]
+     data?.tokenList?.forEach(item=>{
+      tokenAddrList.push(item.address)
+     })
+     let priceList= await getPriceByServiceApi(axiosStore.chainId,"","",tokenAddrList) 
+     priceList=priceList?.data?.token_list||[]
+     data?.tokenList?.forEach((item,index)=>{
+        item.tokenPrice=BigNumber.from(priceList[index] )  || BigNumber.from("0")   
+     })
+
 }
 </script>
 <style lang="less" scoped>
