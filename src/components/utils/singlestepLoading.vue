@@ -22,12 +22,6 @@
                 <img src="@/assets/images/loading.png" class="loading-img animation"/>
                 <div class="loading-title">{{ props.transferName }}</div>
                 <div class="loading-info">Your transfer is underway and will be completed in 22-30minutes. Once completed, your token balance will be automatically updated.</div>
-                 <a-button 
-                    type="primary" 
-                    class="btn-go"
-                    disabled
-                >Go to {{props.nextPage.name}}</a-button>
-                <a-button class="btn-view" disabled>View on {{scanName}}</a-button>
             </div>
             <div class="loading" v-else-if="props.status === 'success'">
                 <img src="@/assets/images/loading-success.png" class="loading-img"/>
@@ -47,7 +41,7 @@
                     class="btn-go"
                     @click="closeDrawer"
                 >Close</a-button>
-                <a-button class="btn-view" @click="viewOnScan">View on {{scanName}}</a-button>
+                <a-button class="btn-view" v-if="props.hash" @click="viewOnScan">View on {{scanName}}</a-button>
             </div>
 
            
@@ -106,7 +100,11 @@ const scanName = computed(() => {
 const currentHeight = computed(() => {
     let height = 500;
     if(props.status === 'pending'){
-        height = 560;
+        height = 460;
+    } else if(props.status === "faild"){
+        if(!props.hash){
+             height = 460;
+        }
     }
     return height;
 })
@@ -121,7 +119,6 @@ var closeDrawer=()=>{
 }
 
 var viewOnScan = () => {
-    console.log(axiosStore.chainInfo.explorerUrl);
     let scanUrl = JSON.parse(JSON.stringify(axiosStore.chainInfo.explorerUrl));
     let chainId = JSON.parse(JSON.stringify(axiosStore.chainId));
     switch(chainId){

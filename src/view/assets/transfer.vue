@@ -217,13 +217,14 @@ var transferTx=async ()=>{
     }
     console.log("进入页面尝试")
     // data.isOpen=true
-    data.transferLoadingData.open = true;
     await sendTx()
 }
 
 
 
 var sendTx=async ()=>{
+    data.transferLoadingData.open = true;
+    data.transferLoadingData.status = "pending";
     let transferAmount=data.optionNumber
     let token=data.tokenInfo.address
     let vault=data.tokenInfo.vault
@@ -237,7 +238,8 @@ var sendTx=async ()=>{
     //授权交易
     let approveStatus= await approveTx(data.tokenInfo.isGasToken,token,vault,transferAmount)
     if(!approveStatus){
-        message.error("approve fail")
+        message.error("approve fail");
+        data.transferLoadingData.status = "faild";
         data.btnLock=false
         return
     }
