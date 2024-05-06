@@ -19,6 +19,9 @@ function  getPriceByPriceOracleApi(_masterToken,_quoteToken){
 
 
 function getPriceByServiceApi(_masterSymbol,_quoteSymbol){
+   if(!_quoteSymbol){
+      _quoteSymbol=""
+   }
    return  useAxiosStore().axios({
       mode:"http", 
       target:"/price_oracle/pyth_price_by_api",

@@ -47,84 +47,70 @@ const props=defineProps({
     }
 })
 const data=reactive({
-     inputShow:""
+     inputShow:"",
+     preValue:""
 })
 
 onMounted(()=>{
-    handleValue(props.value)
+    if(BigNumber.from(props.value)){
+        data.inputShow=props.value.div(ethers.utils.parseUnits("1",props.decimals-3)).toNumber()/1000
+    }
 })
 const emits=defineEmits(["update:value","inputMax","input","blur"])
 var max=()=>{
-    handleValue(props.maxValue)
+    let value=props.maxValue
+    data.inputShow=String(BigNumber.from(value).div(ethers.utils.parseUnits("1",props.decimals-3)).toNumber()/1000)
     emits("update:value",props.maxValue)
     emits("inputMax",props.maxValue,data.inputShow)
 }
 var inputValue= (input)=>{
-    if(onlyContainsZerosAndDots(input.target.value)){
-        return 
+    let value=input.target.value;
+    console.log(data.inputShow,"value",value,data.preValue)
+    //处理字符串等
+    const regex = /^\d*\.?\d*$/;
+    let isDigit= regex.test(value)
+    console.log(isDigit,"-----ss",value)
+    if(!isDigit){
+        //获取最后一位元素  不数字的情况下 删除最后一位元素
+        value=String(value).substring(0,String(value).length-1)
     }
-    let value = numberLimitations(input.target.value);
-    // let value=input.target.value;
+    //处理小数点的情况
+    let lastValue=String(value).substring(String(value).length-1)
+    if(lastValue=="."){
+        data.inputShow=value
+        return
+    } 
+    data.inputShow=Number(value)
+    //处理为bigNumber
     if(props.isMax && BigNumber.from("0").eq(BigNumber.from(props.maxValue))){
         value=BigNumber.from("0")
     }else {
         if(value!=""){
             value=ethers.utils.parseUnits(String(value),props.decimals)
-            if(props.isMax && value.mul(ethers.utils.parseUnits("1",2)).div(props.maxValue).gte(BigNumber.from("99"))){
+            if(props.isMax && value.mul(ethers.utils.parseUnits("1",3)).div(props.maxValue).gte(BigNumber.from("990"))  && String(data.preValue).length<=String(data.inputShow).length){
                 value=props.maxValue       
+                //触发最大值的情况下修改显示值
+                data.inputShow=props.maxValue.div(ethers.utils.parseUnits("1",props.decimals-3)).toNumber()/1000
             } 
         }else{
             value=BigNumber.from("0")
         }
     } 
-    handleValue(value)
     emits("input",value)
     emits("update:value",value)
+    data.preValue=data.inputShow
 }
 
-var onlyContainsZerosAndDots = (str) => {
-    return /^[0.\\.]*$/.test(str);
-}
-
-// 数字限制
-var numberLimitations = (str) => {
-    let bis = "";
-    let reservedBits = (props.decimals !== undefined && props.decimals !== null) ? props.decimals : 18;
-    for (let i = 0; i < reservedBits; i++) {
-        bis += "\\d";
-    }
-    let num = str;
-    let position = '';
-    if (num.startsWith('-') && props.hasMinus) {
-        position = "-";
-        num = num.substring(1, num.length);
-    }
-    let regx = /[^\d\.]/g;
-    if (props.decimals === 0) {
-        regx = /[^\d]/g;
-    }
-    // 正数限制
-    let tempVal = num.replace(regx, "");
-    let Regex = new RegExp(`^(-)*(\\d+)\\.(${bis}).*$`);
-    num = tempVal
-        .replace(Regex, "$1$2.$3")
-        .replace(".", "$#$")
-        .replace(/\./g, "")
-        .replace("$#$", ".");
-    if (position === '-') {
-        num = position + num;
-    }
-    console.log(num);
-    return num;
-}
-
-var handleValue=(value)=>{
-    data.inputShow=String(BigNumber.from(value).div(ethers.utils.parseUnits("1",props.decimals-2)).toNumber()/100)
-}
-
-
-var blurChange=()=>{
-   emits("blur",props.value)
+var blurChange=()=>{  
+   let value =data.inputShow
+   let lastValue=String(value).substring(String(value).length-1)
+   if(lastValue=="."){
+       data.inputShow=String(value).substring(0,String(value).length-1)
+   } 
+   let newValue=ethers.utils.parseUnits(String(value),props.decimals)
+   emits("input",newValue)
+   emits("update:value",newValue)
+   emits("blur",newValue)
 }
 
 </script>

@@ -78,14 +78,14 @@ import {getOfferApi,getOrderApi} from "@/api/protfolio"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {reactive,computed,watch,onMounted,ref} from "vue"
 import { BigNumber, ethers } from "ethers"
-import {getPriceByPriceOracleApi} from "@/api/priceOracle"
+import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getVaultToSaltR} from "@/apiHandle/vault"
 import {getOptionOrderExistR} from "@/apiHandle/optionFacet"
 import {getMulTokenBalance} from "@/apiHandle/token"
 import { message } from "ant-design-vue"
 const axiosStore= useAxiosStore()
   let data=reactive({
-    activeKey:"options",
+    activeKey:"listing",
     isOpenSelect:false,
     isOpenSort:false,
     isOpenLiquidation:false,
@@ -420,10 +420,15 @@ var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
     let incomeAmount=0
 
     let ops=[]
+    let pythTokenName=[]
     //------------处理行权数据--------------------
    if(liquidateType==2){
     //利差清算
     ops.push(liquidateOption(orderType,orderId,2,incomeAmountValue,slippage))
+    //处理pyth币种问题
+    pythTokenName.push(orderInfo.strikeAsset.name)
+    pythTokenName.push(orderInfo.underlyingAsset.name)
+    console.log(pythTokenName,"------sss")
   }else if(liquidateType==1){
     //检查0号vault资产是否足够 买家
     let strikeAmount=orderInfo.underyingAmount.mul(orderInfo.strikeAmount).div(ethers.utils.parseUnits("1",orderInfo?.underlyingAsset?.decimals))
@@ -450,7 +455,8 @@ var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
   }
 
   let salt= await getVaultToSalt(vault)
-  let bundlerHash= await sendTxToBundler(vault,salt,ops) 
+  
+  let bundlerHash= await sendTxToBundler(vault,salt,ops,pythTokenName) 
   console.log("bundlerHash",bundlerHash)
 
 
@@ -517,6 +523,9 @@ var checkBuyerBalance=async (account,asset,strikeAmount)=>{
 
     return false
 }
+
+
+
 
 </script>
 

@@ -6,6 +6,7 @@ import wbtcPng from "@/assets/images/wbtc.png"
 import chainIconPng from "@/assets/images/arbitrum.png"
 
 let contractData={
+  
     "EntryPoint": "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
     "DiamondCutFacet": "0x462482E07D7b2AfFAD9d934544bfFB24Dbcb019A",
     "DiamondLoupeFacet": "0x0E0C448Ddf771AefBFf1e4AA62978E8EDC8FE40F",
@@ -32,6 +33,7 @@ let contractData={
 let bundlerUrl="https://ethgo-arbitrum.fly.dev"
 
 let remark={
+    pyth:"0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
     masterToken:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
     usdToken:"0x0000000000000000000000000000000000000001",
     ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
@@ -140,6 +142,7 @@ let tokens=[
     {
         name:"WBTC",
         address:"0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
+        priceId:"0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33",
         decimals:8,
         img:wbtcPng,
         isGasToken:false,
@@ -152,6 +155,7 @@ let tokens=[
     {
     name:"ETH",
     address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+    priceId:"0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
     decimals:18,
     img:ethPng,
     isGasToken:true,
@@ -164,6 +168,7 @@ let tokens=[
     {
      name:"USDT",
      address:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
+     priceId:"0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b",
      decimals:6,
      img:usdtPng,
      isGasToken:false,
@@ -176,6 +181,7 @@ let tokens=[
     {
      name:"USDC",
      address:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+     priceId:"0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
      decimals:6,
      img:usdcPng,
      isGasToken:false,

@@ -3,13 +3,23 @@ import { BigNumber, ethers } from "ethers";
 import {SimpleAccountAPI} from "@account-abstraction/sdk"
 import {sendOrderR,getOrderR,getVaultNonceR,getFeeDataR} from "@/api/bundler"
 import {useAxiosStore} from "@/pinia/modules/axios"
-
+import {setPrice} from "@/callData/bundler/priceOracle"
+import { EvmPriceServiceConnection } from "@pythnetwork/pyth-evm-js"
 
 let beneficiary="0x2E4621E682272680AEAB78f48Fc0099CED79e7d6"//bundler受益人
 let loopTime=3000 //多长时间循环一次 
 let loopCount=10  //循环多少次
 
-async function sendTxToBundler(vault,salt,data){
+async function sendTxToBundler(vault,salt,data,tokenList=[]){
+    //处理价格问题  添加预言机pyth
+    console.log(tokenList)
+    if(tokenList&&tokenList.length>0){
+        let pythResult=await setPythPrice(tokenList)
+        console.log("pythResult",pythResult)
+        if(pythResult.length!=0){
+            data.push(pythResult)
+        }
+    }
     //处理数据
     let dest=[]
     let value=[]
@@ -38,7 +48,7 @@ async function sendTxToBundler(vault,salt,data){
     //-----------------------------------
     //是否需要初始化vault
     let vaultCode = await provider.getCode(vault)
-    console.log(vaultCode,"vaultCode")
+    // console.log(vaultCode,"vaultCode")
     let initCode="0x"
     if (vaultCode == "0x") {
         initCode = `${axiosStore.currentContractData["VaultFactory"]}5fbfb9cf${String(axiosStore.currentAccount).substring(2).padStart(64, "0")}${(Number(salt)).toString(16).padStart(64, "0")}`
@@ -224,6 +234,26 @@ async function parseLogForBundler(txHash){
     console.log("解析完毕",result)
     return result
   }
+
+//更新预言机价格
+  //处理pyth预言机问题
+async function setPythPrice(tokenList){
+    let axiosStore=useAxiosStore()
+    if(Number(axiosStore.chainId) != 42161){
+        return []
+    }
+    let priceIds = []
+    tokenList.forEach(item=>{
+        let token= axiosStore.getTokenByName(item)  
+        priceIds.push(token.priceId)
+    })
+    const connection = new EvmPriceServiceConnection("https://hermes.pyth.network");
+    const priceFeedUpdateData = await connection.getPriceFeedsUpdateData(priceIds);
+    console.log(priceIds,"pythId",priceFeedUpdateData)
+    return  setPrice(axiosStore.remark.pyth,priceFeedUpdateData) 
+ }
+    
+    
 
 
 export {sendTxToBundler,getBundlerTxResult}

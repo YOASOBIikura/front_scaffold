@@ -32,6 +32,7 @@ let contractData={
 }
 
 let remark={
+    pyth:"0xff1a0f4744e8582DF1aE09D5611b887B6a12925C",
     masterToken:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
     usdToken:"0x0000000000000000000000000000000000000001",
     ethToken:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
@@ -64,7 +65,7 @@ let optionBusiness={
             decimals:18,
             img:maticPng,
             assetType:0,
-            isSellPut:true,
+            isSellPut:false,
             isSellCall:true,
            },
         
@@ -153,18 +154,20 @@ let tokens=[
     {
      name:"MATIC",
      address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+     priceId:"0x5de33a9112c2b700b8d30b8a3402c103578ccfa2765696471cc672bd5cf6ac52",
      decimals:18,
      img:maticPng,
      isGasToken:true,
      isShowAsset:true,
      isAble:true,
      type:1,
-     isSellPut:true,
+     isSellPut:false,
      isSellCall:true,
     },
     {
     name:"ETH",
     address:"0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+    priceId:"0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
     decimals:18,
     img:ethPng,
     isGasToken:false,
@@ -177,6 +180,7 @@ let tokens=[
     {
     name:"WBTC",
     address:"0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+    priceId:"0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33",
     decimals:8,
     img:wbtcPng,
     isGasToken:false,
@@ -189,6 +193,7 @@ let tokens=[
     {
      name:"USDT",
      address:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+     priceId:"0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b",
      decimals:6,
      img:usdtPng,
      isGasToken:false,
@@ -202,6 +207,7 @@ let tokens=[
     {
      name:"USDC",
      address:"0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+     priceId:"0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
      decimals:6,
      img:usdcPng,
      isGasToken:false,
