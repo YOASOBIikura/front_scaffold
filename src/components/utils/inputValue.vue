@@ -79,6 +79,14 @@ var inputValue= (input)=>{
         data.inputShow=value
         return
     } 
+    // 处理只有0和小数点的情况
+    const OnlyZeroAndDigitRegx = /^[0.\\.]*$/;
+    let isOnlyZeroAndDigit = OnlyZeroAndDigitRegx.test(value);
+    if(isOnlyZeroAndDigit){
+        data.inputShow=value;
+        return
+    }
+
     data.inputShow=Number(value)
     //处理为bigNumber
     if(props.isMax && BigNumber.from("0").eq(BigNumber.from(props.maxValue))){
