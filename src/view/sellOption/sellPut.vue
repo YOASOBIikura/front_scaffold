@@ -473,8 +473,8 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
    let currentTimestamp=BigNumber.from(time)
   //multicall数据
    let multiCallData=[]
-   multiCallData.push(getSigatureLock("getSigatureLock",vault,0,underlyingAsset))  
-   multiCallData.push(getUnderlyTotal("getUnderlyTotal",vault,0,underlyingAsset))  
+   multiCallData.push(getSigatureLock("getSigatureLock",vault,1,underlyingAsset))  
+   multiCallData.push(getUnderlyTotal("getUnderlyTotal",vault,1,underlyingAsset))  
    let multiCallResponse=await multiCallObjR(multiCallData)
    console.log("multiCallResponse",multiCallResponse)   
    //如果当前时间戳> 链上时间戳   &&  total大于0的情况 则需要去除老的签名    

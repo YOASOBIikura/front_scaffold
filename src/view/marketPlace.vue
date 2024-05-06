@@ -88,6 +88,8 @@ import writeOptionEmpty from "@/components/utils/writeOptionEmpty.vue"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import {getMarketPriceApi,getMarketOfferApi} from "@/api/marketPrice"
 import { BigNumber, ethers } from "ethers"
+import {getUnderlyTotal} from "@/callData/multiCall/optionFacet"
+import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 const axiosStore= useAxiosStore()
 const data=reactive({
      loading:false,
@@ -270,8 +272,21 @@ var getOrderList=async (page=1)=>{
      }
      let orderListResponse= await getMarketOfferApi(axiosStore.chainId,data.currentOrderType[0]=="call"?0 : 1,data.currentUnderlyingAsset.name,strikePrice,date,wallet,page)
      console.log("orderListResponse",orderListResponse)
-     let orderList=[]
+     //处理used
+     let totalList=[]
      orderListResponse?.data?.forEach(item=>{
+          let obj={
+            writerVault:item["writer_vault"],
+            orderType:item["option_type"],
+            underlyingAsset:item["underlying_asset"]
+          }
+          totalList.push(obj)
+     })
+     let unUsedList= await getUnderlyAssetTotal(totalList)
+
+     //处理相关数据
+     let orderList=[]
+     orderListResponse?.data?.forEach((item,index)=>{
           //network
           let netWork=""
           switch(item["chain_id"]){
@@ -289,7 +304,14 @@ var getOrderList=async (page=1)=>{
           //处理总量
           let total=BigNumber.from(item["total"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals)).toNumber()
           //处理未使用
-          let unUsed=Number(total)-BigNumber.from(item["used"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals)).toNumber()
+        //   let unUsed=Number(total)-BigNumber.from(item["used"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals)).toNumber()
+          let unUsed=BigNumber.from("0")
+         if(BigNumber.from(unUsedList[index]).eq(BigNumber.from("0"))){
+            unUsed=total
+         }else{    
+            unUsed=BigNumber.from(unUsedList[index]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
+         }
+
           //处理清算方式
 
           let liquidate=""
@@ -321,6 +343,7 @@ var getOrderList=async (page=1)=>{
             liquidate: liquidate,
             KYT: "Passed" 
           }
+          console.log(obj,"obj")
           orderList.push(obj)
      })
     //  data.orderList=orderList
@@ -344,6 +367,23 @@ var loadMoreOrder = () => {
   data.marketOfferPage += 1;
   getOrderList(data.marketOfferPage)
 }
+
+
+//买单总余额(剩余)
+var  getUnderlyAssetTotal=async (dataList)=>{
+    let multiCallData=[]
+    dataList?.forEach((item,index)=>{
+        multiCallData.push(getUnderlyTotal(`${index}`,item.writerVault,item.orderType,item.underlyingAsset))
+    })
+    let multiCallResponse=await multiCallObjR(multiCallData)
+    console.log("multiCallResponse",multiCallResponse)   
+    let result=[]
+    for(let key in multiCallResponse){
+        result.push(multiCallResponse[key]?.total)
+    }
+    return result
+}
+
 </script>
 
 

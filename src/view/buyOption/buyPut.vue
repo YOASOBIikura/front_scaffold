@@ -551,7 +551,7 @@ var getVault=async ()=>{
 //卖单总余额
 var  getUnderlyAssetTotal=async ()=>{
     let multiCallData=[]
-    multiCallData.push(getUnderlyTotal("getUnderlyTotal",data.remarkInfo.writerVault,0,data.currentUnderlyingAsset.address))  
+    multiCallData.push(getUnderlyTotal("getUnderlyTotal",data.remarkInfo.writerVault,1,data.currentUnderlyingAsset.address))  
     let multiCallResponse=await multiCallObjR(multiCallData)
     console.log("multiCallResponse",multiCallResponse)   
     //如果当前时间戳> 链上时间戳   &&  total大于0的情况 则需要去除老的签名    

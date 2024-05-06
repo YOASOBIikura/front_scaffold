@@ -82,6 +82,8 @@ import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getVaultToSaltR} from "@/apiHandle/vault"
 import {getOptionOrderExistR} from "@/apiHandle/optionFacet"
 import {getMulTokenBalance} from "@/apiHandle/token"
+import {getUnderlyTotal} from "@/callData/multiCall/optionFacet"
+import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import { message } from "ant-design-vue"
 const axiosStore= useAxiosStore()
   let data=reactive({
@@ -260,7 +262,19 @@ var exerciseLiquidate=async (orderInfo,liquidateType,incomeAmount)=>{
 var getOfferList=async (page = 1)=>{
    let orderResponse= await getOfferApi("",axiosStore.chainId,axiosStore.currentAccount,page);
    let offerList = [];
-   orderResponse?.data?.forEach((item) => {
+     //处理used
+    let totalList=[]
+    orderResponse?.data?.forEach(item=>{
+        let obj={
+          writerVault:item["writer_vault"],
+          orderType:item["option_type"],
+          underlyingAsset:item["underlying_asset"]
+        }
+        totalList.push(obj)
+    })
+    let unUsedList= await getUnderlyAssetTotal(totalList)
+   //处理数据
+   orderResponse?.data?.forEach((item,index) => {
     let netWork=""
     switch(item["chain_id"]){
       case "137":netWork="polygon";break;
@@ -288,9 +302,14 @@ var getOfferList=async (page = 1)=>{
     let  underlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.underlying_asset)));
     let  strikeAsset=JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.strike_assets[0])))
     let  total=BigNumber.from(item.total).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
-    let  used=BigNumber.from(item.used).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
-
-    
+    // let  used=BigNumber.from(item.used).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
+    let unUsed=BigNumber.from("0")
+    if(BigNumber.from(unUsedList[index]).eq(BigNumber.from("0"))){
+      unUsed=total
+    }else{    
+      unUsed=BigNumber.from(unUsedList[index]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
+    }
+    let  used=total-unUsed  
     let obj = {
       id:item.id,
       orderType:item["option_type"]==0?'call':'put',
@@ -540,6 +559,20 @@ var checkBuyerBalance=async (account,asset,strikeAmount)=>{
     return false
 }
 
+//买单总余额(剩余)
+var  getUnderlyAssetTotal=async (dataList)=>{
+    let multiCallData=[]
+    dataList?.forEach((item,index)=>{
+        multiCallData.push(getUnderlyTotal(`${index}`,item.writerVault,item.orderType,item.underlyingAsset))
+    })
+    let multiCallResponse=await multiCallObjR(multiCallData)
+    console.log("multiCallResponse",multiCallResponse)   
+    let result=[]
+    for(let key in multiCallResponse){
+        result.push(multiCallResponse[key]?.total)
+    }
+    return result
+}
 
 
 
