@@ -14,7 +14,7 @@
         <template v-slot:title>
              <div class="transfer-title">
                  <span class="title">{{props.transferName}}</span>
-                 <img v-if="canClose"  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
+                 <!-- <img v-if="canClose"  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer"> -->
              </div>
         </template>
         <div class="loading-content">
@@ -120,12 +120,7 @@ var closeDrawer=()=>{
 
 var viewOnScan = () => {
     let scanUrl = JSON.parse(JSON.stringify(axiosStore.chainInfo.explorerUrl));
-    let chainId = JSON.parse(JSON.stringify(axiosStore.chainId));
-    switch(chainId){
-        case 137:  window.open(`${scanUrl}/tx/${props.hash}`); break;
-        case 42161: window.open(`${scanUrl}/${props.hash}`); break;
-    }
-   
+    window.open(`${scanUrl}tx/${props.hash}`);
 }
 
 // 去下一个页面
@@ -145,7 +140,7 @@ var goToNextPage = () => {
     .transfer-title{
         width: 100%;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         height: 60px;
         padding: 20px 16px;

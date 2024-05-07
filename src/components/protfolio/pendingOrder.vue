@@ -38,7 +38,7 @@
         <div class="amount">
           <span class="title">Amount</span>
           <p class="content">
-            <span class="pre">{{ remainderShow }}</span>
+            <span class="pre">{{ props.orderData?.unUsed }}</span>
             <span class="end"
               >/{{ props.orderData.total
               }}{{   props.orderData?.underlyingAsset.name }}</span
@@ -48,9 +48,9 @@
             <p
               class="bar"
               :style="{
-                width: (remainderShow / props.orderData.total) * 100 + '%',
+                width: (props.orderData?.unUsed / props.orderData.total) * 100 + '%',
               }"
-              :class="{ 'is-all': remainderShow == props.orderData.total }"
+              :class="{ 'is-all': props.orderData?.unUsed == props.orderData.total }"
             ></p>
           </div>
         </div>

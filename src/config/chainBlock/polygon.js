@@ -40,7 +40,7 @@ let remark={
     gasSymbol:"matic",
     chainIcon:chainIconPng,
     chainName:"Polygon",
-    safeBlock: 12,
+    safeBlock: 3,
     loop: 5
 
 }

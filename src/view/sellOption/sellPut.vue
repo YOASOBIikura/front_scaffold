@@ -87,6 +87,7 @@
             :decimals="18"
             :isMax="false"
             v-model:value="data.currentPremiumFee"
+            :valueChange="currentPremiumFeeShow"
             ></inputValue>
         </div> 
 
@@ -190,6 +191,14 @@ var underlyingAssetBalance=computed(()=>{
      console.log("当前抵押资产余额",data.underlyingAssetBalance)
      return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
 })
+
+
+var currentPremiumFeeShow = computed(() => {
+    if(axiosStore?.remark?.priceDecimals && data.premiumPrice){
+        return ethers.utils.parseUnits(String(data.premiumPrice), axiosStore.remark.priceDecimals);
+    }
+    return "0";
+});
 
 //----------普通处理方法--------------------
 var selectLockAsset=async (value)=>{
