@@ -57,7 +57,7 @@ async function sendContractTransition(_this,option,argType,argValue){
         from:_this.wallet,//拿provider的值
         to:option.target,
         data:dataHex,
-        value:(option.data.value?Number(option.data.value).toString(16):0)
+        value:(option.data.value?option.data.value.toHexString():0)
      } 
      //是否预估gas
      if(option.estimateGas){
