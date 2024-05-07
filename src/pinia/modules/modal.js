@@ -103,9 +103,9 @@ function checkChain(chainId){
               }
         })
         if(!isExistChain){
-          clearChain()
-          let routeStore=useRouteStore()
-          routeStore.setChangeRoute("/networkError")
+             clearChain()
+            let routeStore=useRouteStore()
+            routeStore.setChangeRoute("/networkError")
            return
         }
         return false

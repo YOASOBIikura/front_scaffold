@@ -31,8 +31,7 @@ watch(routeResult,(newVal,oldVal)=>{
     console.log("新路由",newVal)
     routeStore.setCurrentRoute(oldVal,newVal)
 })
-let changeRoute=computed(() => routeStore.changeRoute)
-watch(changeRoute,(newVal,oldVal)=>{
+watch(computed(() => routeStore.changeRoute),(newVal,oldVal)=>{
     console.log("切换路由",newVal,oldVal)
     router.push(newVal)
 })

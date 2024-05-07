@@ -6,12 +6,42 @@
         <div class="content">
             <img class="icon" src="@/assets/images/warn.png" alt="">
             <span class="info">Your connectted network is unsupported</span>
-            <span class="btn">Switch Network</span>
+            <span class="btn" @click="switchNetwork">Switch Network</span>
         </div>
-
     </div>
 </template>
 <script setup>
+import {useAxiosStore} from "@/pinia/modules/axios"
+import {useModalStore} from "@/pinia/modules/modal"
+import {useRouteStore} from "@/pinia/modules/route"
+import { ethers } from "ethers";
+import {watch,computed,onMounted} from "vue"
+import { useRouter } from "vue-router";
+import {switchNetworkApi} from "@/api/utils"
+const axiosStore= useAxiosStore()
+const modalStore= useModalStore()
+const routeStore=useRouteStore()
+const router=useRouter()
+
+
+var switchNetwork=async ()=>{  
+  let allowChain=  modalStore.allowChain
+  await  switchNetworkApi(allowChain[0]?.chainInfo?.chainId)
+}
+//如果链正确就转到 marketPlace
+watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
+        let allowChain=  modalStore.allowChain
+        let isExistChain=false
+        allowChain.forEach(item=>{
+              if(item?.chainInfo?.chainId==Number(axiosStore.chainId)){
+                  isExistChain=true
+              }
+        })
+        if(isExistChain){
+            routeStore.setChangeRoute("/marketPlace")
+        }
+})
+
 
 </script>
 <style lang="less" scoped>

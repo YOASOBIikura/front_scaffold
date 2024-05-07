@@ -60,7 +60,7 @@ let optionBusiness={
             priceInterval:100,//价格区间
             isGasToken:true,
             decimals:18,
-            assetType:1,
+            assetType:0,
             isSellPut:true,
             isSellCall:true,
         },
