@@ -8,7 +8,7 @@ import { EvmPriceServiceConnection } from "@pythnetwork/pyth-evm-js"
 
 let beneficiary="0x2E4621E682272680AEAB78f48Fc0099CED79e7d6"//bundler受益人
 let loopTime=3000 //多长时间循环一次 
-let loopCount=10  //循环多少次
+let loopCount=20  //循环多少次
 
 async function sendTxToBundler(vault,salt,data,tokenList=[]){
     //处理价格问题  添加预言机pyth
@@ -182,7 +182,7 @@ async function getOperationHash(orderId, time, count) {
     return new Promise(resolve=>{
         let timeId= setInterval(async ()=>{
             let  orderResponse=  await getOrderR(orderId)
-            if ( orderResponse.data && orderResponse.data.txHash) {
+            if ( orderResponse.data && orderResponse.data.txHash && String(orderResponse.data.status).includes("succ")) {
                    clearInterval(timeId);
                    resolve(orderResponse.data.txHash)
             }  
