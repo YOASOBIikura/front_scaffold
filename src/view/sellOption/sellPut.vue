@@ -194,7 +194,10 @@ var underlyingAssetBalance=computed(()=>{
 
 
 var currentPremiumFeeShow = computed(() => {
-    return ethers.utils.parseUnits(String(data.premiumPrice), axiosStore.remark.priceDecimals);
+    if(axiosStore?.remark?.priceDecimals && data.premiumPrice){
+        return ethers.utils.parseUnits(String(data.premiumPrice), axiosStore.remark.priceDecimals);
+    }
+    return "0";
 });
 
 //----------普通处理方法--------------------

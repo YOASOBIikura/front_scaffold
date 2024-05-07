@@ -120,12 +120,7 @@ var closeDrawer=()=>{
 
 var viewOnScan = () => {
     let scanUrl = JSON.parse(JSON.stringify(axiosStore.chainInfo.explorerUrl));
-    let chainId = JSON.parse(JSON.stringify(axiosStore.chainId));
-    switch(chainId){
-        case 137:  window.open(`${scanUrl}/tx/${props.hash}`); break;
-        case 42161: window.open(`${scanUrl}/${props.hash}`); break;
-    }
-   
+    window.open(`${scanUrl}tx/${props.hash}`);
 }
 
 // 去下一个页面

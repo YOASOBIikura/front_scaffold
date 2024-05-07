@@ -15,7 +15,7 @@
             <div class="price">
                 <img v-if="props.dataInfo?.orderTypeShow=='Call'" class="icon" src="@/assets/images/arrow_green.png" alt="">
                 <img v-else class="icon" src="@/assets/images/arrow_red.png" alt="">
-                <span class="text">${{strikePrice}}</span>
+                <span class="text" :class="props.dataInfo.orderTypeShow === 'Put' ? 'color-red' : ''">${{strikePrice}}</span>
             </div>       
 
             <div class="bottom">
@@ -238,6 +238,9 @@ var liquidation=()=>{
                  font-size: 14px;
                  color: var(--text-color-success);
                  font-weight: 600;
+                  &.color-red{
+                     color: var(--text-color-error);
+                  }
               }
            }
            .middle{
