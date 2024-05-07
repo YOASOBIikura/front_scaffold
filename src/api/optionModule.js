@@ -5,6 +5,7 @@ function  setSigatureLockApi(_vault,_orderType,_underlyingAsset,_timestamp){
         mode:"chainBlockSend", 
         target:"@OptionModule",
         method:"setSigatureLock",
+        estimateGas:true,
         data:{
           param:{
              "address:1":_vault,

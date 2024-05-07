@@ -1,4 +1,5 @@
 import {parseRequest,parseResponse,makeHex} from "./chainBlockUtils"
+import { BigNumber, ethers } from "ethers";
 
 async function chainBlockSendRequest(_this,option){
     if( (!option.data || !option.data.param) && !option.data.value) {
@@ -51,12 +52,19 @@ async function sendContractTransition(_this,option,argType,argValue){
     if(option.method != "" && option.method){
        dataHex=makeHex(option.method,argType,argValue)
     }
+  
     let tx={
         from:_this.wallet,//拿provider的值
         to:option.target,
         data:dataHex,
         value:(option.data.value?Number(option.data.value).toString(16):0)
      } 
+     //是否预估gas
+     if(option.estimateGas){
+       let estimateGas= await estimateGasTx(_this,tx)
+       tx["gasLimit"]=estimateGas.toString()
+     }
+     console.log("tx",tx)
      let hash;
      try{
        hash= await _this.chainBlockSendProvider.request({
@@ -84,4 +92,13 @@ async function sendContractTransition(_this,option,argType,argValue){
     }
 
 }
+//预估交易
+async function  estimateGasTx(_this,tx){
+  let provider= new ethers.providers.Web3Provider(_this.chainBlockSendProvider)
+  let result= await provider.estimateGas(tx)
+  result=result.mul(BigNumber.from("15")).div(BigNumber.from("10"))
+  console.log("estimateGasTx",result)
+  return result
+}
+
 export {chainBlockSendRequest}

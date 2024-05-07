@@ -6,6 +6,7 @@ function approveApi(token,spender,amount){
         mode:"chainBlockSend", 
         target:token ,
         method:"approve",
+        estimateGas:true,
         data:{
           value:0,
           param:{
@@ -22,6 +23,7 @@ function transferApi(token,to,amount){
         mode:"chainBlockSend", 
         target:token ,
         method:"transfer",
+        estimateGas:true,
         data:{
           value:0,
           param:{
@@ -73,6 +75,7 @@ function allownoceApi(token,owner,spender){
 function transferEthApi(target,amount){
     return  useAxiosStore().axios({
         mode:"chainBlockSend", 
+        estimateGas:true,
         target:target,
         data:{
           value:amount,

@@ -30,8 +30,8 @@ export const useModalStore = defineStore('modal', {
         }  
         //创造modal    
         const modal = createWeb3Modal({
-            termsConditionsUrl:"http://www.baidu.com",//条款和条件链接的url
-            privacyPolicyUrl:"https://www.google.com/",//隐私政策链接url
+            // termsConditionsUrl:"http://www.baidu.com",//条款和条件链接的url
+            // privacyPolicyUrl:"https://www.google.com/",//隐私政策链接url
             featuredWalletIds:["2a3c89040ac3b723a1972a33a125b1db11e258a6975d3a61252cd64e6ea5ea01"],//默认钱包
             ethersConfig: defaultConfig({ metadata }),
             chains: [polygon.chainInfo,arbitrum.chainInfo,eth],
@@ -50,17 +50,17 @@ export const useModalStore = defineStore('modal', {
               }
             },
             customWallets: [
-              {
-                id: '195225',
-                name: 'SEIWallet',
-                homepage: 'https://metamask.io/', // Optional
-                image_url: 'https://www.baidu.com/img/flexible/logo/pc/result.png', // Optional
-                mobile_link: 'http://www.baidu.com', // Optional - Deeplink or universal
-                desktop_link: 'http://www.baidu.com', // Optional - Deeplink
-                webapp_link: 'http://www.baidu.com', // Optional
-                app_store: 'app_store', // Optional
-                play_store: 'play_store' // Optional
-              }
+              // {
+              //   id: '195225',
+              //   name: 'SEIWallet',
+              //   homepage: 'https://metamask.io/', // Optional
+              //   image_url: 'https://www.baidu.com/img/flexible/logo/pc/result.png', // Optional
+              //   mobile_link: 'http://www.baidu.com', // Optional - Deeplink or universal
+              //   desktop_link: 'http://www.baidu.com', // Optional - Deeplink
+              //   webapp_link: 'http://www.baidu.com', // Optional
+              //   app_store: 'app_store', // Optional
+              //   play_store: 'play_store' // Optional
+              // }
             ]
         })
         this.modal=modal
