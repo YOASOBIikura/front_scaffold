@@ -334,7 +334,12 @@ var balanceOf=async (isGasToken,underlyingAsset,wallet)=> {
 
 //获取行权价列表
 var getStrikePrice=async ()=>{
-     let marketPrice=data.marketPrice
+     let marketPrice=data.marketPrice;
+     if(marketPrice == "0"){
+        data.strikePrice= [];
+        data.currentStrikePrice= {};
+        return;
+     }
      let priceInterval=data.currentStrikeAsset.priceInterval
      //做参数数据处理
      let basePrice=parseInt(marketPrice/priceInterval)
@@ -427,7 +432,7 @@ var getPrice=async ()=>{
 }
 
 var getPriceByService=async ()=>{
-    let underlyingAssetPrice= await getPriceByServiceApi(axiosStore.chainId,data.currentUnderlyingAsset.address)
+    let underlyingAssetPrice= await getPriceByServiceApi(axiosStore.chainId,data.currentStrikeAsset.address)
     underlyingAssetPrice=BigNumber.from(underlyingAssetPrice?.data?.a_price)  || BigNumber.from("0")
     return underlyingAssetPrice
 }
