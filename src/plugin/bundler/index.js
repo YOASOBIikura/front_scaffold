@@ -17,7 +17,7 @@ async function sendTxToBundler(vault,salt,data,tokenList=[]){
         let pythResult=await setPythPrice(tokenList)
         console.log("pythResult",pythResult)
         if(pythResult.length!=0){
-            data.push(pythResult)
+            data.unshift(pythResult)
         }
     }
     //处理数据

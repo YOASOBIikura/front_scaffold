@@ -12,9 +12,9 @@
         <!-- options -->
         <a-tab-pane key="options" tab="My Options" force-render >
           <div class="select" v-if="true" >
-                  <span class="text">9 Options</span>
+                  <span class="text">{{data.orderList.length}} Options</span>
                   <div class="list">
-                    <div class="list-one">
+                    <div class="list-one"> 
                       <img  src="@/assets/images/selecttwo.png" alt="" @click="selectCondition">
                     </div>
                     <div class="list-two">
@@ -430,6 +430,7 @@ var getOrderList=async (page = 1)=>{
 //清算交易
 var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
     data.transferLoadingData.open = true;
+    data.transferLoadingData.status = "pending";
     console.log("orderInfo",orderInfo)
     //------------数据上链-------------------------
     data.isOpenLiquidation=false  
@@ -494,7 +495,7 @@ var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
   let result=  await getBundlerTxResult(bundlerHash.hash)
   data.txResult=result
   console.log(result)
-  if(result.status){
+  if(!result.status){
       data.btnLock=false
        data.transferLoadingData.status = "faild";
        data.transferLoadingData.hash = result.message;

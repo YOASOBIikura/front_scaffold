@@ -73,6 +73,7 @@
             :decimals="18"
             :isMax="false"
             v-model:value="data.currentPremiumFee"
+            :valueChange="currentPremiumFeeShow"
             ></inputValue>
 
         </div>
@@ -190,12 +191,17 @@ var underlyingAssetBalance=computed(()=>{
      return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
 })
 
+var currentPremiumFeeShow = computed(() => {
+    return ethers.utils.parseUnits(String(data.premiumPrice), axiosStore.remark.priceDecimals);
+});
+
 
 
 //----------普通处理方法--------------------
 const changeExpiry = (item) => {;
     data.currentExpiryData=BigNumber.from(parseInt(item.timestamp/1000))
     data.premiumPrice=item.premiumPrice
+    
 }
 
 var strikePriceChange=async (item)=>{
