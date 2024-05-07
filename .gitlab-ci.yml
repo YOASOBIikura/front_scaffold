@@ -6,8 +6,9 @@ cdwebv2:
   variables:
     IMG_NAME: registry.fly.io/$CI_JOB_NAME:$CI_COMMIT_SHORT_SHA
     FLY_FILE: fly/$CI_JOB_NAME.toml
+    RUN_ENV: test
   script:
-    - docker build -t $IMG_NAME .
+    - docker build -t $IMG_NAME --build-arg JASPER_ENV=$RUN_ENV .
     - docker push $IMG_NAME
     - fly deploy --detach -i "$IMG_NAME" -c $FLY_FILE
 
@@ -19,13 +20,14 @@ deploy_prod:
   variables:
     # 不同环境需要修改的地方
     ENV_NAME: latest
+    RUN_ENV: prod
     DO_APPID: "381bebcb-54e2-4320-8d8b-0402eb6aedfa"
     BASE_IMG_NAME: registry.digitalocean.com/jaspervault/v2/pro/web
 
     DO_IMG_NAME: $BASE_IMG_NAME:$ENV_NAME
     COMMIT_IMG_NAME: $BASE_IMG_NAME:$CI_COMMIT_SHORT_SHA
   script:
-    - docker build -t $COMMIT_IMG_NAME .
+    - docker build -t $COMMIT_IMG_NAME --build-arg JASPER_ENV=$RUN_ENV .
     - docker tag $COMMIT_IMG_NAME $DO_IMG_NAME
     - docker push $COMMIT_IMG_NAME
     - docker push $DO_IMG_NAME
