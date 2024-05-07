@@ -18,9 +18,9 @@ function  getPriceByPriceOracleApi(_masterToken,_quoteToken){
 }
 
 
-function getPriceByServiceApi(_chainId,_masterSymbol,_quoteSymbol="",tokeList=[]){
-   if(!_quoteSymbol){
-      _quoteSymbol=""
+function getPriceByServiceApi(_chainId,_masterAddress,_quoteAddress="",tokeList=[]){
+   if(!_quoteAddress){
+      _quoteAddress=""
    }
    return  useAxiosStore().axios({
       mode:"http", 
@@ -28,8 +28,8 @@ function getPriceByServiceApi(_chainId,_masterSymbol,_quoteSymbol="",tokeList=[]
       method:"post",
       data:{
         "chain_id":_chainId,
-        "token_a_addr":_masterSymbol,
-        "token_b_addr":_quoteSymbol,
+        "token_a_addr":_masterAddress,
+        "token_b_addr":_quoteAddress,
         "token_list":tokeList   
   }});
 }

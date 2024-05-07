@@ -4,9 +4,10 @@
         <a-menu v-model:selectedKeys="data.currentOrderType" mode="horizontal" :items="data.orderTypeList" @select="orderTypeChange"/>
         <div class="order-content">
             <!-- 价格提示 -->
-            <!-- <div class="price-tips-content">
-                I expect ETH $3,000 -> $3,100 in 6d
-            </div> -->
+            <div class="price-tips-content">
+                <span class="title">{{data.currentUnderlyingAsset.name}} market price</span>
+                <span>${{data.underlyPrice}}</span>
+            </div>
 
             <!-- 选择期权币种 -->
             <div class="select-option-token-content">
@@ -79,7 +80,7 @@
 
        
 <script setup>
-import { ref, reactive,onMounted,watch,computed } from "vue"
+import { ref, reactive,onMounted,watch,computed, onBeforeUnmount } from "vue"
 import selectSwitch from "@/components/utils/selectSwitch.vue"
 import selectCoin from "@/components/utils/selectCoin.vue"
 import swiperSelect from "@/components/utils/swiperSelect.vue"
@@ -90,6 +91,7 @@ import {getMarketPriceApi,getMarketOfferApi} from "@/api/marketPrice"
 import { BigNumber, ethers } from "ethers"
 import {getUnderlyTotal} from "@/callData/multiCall/optionFacet"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
+import { getPriceByServiceApi } from "@/api/priceOracle"
 const axiosStore= useAxiosStore()
 const data=reactive({
      loading:false,
@@ -138,6 +140,8 @@ const data=reactive({
      ], //订单数据列表
      //---------数据----------------
      underlyingAssetList:[], //抵押资产数据
+     underlyPrice: "--", // 抵押资产价格
+     underlyInterval: null, // 
      currentUnderlyingAsset:{},//当前抵押资产
      marketOfferPage: 1, // offer分页
      marketOfferLoadLock: false // offer滚动加载锁
@@ -150,6 +154,11 @@ var isShowWriteEmpty=computed(()=>{
 onMounted(async()=>{
      await init()
 }) 
+
+onBeforeUnmount(() => {
+  clearPriceInterval();
+})
+
 //处理监听事件
 watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
    await  init()
@@ -166,16 +175,20 @@ var  init=async ()=>{
     data.loading=true
     //获取参数
     await getParamData()
+    addPriceInterval();
     data.loading=false
 }
 
 //-------------普通方法------------
 var underlyingChange=async (item)=>{
-    console.log(item,data.currentUnderlyingAsset,"====ss")
+    console.log(item,data.currentUnderlyingAsset,"====ss");
     data.loading=true
-    await getParamData()
+    clearPriceInterval();
+    addPriceInterval();
+    await getParamData();
     data.loading=false
 }
+
 
 var expiryDateChange=async (item)=>{
     data.currentExpiryValue=item
@@ -215,6 +228,19 @@ var orderTypeChange=async (item)=>{
      await getParamData()
      //获取订单
      data.loading=false
+}
+
+var addPriceInterval = async () => {
+  data.underlyPrice = await getTokenPrice(data.currentUnderlyingAsset.address);
+  data.underlyInterval = setInterval(async () => {
+    data.underlyPrice = await getTokenPrice(data.currentUnderlyingAsset.address);
+  },10000);
+}
+
+var clearPriceInterval = async () => {
+   if(data.underlyInterval){
+      clearInterval(data.underlyInterval);
+   }
 }
 
 //---------服务器数据-----------------
@@ -258,6 +284,17 @@ var getParamData=async ()=>{
     data.marketOfferPage = 1;
     data.marketOfferLoadLock =  false;
     await getOrderList()
+}
+
+// 获取当前价格
+var getTokenPrice = async (address) => {
+  let chianId = axiosStore.chainId
+  let priceData = await getPriceByServiceApi(chianId, address);
+  if(priceData.status == 200 && priceData.data?.a_price){
+    return ethers.utils.formatUnits(priceData.data?.a_price, axiosStore.remark.priceDecimals);
+  } else {
+    return "0";
+  }
 }
 
 //获取订单
@@ -394,13 +431,19 @@ var  getUnderlyAssetTotal=async (dataList)=>{
     box-sizing: border-box;
     width: 100%;
     .price-tips-content{
+      margin-top: 16px;
       padding: 0px 8px;
       background-color: rgba(1, 167, 84, 0.07);
       color: var(--text-color-success);
       border-radius: 8px;
       height: 40px;
       line-height: 40px;
-  
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      .title{
+        color: var(--text-color-primary);
+      }
     }
 
     .select-option-token-content{
