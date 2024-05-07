@@ -54,12 +54,12 @@ const props=defineProps({
 //-----------计算属性---------------------
 var walletAmountUsd=computed(()=>{
     let value=  props.tokenInfo.tokenPrice.mul(props.tokenInfo.walletBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
-    return (value.toNumber()/100).toFixed(2)
+    return (Number(value.toString())/100).toFixed(2)
 })
 
 var vaultAmountUsd=computed(()=>{
     let value= props.tokenInfo.tokenPrice.mul(props.tokenInfo.vaultBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
-    return (value.toNumber()/100).toFixed(2)
+    return (Number(value.toString())/100).toFixed(2)
 })
 
 var walletBalance=computed(()=>{
@@ -69,12 +69,12 @@ var walletBalance=computed(()=>{
     // }else{
 
     // }
-    return  (value.toNumber()/100).toFixed(2)
+    return  (Number(value.toString())/100).toFixed(2)
 })
 
 var vaultBalance=computed(()=>{
     let value=props.tokenInfo.vaultBalance.div(ethers.utils.parseUnits("1",props.tokenInfo.decimals-2))
-    return  (value.toNumber()/100).toFixed(2)
+    return  (Number(value.toString())/100).toFixed(2)
 })
 
 //---------方法跳转-------------------

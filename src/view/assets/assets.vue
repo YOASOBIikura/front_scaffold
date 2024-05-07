@@ -96,9 +96,9 @@ var handleValue= async ()=>{
       totalVault=valueVault.add(totalVault)
    })
    totalAsset=totalAsset.add(totalWallet.add(totalVault))
-   data.totalAsset=(totalAsset.toNumber()/100).toFixed(2)
-   data.totalWallet=(totalWallet.toNumber()/100).toFixed(2)
-   data.totalVault=(totalVault.toNumber()/100).toFixed(2)
+   data.totalAsset=(Number(totalAsset.toString())/100).toFixed(2)
+   data.totalWallet=(Number(totalWallet.toString())/100).toFixed(2)
+   data.totalVault=(Number(totalVault.toString())/100).toFixed(2)
 
 }
 
@@ -229,6 +229,7 @@ var handlePriceByService=async ()=>{
           .infop1{
              display: flex;
              flex-direction: column;
+             max-width: 30%;
              .title{
                 color: var(--text-color-primary);
                 font-size: 14px;
@@ -238,6 +239,9 @@ var handlePriceByService=async ()=>{
                 color: var(--text-color-primary);
                 font-size: 16px;
                 font-weight: 600;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
              }
           }
           .infop2{
@@ -253,6 +257,7 @@ var handlePriceByService=async ()=>{
                 color: var(--text-color-primary);
                 font-size: 16px;
                 font-weight: 600;
+                
              }        
           }
       }
