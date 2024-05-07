@@ -108,6 +108,7 @@
             type="primary"
             class="pay-btn"
             @click="buyCall"
+            :loading="data.btnLoading"
             >Pay {{ data.currentPremiumAsset.premium }} {{data.currentPremiumAsset.name}}</a-button>
     </div>
 
@@ -184,7 +185,8 @@ const data = reactive({
         },
         transferName: "buy Call"
     },
-    loading:false
+    loading:false,
+    btnLoading: false
 
 });
 
@@ -409,20 +411,24 @@ var getOrder=async ()=>{
 //------------上链业务相关------------------
 //买操作上链
 var buyCall=async ()=>{
+    data.btnLoading = true;
     //处理边界条件
    if(data.signature==""){
        message.warning("order data error")
+       data.btnLoading = false;
       return
    }
     //抵押数量为0
   if(data.underlyingAmount.eq(BigNumber.from("0"))){
      message.warning("please input underlyingAmount")
+    data.btnLoading = false;
      return 
    }
    //获取卖家0vault余额
    let writerBalance=  await getTokenBalance(data.remarkInfo.writerVault,[data.currentUnderlyingAsset.address])
    if(BigNumber.isBigNumber(writerBalance[0]) && data.underlyingAmount.gte(writerBalance[0])){
      message.warning("writer Vault balance not enough")
+       data.btnLoading = false;
      return 
    }
 
@@ -430,6 +436,7 @@ var buyCall=async ()=>{
    let underkyTotal=await getUnderlyAssetTotal()
    if(data.underlyingAmount.gte(underkyTotal)){
      message.warning("offer total not enough")
+       data.btnLoading = false;
      return 
    }
    //-----------------------------
@@ -451,6 +458,7 @@ var buyCall=async ()=>{
    //判断买家余额是否足够  
    if(premium.gte(data.currentPremiumAsset.balance)){
        message.warning("premium balance not enough")
+        data.btnLoading = false;
        return
    }
    let amount=[premium]
@@ -487,6 +495,7 @@ var buyCall=async ()=>{
     // 接触按钮锁
     if(!bundlerHash.status){
         data.btnLock=false;
+        data.btnLoading = false;
         data.transferLoadingData.status = 'faild';
         data.transferLoadingData.hash = bundlerHash.hash;
         return
@@ -499,6 +508,7 @@ var buyCall=async ()=>{
     // data.txResult=result
     console.log("交易结果",result)
     if(!result.status){
+        data.btnLoading = false;
         data.transferLoadingData.status = "faild";
         data.transferLoadingData.hash = bundlerHash.hash;
         data.btnLock=false
@@ -507,6 +517,7 @@ var buyCall=async ()=>{
     console.log(result);
     data.transferLoadingData.status = "success";
     data.transferLoadingData.hash = bundlerHash.hash;
+    data.btnLoading = false;
 }
 
 //查询货币价格

@@ -80,7 +80,6 @@ var inputValue= (input)=>{
     //处理字符串等
     const regex = /^\d*\.?\d*$/;
     let isDigit= regex.test(value)
-    console.log(isDigit,"-----ss",value)
     if(!isDigit){
         //获取最后一位元素  不数字的情况下 删除最后一位元素
         value=String(value).substring(0,String(value).length-1)
