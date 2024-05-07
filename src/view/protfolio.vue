@@ -458,6 +458,7 @@ var liquidationTx=async (orderInfo,liquidateType,incomeAmountValue)=>{
     let isCheck= await   checkBuyerBalance(orderInfo.recipient,orderInfo.strikeAsset.address,strikeAmount)
     if(!isCheck){
        message.warning("vault balance is insufficient to pay strikeAmount")
+       data.transferLoadingData.status = "faild";
        return
     }
     //实物交割
