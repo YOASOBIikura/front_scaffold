@@ -31,7 +31,7 @@ export const useAxiosStore = defineStore('axios', {
      initAxios(chainBlockCallProvider,chainBlockSendProvider,wallet){
          this.axios= new Axios({
             // httpUrl:"http://192.168.3.31:8000",
-            httpUrl: "https://cdapiv2.fly.dev",
+            httpUrl: import.meta.env.VITE_APP_API_URL,
             chainBlockCallProvider:chainBlockCallProvider,
             chainBlockSendProvider:chainBlockSendProvider,
             safeBlock:6,
