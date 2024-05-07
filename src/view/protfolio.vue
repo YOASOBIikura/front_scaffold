@@ -309,7 +309,6 @@ var getOfferList=async (page = 1)=>{
     }else{    
       unUsed=BigNumber.from(unUsedList[index]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
     }
-    let  used=total-unUsed  
     let obj = {
       id:item.id,
       orderType:item["option_type"]==0?'call':'put',
@@ -319,13 +318,14 @@ var getOfferList=async (page = 1)=>{
       premiumAssets: premiumAssets,
       createDate: item.create_time*1000,
       expirationDate: item.expiration_date*1000,
-      used:used,
+      unUsed:unUsed,
       strikeAsset:strikeAsset,
       underlyingAsset: underlyingAsset,
       liquidate: liquidate,
       premiumPrice: item.option_premium ?  item.option_premium: item.derbit_price, // 期权费
 
     }
+    console.log(obj);
     offerList.push(obj);
    });
    if(page == 1){
