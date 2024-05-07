@@ -39,7 +39,9 @@ let remark={
     priceDecimals:18,
     gasSymbol:"matic",
     chainIcon:chainIconPng,
-    chainName:"Polygon"
+    chainName:"Polygon",
+    safeBlock: 12,
+    loop: 5
 
 }
 

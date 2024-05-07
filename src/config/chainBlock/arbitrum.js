@@ -47,8 +47,9 @@ let remark={
     priceDecimals:18,
     gasSymbol:"Eth",
     chainIcon:chainIconPng,
-    chainName:"Arbitrum"
-
+    chainName:"Arbitrum",
+    safeBlock: 2,
+    loop: 5
 }
 
 let optionBusiness={
@@ -121,11 +122,11 @@ let optionBusiness={
     ],//权力金资产
     liquidation:[
         {     
-           label:"Cash Settlement",
+           name:"Cash Settlement",
            value:1
         },
         {
-           label:"Asset Delivery",
+            name:"Asset Delivery",
            value:2 
         }
    ]//清算方式

@@ -58,6 +58,8 @@ export const useAxiosStore = defineStore('axios', {
             this.remark=polygon.remark
             this.optionBusiness=polygon.optionBusiness
             this.chainInfo = polygon.chainInfo
+            this.axios.safeBlock = polygon.remark.safeBlock;
+            this.axios.loop = polygon.remark.loop;
             break
           case 42161:
              this.currentContractData=arbitrum.contractData
@@ -66,6 +68,8 @@ export const useAxiosStore = defineStore('axios', {
              this.remark=arbitrum.remark
              this.optionBusiness=arbitrum.optionBusiness
              this.chainInfo = arbitrum.chainInfo
+             this.axios.safeBlock = arbitrum.remark.safeBlock;
+             this.axios.loop = arbitrum.remark.loop;
              break;       
       }
      },
