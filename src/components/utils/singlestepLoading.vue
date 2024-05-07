@@ -14,7 +14,7 @@
         <template v-slot:title>
              <div class="transfer-title">
                  <span class="title">{{props.transferName}}</span>
-                 <img v-if="canClose"  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer">
+                 <!-- <img v-if="canClose"  class="close" src="@/assets/images/close.png" alt="" @click="closeDrawer"> -->
              </div>
         </template>
         <div class="loading-content">
@@ -140,7 +140,7 @@ var goToNextPage = () => {
     .transfer-title{
         width: 100%;
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         height: 60px;
         padding: 20px 16px;

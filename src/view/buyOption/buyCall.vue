@@ -180,7 +180,9 @@ const data = reactive({
         hash: "",
         nextPage: {
             path: "/protfolio",
-            query: {},
+            query: {
+                type: "options"
+            },
             name: "my protfolio"
         },
         transferName: "buy Call"

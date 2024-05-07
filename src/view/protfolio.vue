@@ -12,7 +12,7 @@
         <!-- options -->
         <a-tab-pane key="options" tab="My Options" force-render >
           <div class="select" v-if="true" >
-                  <span class="text">{{data.orderList.length}} Options</span>
+                  <span class="text">{{ data.orderTotal }} Options</span>
                   <div class="list">
                     <div class="list-one"> 
                       <img  src="@/assets/images/selecttwo.png" alt="" @click="selectCondition">
@@ -85,9 +85,11 @@ import {getMulTokenBalance} from "@/apiHandle/token"
 import {getUnderlyTotal} from "@/callData/multiCall/optionFacet"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import { message } from "ant-design-vue"
+import { useRoute } from "vue-router"
 const axiosStore= useAxiosStore()
+const route = useRoute();
   let data=reactive({
-    activeKey:"listing",
+    activeKey:"listing", // options / listing
     isOpenSelect:false,
     isOpenSort:false,
     isOpenLiquidation:false,
@@ -99,6 +101,7 @@ const axiosStore= useAxiosStore()
     scrollOrderLoadLock: false, // order订单的滚动加载锁
     //------------
     orderList:[],//订单列表 
+    orderTotal: 0, // 所有订单总数
     priceList:{},//价格列表
     priceAddressList:[],//价格地址列表,
     currentOrder:{},
@@ -231,6 +234,7 @@ var liquidate=(orderInfo)=>{
 }
 //-------------初始化-----------------
 onMounted(async ()=>{
+   data.activeKey = route.query.type ? route.query.type : "listing";
    await init()
 })
 //处理监听事件
@@ -343,9 +347,8 @@ var getOfferList=async (page = 1)=>{
 //订单
 var getOrderList=async (page = 1)=>{
   // _optionId,_chainId,_wallet
-  let orderListResponse=  await getOrderApi("",axiosStore.chainId,axiosStore.currentAccount,data.filterType,data.filterStatus,data.filterSort,page);
-  console.log(orderListResponse,"orderListResponse")
-  orderListResponse=orderListResponse.data||[]
+  let orderListResponseRaw=  await getOrderApi("",axiosStore.chainId,axiosStore.currentAccount,data.filterType,data.filterStatus,data.filterSort,page);
+  let orderListResponse=orderListResponseRaw.data||[]
   //处理价格列表
   let priceAddressList=new Set()
   orderListResponse?.forEach(item=>{
@@ -396,7 +399,7 @@ var getOrderList=async (page = 1)=>{
          strikeAsset:strikeAsset,
          chainId:item["chain_id"],
          underyingAmount:BigNumber.from(item["underlying_amount"]),
-         underyingAmountShow:BigNumber.from(item["underlying_amount"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100,
+         underyingAmountShow:BigNumber.from(item["underlying_amount"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-4)).toNumber()/10000,
          strikeAmount:BigNumber.from(item["strike_amount"]),
          writer:item["writer"],
          writerWallet:item["writer_wallet"],
@@ -408,9 +411,9 @@ var getOrderList=async (page = 1)=>{
       }
       console.log(obj,"objjjsd")
       orderList.push(obj)
-  })
+  });
   //获取币种市场价格
-  
+  data.orderTotal = orderListResponseRaw.total;
    if(page == 1){
     data.orderList=orderList
    } else {
