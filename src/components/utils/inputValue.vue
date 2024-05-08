@@ -88,7 +88,7 @@ var inputValue= (input)=>{
             value=String(value).substring(0,String(value).length-1);
         } 
     }
-    if(!checkValue(value)){
+    if(!checkValue(value,false)){
         return;
     }
     data.inputShow=Number(value);
@@ -114,7 +114,7 @@ var inputValue= (input)=>{
     data.preValue=data.inputShow
 }
 
-var checkValue = (value) => {
+var checkValue = (value,isBlur) => {
     //处理小数点的情况
     let lastValue=String(value).substring(String(value).length-1)
     if(lastValue=="."){
@@ -124,7 +124,7 @@ var checkValue = (value) => {
     // 处理只有0和小数点的情况
     const OnlyZeroAndDigitRegx = /^[0.\\.]*$/;
     let isOnlyZeroAndDigit = OnlyZeroAndDigitRegx.test(value);
-    if(isOnlyZeroAndDigit){
+    if(isOnlyZeroAndDigit && !isBlur){
         data.inputShow=value;
         return false;
     }
@@ -151,7 +151,7 @@ var blurChange=()=>{
         value="0";
         data.inputShow = "0";
     }
-    if(!checkValue(value)){
+    if(!checkValue(value,true)){
         return;
     }
    let lastValue=String(value).substring(String(value).length-1)
