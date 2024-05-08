@@ -26,6 +26,7 @@
         :isApproximate="true"
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
+        :decimalsShow="data.currentUnderlyingAsset.decimalsShow"
         :decimals="data.currentUnderlyingAsset.decimals">
              <div class="slotBalance">
                  <span></span>
@@ -85,6 +86,7 @@
             <inputValue 
             :isSuffix="false"  
             :decimals="18"
+            :decimalsShow="2"
             :isMax="false"
             v-model:value="data.currentPremiumFee"
             :valueChange="currentPremiumFeeShow"
@@ -190,7 +192,7 @@ var underlyingAssetBalance=computed(()=>{
          return 0
      }
      console.log("当前抵押资产余额",data.underlyingAssetBalance)
-     return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
+     return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals - data.currentUnderlyingAsset.decimalsShow)).toNumber()/10 ** data.currentUnderlyingAsset.decimalsShow).toFixed(data.currentUnderlyingAsset.decimalsShow)
 })
 
 
@@ -553,8 +555,6 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
         data.loadingData.stepList[1].status = "current";
         //触发上链签名
        let resetSigature= await  setSigatureLockApi(data.vault,1,underlyingAsset,currentTimestamp)
-       console.log(resetSigature);
-       debugger;
        if(!resetSigature.message.status){
           data.loadingData.stepList[1].status = "faild";
           message.error("cacel old offer fail")

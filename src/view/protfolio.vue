@@ -305,13 +305,13 @@ var getOfferList=async (page = 1)=>{
     }
     let  underlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.underlying_asset)));
     let  strikeAsset=JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.strike_assets[0])))
-    let  total=BigNumber.from(item.total).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
+    let  total=BigNumber.from(item.total).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-underlyingAsset.decimalsShow)).toNumber()/10 ** underlyingAsset.decimalsShow
     // let  used=BigNumber.from(item.used).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
     let unUsed=BigNumber.from("0")
     if(BigNumber.from(unUsedList[index]).eq(BigNumber.from("0"))){
       unUsed=total
     }else{    
-      unUsed=BigNumber.from(unUsedList[index]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-2)).toNumber()/100
+      unUsed=BigNumber.from(unUsedList[index]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals- underlyingAsset.decimalsShow)).toNumber()/10 ** underlyingAsset.decimalsShow
     }
     let obj = {
       id:item.id,
@@ -399,7 +399,7 @@ var getOrderList=async (page = 1)=>{
          strikeAsset:strikeAsset,
          chainId:item["chain_id"],
          underyingAmount:BigNumber.from(item["underlying_amount"]),
-         underyingAmountShow:BigNumber.from(item["underlying_amount"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-4)).toNumber()/10000,
+         underyingAmountShow:BigNumber.from(item["underlying_amount"]).div(ethers.utils.parseUnits("1",underlyingAsset.decimals-underlyingAsset.decimalsShow)).toNumber()/10 ** underlyingAsset.decimalsShow,
          strikeAmount:BigNumber.from(item["strike_amount"]),
          writer:item["writer"],
          writerWallet:item["writer_wallet"],

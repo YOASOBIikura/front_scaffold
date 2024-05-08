@@ -88,7 +88,11 @@ onMounted(()=>{
     }else{
       data.png=redeemPng
     }
-    data.showAmount=(BigNumber.from(props.amount).div(ethers.utils.parseUnits("1",props.decimals-2)).toNumber()/100).toFixed()
+    if(!props.tokenInfo?.decimalsShow){
+      data.showAmount = "0";
+      return;
+    }
+    data.showAmount=(BigNumber.from(props.amount).div(ethers.utils.parseUnits("1",props.decimals-props.tokenInfo.decimalsShow)).toNumber()/10 ** props.tokenInfo.decimalsShow).toFixed(props.tokenInfo.decimalsShow)
 })
 
 var closeDrawer=()=>{

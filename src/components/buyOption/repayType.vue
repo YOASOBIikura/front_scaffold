@@ -55,15 +55,15 @@ var payStrikeAmount=computed(()=>{
     if(!BigNumber.isBigNumber(props.strikeAmount) || !props.strikeAsset.decimals){
         return 0
     }
-    let newAmount= props.strikeAmount.mul(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-2)).div(ethers.utils.parseUnits("1",props.strikeAsset.decimals))
-    return newAmount.toNumber()/100
+    let newAmount= props.strikeAmount.mul(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-props.asset.decimalsShow)).div(ethers.utils.parseUnits("1",props.strikeAsset.decimals))
+    return newAmount.toNumber()/10 ** props.asset.decimalsShow
 })
 
 var newUnderlyingAmount=computed(()=>{
     if(!BigNumber.isBigNumber(props.underlyingAmount) || !props.asset.decimals){
         return 0
     }
-     return BigNumber.from(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-2)).toNumber()/100
+     return BigNumber.from(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-props.asset.decimalsShow)).toNumber()/10 ** props.asset.decimalsShow
 })
 </script>
 <style scoped lang="less">

@@ -60,6 +60,7 @@ let optionBusiness={
             priceInterval:100,//价格区间
             isGasToken:true,
             decimals:18,
+            decimalsShow: 4,
             assetType:0,
             isSellPut:true,
             isSellCall:true,
@@ -71,6 +72,7 @@ let optionBusiness={
             priceInterval:500,//价格区间
             isGasToken:false,
             decimals:8,
+            decimalsShow: 4,
             assetType:1,
             isSellPut:true,
             isSellCall:true,
@@ -83,6 +85,7 @@ let optionBusiness={
             address:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
             isGasToken:false,
             decimals:6,
+            decimalsShow: 2,
             assetType:1,
             isSellPut:true,
             isSellCall:true,
@@ -93,6 +96,7 @@ let optionBusiness={
             address:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
             isGasToken:false,
             decimals:6,
+            decimalsShow: 2,
             assetType:1,
             isSellPut:true,
             isSellCall:true,           
@@ -105,6 +109,7 @@ let optionBusiness={
             address:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
             isGasToken:false,
             decimals:6,
+            decimalsShow: 2,
             assetType:1,
             isSellPut:true,
             isSellCall:true,
@@ -115,6 +120,7 @@ let optionBusiness={
             address:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
             isGasToken:false,
             decimals:6,
+            decimalsShow: 2,
             assetType:1,
             isSellPut:true,
             isSellCall:true,          
@@ -152,6 +158,7 @@ let tokens=[
         address:"0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
         priceId:"0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33",
         decimals:8,
+        decimalsShow: 4,
         img:wbtcPng,
         isGasToken:false,
         isShowAsset:true,
@@ -165,6 +172,7 @@ let tokens=[
     address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     priceId:"0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
     decimals:18,
+    decimalsShow: 4,
     img:ethPng,
     isGasToken:true,
     isShowAsset:true,
@@ -178,6 +186,7 @@ let tokens=[
      address:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9",
      priceId:"0x2b89b9dc8fdf9f34709a5b106b472f0f39bb6ca9ce04b0fd7f2e971688e2e53b",
      decimals:6,
+     decimalsShow: 2,
      img:usdtPng,
      isGasToken:false,
      isShowAsset:true,
@@ -191,6 +200,7 @@ let tokens=[
      address:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
      priceId:"0xeaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
      decimals:6,
+     decimalsShow: 2,
      img:usdcPng,
      isGasToken:false,
      isShowAsset:true,
@@ -199,7 +209,6 @@ let tokens=[
      isSellPut:false,
      isSellCall:false,  
     }
-
 ]
 
 

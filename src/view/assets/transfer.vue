@@ -36,6 +36,7 @@
             :maxValue="data.type=='issue'? data.walletBalanceValue : data.vaultBalanceValue"
             :symbol="data.tokenInfo.name" 
             :decimals="data.tokenInfo.decimals"
+            :decimalsShow="data.tokenInfo.decimalsShow"
            
         >
     </inputValue>

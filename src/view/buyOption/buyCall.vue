@@ -36,6 +36,7 @@
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
         :decimals="data.currentUnderlyingAsset.decimals"
+        :decimalsShow="data.currentUnderlyingAsset.decimalsShow"
         @input="inputChange"   
         @inputMax="maxChange"
         >
@@ -201,7 +202,7 @@ var underlyingAssetBalance=computed(()=>{
          return 0
      }
      console.log(data.underlyingAssetBalance,"=s==s===ss")
-     return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
+     return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-data.currentUnderlyingAsset.decimalsShow)).toNumber()/10 ** data.currentUnderlyingAsset.decimalsShow).toFixed(data.currentUnderlyingAsset.decimalsShow)
 })
 
 

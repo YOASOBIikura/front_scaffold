@@ -53,28 +53,28 @@ const props=defineProps({
 })
 //-----------计算属性---------------------
 var walletAmountUsd=computed(()=>{
-    let value=  props.tokenInfo.tokenPrice.mul(props.tokenInfo.walletBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
-    return (Number(value.toString())/100).toFixed(2)
+    let value=  props.tokenInfo.tokenPrice.mul(props.tokenInfo.walletBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals - props.tokenInfo.decimalsShow)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
+    return (Number(value.toString())/10 ** props.tokenInfo.decimalsShow).toFixed(props.tokenInfo.decimalsShow)
 })
 
 var vaultAmountUsd=computed(()=>{
-    let value= props.tokenInfo.tokenPrice.mul(props.tokenInfo.vaultBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
-    return (Number(value.toString())/100).toFixed(2)
+    let value= props.tokenInfo.tokenPrice.mul(props.tokenInfo.vaultBalance).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-props.tokenInfo.decimalsShow)).div(ethers.utils.parseUnits("1",props.tokenInfo.decimals))
+    return (Number(value.toString())/10 ** props.tokenInfo.decimalsShow).toFixed(props.tokenInfo.decimalsShow)
 })
 
 var walletBalance=computed(()=>{
-    let value=props.tokenInfo.walletBalance.div(ethers.utils.parseUnits("1",props.tokenInfo.decimals-2))
+    let value=props.tokenInfo.walletBalance.div(ethers.utils.parseUnits("1",props.tokenInfo.decimals-props.tokenInfo.decimalsShow))
     // if(walletAmountUsd>10){
      
     // }else{
 
     // }
-    return  (Number(value.toString())/100).toFixed(2)
+    return  (Number(value.toString())/10 ** props.tokenInfo.decimalsShow).toFixed(props.tokenInfo.decimalsShow)
 })
 
 var vaultBalance=computed(()=>{
-    let value=props.tokenInfo.vaultBalance.div(ethers.utils.parseUnits("1",props.tokenInfo.decimals-2))
-    return  (Number(value.toString())/100).toFixed(2)
+    let value=props.tokenInfo.vaultBalance.div(ethers.utils.parseUnits("1",props.tokenInfo.decimals - props.tokenInfo.decimalsShow))
+    return  (Number(value.toString())/10 ** props.tokenInfo.decimalsShow).toFixed(props.tokenInfo.decimalsShow)
 })
 
 //---------方法跳转-------------------

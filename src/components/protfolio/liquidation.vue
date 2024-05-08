@@ -74,8 +74,8 @@ var closeDrawer=()=>{
 
 var assetDeliveryShow=computed(()=>{
     let info=""
-    let underlyingAmount=props.dataInfo?.underyingAmount.div(ethers.utils.parseUnits("1",props.dataInfo?.underlyingAsset?.decimals-2)).toNumber()/100
-    let strikeAmount=props.dataInfo?.strikeAmount.mul(props.dataInfo?.underyingAmount).div(ethers.utils.parseUnits("1",props.dataInfo?.strikeAsset?.decimals-2)).div(ethers.utils.parseUnits("1",props.dataInfo?.underlyingAsset?.decimals)).toNumber()/100
+    let underlyingAmount=props.dataInfo?.underyingAmount.div(ethers.utils.parseUnits("1",props.dataInfo?.underlyingAsset?.decimals-props.dataInfo?.underlyingAsset?.decimalsShow)).toNumber()/10 ** props.dataInfo?.underlyingAsset?.decimalsShow
+    let strikeAmount=props.dataInfo?.strikeAmount.mul(props.dataInfo?.underyingAmount).div(ethers.utils.parseUnits("1",props.dataInfo?.strikeAsset?.decimals - props.dataInfo?.strikeAsset?.decimalsShow)).div(ethers.utils.parseUnits("1",props.dataInfo?.underlyingAsset?.decimals)).toNumber()/10 ** props.dataInfo?.strikeAsset?.decimalsShow
     info=`Pay ${strikeAmount}${props.dataInfo?.strikeAsset?.name} to get ${underlyingAmount}${props.dataInfo?.underlyingAsset?.name}`
     return info
 })
@@ -98,7 +98,7 @@ var getCashValue=()=>{
    if(!underlyingPrice){
       return 0
    }
-   underlyingPrice=underlyingPrice.div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100
+   underlyingPrice=underlyingPrice.div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals - props.dataInfo?.underlyingAsset?.decimalsShow)).toNumber() / 10 ** props.dataInfo?.underlyingAsset?.decimalsShow
    let value=profitValue/underlyingPrice
    return value
 }

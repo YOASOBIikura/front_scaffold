@@ -15,7 +15,9 @@
         :isApproximate="true"
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
-        :decimals="data.currentUnderlyingAsset.decimals">
+        :decimals="data.currentUnderlyingAsset.decimals"
+        :decimalsShow="data.currentUnderlyingAsset.decimalsShow"
+        >
              <div class="slotBalance">
                  <span></span>
                  <span>{{underlyingAssetBalance}}</span>
@@ -71,6 +73,7 @@
             <inputValue 
             :isSuffix="false"  
             :decimals="18"
+            :decimalsShow="2"
             :isMax="false"
             v-model:value="data.currentPremiumFee"
             :valueChange="currentPremiumFeeShow"
@@ -189,7 +192,7 @@ var underlyingAssetBalance=computed(()=>{
          return 0
      }
      console.log(data.underlyingAssetBalance,"=s==s===ss")
-     return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100).toFixed(2)
+     return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-data.currentUnderlyingAsset.decimalsShow)).toNumber()/10 ** data.currentUnderlyingAsset.decimalsShow).toFixed(data.currentUnderlyingAsset.decimalsShow)
 })
 
 var currentPremiumFeeShow = computed(() => {

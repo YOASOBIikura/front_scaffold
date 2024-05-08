@@ -60,7 +60,7 @@ var assetShow=computed(()=>{
     if(!props.asset.decimals){
          return 0
     }
-     return BigNumber.from(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-2)).toNumber()/100
+     return BigNumber.from(props.underlyingAmount).div(ethers.utils.parseUnits("1",props.asset.decimals-props.asset.decimalsShow)).toNumber()/10 ** props.asset.decimalsShow
 })
 
 </script>
