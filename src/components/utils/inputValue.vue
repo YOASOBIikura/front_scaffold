@@ -79,31 +79,16 @@ var max=()=>{
 var inputValue= (input)=>{
     let value=input.target.value;
     //处理字符串等
+    
     const regex = /^\d*\.?\d*$/;
-    let isDigit= regex.test(value)
-    if(!isDigit){
-        //获取最后一位元素  不数字的情况下 删除最后一位元素
-        value=String(value).substring(0,String(value).length-1)
+    let isDigit = false;
+    while(!isDigit){
+        isDigit = regex.test(value)
+        if(!isDigit){
+            value=String(value).substring(0,String(value).length-1);
+        } 
     }
-    //处理小数点的情况
-    let lastValue=String(value).substring(String(value).length-1)
-    if(lastValue=="."){
-        data.inputShow=value
-        return
-    } 
-    // 处理只有0和小数点的情况
-    const OnlyZeroAndDigitRegx = /^[0.\\.]*$/;
-    let isOnlyZeroAndDigit = OnlyZeroAndDigitRegx.test(value);
-    if(isOnlyZeroAndDigit){
-        data.inputShow=value;
-        return
-    }
-    // 取精度以内的数字，其他的都不要
-    let digitBefore = value.split(".")[0];
-    let digitAfter = value.split(".")[1];
-    if(digitAfter && digitAfter.length > props.decimals){
-        digitAfter = digitAfter.substring(0, props.decimals);
-        data.inputShow = `${digitBefore}.${digitAfter}`;
+    if(!checkValue(value)){
         return;
     }
     data.inputShow=Number(value);
@@ -129,11 +114,46 @@ var inputValue= (input)=>{
     data.preValue=data.inputShow
 }
 
+var checkValue = (value) => {
+    //处理小数点的情况
+    let lastValue=String(value).substring(String(value).length-1)
+    if(lastValue=="."){
+        data.inputShow=value
+        return false;
+    } 
+    // 处理只有0和小数点的情况
+    const OnlyZeroAndDigitRegx = /^[0.\\.]*$/;
+    let isOnlyZeroAndDigit = OnlyZeroAndDigitRegx.test(value);
+    if(isOnlyZeroAndDigit){
+        data.inputShow=value;
+        return false;
+    }
+    console.log(value, "value--00");
+    // 取精度以内的数字，其他的都不要
+    let digitBefore = String(value).split(".")[0];
+    let digitAfter = String(value).split(".")[1];
+    if(digitAfter && digitAfter.length > props.decimals){
+        digitAfter = digitAfter.substring(0, props.decimals);
+        data.inputShow = `${digitBefore}.${digitAfter}`;
+        return false;
+    }
+    return true;
+}
+
 var blurChange=()=>{  
    let value =data.inputShow
    if(value === ""){
     return;
    }
+    const regex = /^\d*\.?\d*$/;
+    let isDigit= regex.test(value)
+    if(!isDigit){
+        value="0";
+        data.inputShow = "0";
+    }
+    if(!checkValue(value)){
+        return;
+    }
    let lastValue=String(value).substring(String(value).length-1)
    if(lastValue=="."){
        data.inputShow=String(value).substring(0,String(value).length-1)

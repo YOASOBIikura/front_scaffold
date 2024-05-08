@@ -554,8 +554,8 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
    if(currentTimestamp.gt(timestamp) && total.gt(BigNumber.from("0"))){
         data.loadingData.stepList[1].status = "current";
         //触发上链签名
-       let resetSigature= await  setSigatureLockApi(data.vault,1,underlyingAsset,currentTimestamp)
-       if(!resetSigature.message.status){
+       let resetSigature= await  setSigatureLockApi(data.vault,1,underlyingAsset,currentTimestamp);
+       if(!resetSigature.status){
           data.loadingData.stepList[1].status = "faild";
           message.error("cacel old offer fail")
           return
