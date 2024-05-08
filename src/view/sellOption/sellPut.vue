@@ -146,6 +146,7 @@ import {balanceOfApi} from "@/api/token"
 import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getWalletBalanceApi} from "@/api/utils"
 import { message } from 'ant-design-vue';
+import { getKytData } from "@/apiHandle/others"
 const router=useRouter()
 const route=useRoute()
 const axiosStore= useAxiosStore()
@@ -436,6 +437,8 @@ var getPriceByService=async ()=>{
     underlyingAssetPrice=BigNumber.from(underlyingAssetPrice?.data?.a_price)  || BigNumber.from("0")
     return underlyingAssetPrice
 }
+
+
 //---------------上链业务相关部分---------------
 var sendTx=async ()=>{
     console.log(data.underlyingAmount,"data.underlyingAmount",data.currentStrikePrice)
@@ -475,6 +478,12 @@ var sendTx=async ()=>{
 
         return
       }
+        // kyt条件判断
+        if(!await getKytData(axiosStore.currentAccount)){
+            message.warning("kyt error");
+            data.btnLoading = false;
+            return 
+        }
       await checkUpdateGignature(data.vault,data.currentUnderlyingAsset.address)
 }
 

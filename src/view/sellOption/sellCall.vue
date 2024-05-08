@@ -143,6 +143,7 @@ import {balanceOfApi} from "@/api/token"
 import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getWalletBalanceApi} from "@/api/utils"
 import { message } from 'ant-design-vue';
+import { getKytData } from "@/apiHandle/others"
 const router=useRouter()
 const route=useRoute()
 const axiosStore= useAxiosStore()
@@ -420,6 +421,7 @@ var getPriceByService=async ()=>{
 }
 
 
+
 //---------------上链业务相关部分---------------
 var sendTx=async ()=>{
    
@@ -473,6 +475,12 @@ var sendTx=async ()=>{
         message.warning("please select liquidation")
         return
       }
+        // kyt条件判断
+       if(!await getKytData(axiosStore.currentAccount)){
+            message.warning("kyt error");
+            data.btnLoading = false;
+            return 
+        }
       console.log("开始上链流程",data.vault,data.currentUnderlyingAsset.address)
      await checkUpdateGignature(data.vault,data.currentUnderlyingAsset.address)
 }

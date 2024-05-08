@@ -1,6 +1,6 @@
 <template>
     <div class="assets">
-        <assetHeader :address="axiosStore.currentAccount"></assetHeader>
+        <assetHeader :kytStatus="data.kytStatus" :address="axiosStore.currentAccount"></assetHeader>
         <div class="total-info">
               <p class="infop1">
                   <span class="title">Total Asset</span>
@@ -42,6 +42,7 @@ import {getWalletBalanceApi} from "@/api/utils"
 import {getPrice} from "@/callData/multiCall/priceOracle"
 import {getIssueMode} from "@/callData/multiCall/IssuanceFacet"
 import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
+import { getKytData } from "@/apiHandle/others"
 const axiosStore= useAxiosStore()
 const data=reactive({
      tokenList:[],
@@ -50,7 +51,8 @@ const data=reactive({
      totalVault:0,
      issueMode:0,
      //----
-     loading:false
+     loading:false,
+     kytStatus: false // KYT状态判断
 })
 // 生命周期
 onMounted(async ()=>{
@@ -77,6 +79,9 @@ var init=async ()=>{
    await handlePriceByService()
    //计算总价值
    await handleValue()
+
+   // 获取kyt数据
+   data.kytStatus = await getKytData(axiosStore.currentAccount);
    data.loading=false
    console.log("tokenList",data.tokenList)
 }
@@ -209,6 +214,9 @@ var handlePriceByService=async ()=>{
      })
 
 }
+
+
+
 </script>
 <style lang="less" scoped>
    .assets{

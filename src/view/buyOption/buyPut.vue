@@ -152,6 +152,7 @@ import {getMulTokenBalance} from "@/apiHandle/token"
 import {setVaultType} from "@/callData/bundler/vaultManageModule"
 import {getVaultApi} from "@/api/vaultFactory"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
+import { getKytData } from "@/apiHandle/others"
 const route=useRoute()
 const router=useRouter()
 const axiosStore=useAxiosStore()
@@ -412,11 +413,18 @@ var getOrder=async ()=>{
   
    
 }
+
 //------------上链业务相关------------------
 //买操作上链
 var buyCall=async ()=>{
       //处理边界条件
     data.btnLoading = true;
+      // kyt条件判断
+   if(!await getKytData(axiosStore.currentAccount)){
+        message.warning("kyt error");
+        data.btnLoading = false;
+        return 
+   }
    if(data.signature==""){
        message.warning("order data error")
         data.btnLoading = false;
