@@ -125,6 +125,7 @@ var viewOnScan = () => {
 
 // 去下一个页面
 var goToNextPage = () => {
+    closeDrawer();
     router.push({
         path: props.nextPage.path,
         query: props.nextPage?.query ? props.nextPage?.query : {}

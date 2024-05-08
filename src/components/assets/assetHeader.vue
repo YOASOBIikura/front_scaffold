@@ -4,12 +4,13 @@
                 <div class="icon" id="avtor" > </div>
                 <div class="info">
                     <p class="top">
-                        <span class="text">Joey268</span>
+                        <span class="text" >Wallet: {{`${String(props.address).substring(0,6)}...${String(props.address).substring(38)}`}}</span>
                         <img v-if="kytStatus" class="img" src="@/assets/images/certified.png" alt="">
                     </p>
                     <p class="bottom">
-                        <span class="text" >{{`${String(props.address).substring(0,6)}...${String(props.address).substring(38)}`}}</span>
-                        <img class="img" src="@/assets/images/copy2.png" alt="" @click="copyText(props.address)">
+                        
+                        <span class="text" >Vault: {{`${String(props.vaultAddress).substring(0,6)}...${String(props.vaultAddress).substring(38)}`}}</span>
+                        <img class="img" src="@/assets/images/copy2.png" alt="" @click="copyText(props.vaultAddress)">
                         <span class="text-none" id="copyDom">{{}}</span>
                     </p>
                 </div>
@@ -34,6 +35,11 @@ const props=defineProps({
          type:String,
          require:true,
          default:ethers.constants.AddressZero
+     },
+     vaultAddress: {
+        type:String,
+        require:true,
+        default:ethers.constants.AddressZero
      },
      kytStatus: {
         type: Boolean,
