@@ -5,11 +5,12 @@
                 <div class="info">
                     <p class="top">
                         <span class="text">Joey268</span>
-                        <img class="img" src="@/assets/images/certified.png" alt="">
+                        <img v-if="kytStatus" class="img" src="@/assets/images/certified.png" alt="">
                     </p>
                     <p class="bottom">
-                        <span class="text">{{`${String(props.address).substring(0,6)}...${String(props.address).substring(38)}`}}</span>
-                        <img class="img" src="@/assets/images/copy2.png" alt="">
+                        <span class="text" >{{`${String(props.address).substring(0,6)}...${String(props.address).substring(38)}`}}</span>
+                        <img class="img" src="@/assets/images/copy2.png" alt="" @click="copyText(props.address)">
+                        <span class="text-none" id="copyDom">{{}}</span>
                     </p>
                 </div>
           </div>
@@ -25,6 +26,7 @@ import { reactive,defineProps,onMounted,watch,computed } from 'vue';
 import { useRouter,useRoute } from "vue-router";
 import {useAxiosStore} from "@/pinia/modules/axios"
 import  jazzicon from 'jazzicon'
+import { message } from 'ant-design-vue';
 const router=useRouter()
 const axiosStore=useAxiosStore()
 const props=defineProps({
@@ -32,11 +34,17 @@ const props=defineProps({
          type:String,
          require:true,
          default:ethers.constants.AddressZero
+     },
+     kytStatus: {
+        type: Boolean,
+        require: true,
+        default: false
      }
 })
 var goLogout=()=>{
     //  router.push({path:"/logout"})
 }
+
 
 onMounted(()=>{
       createAvator()
@@ -55,6 +63,17 @@ var createAvator=()=>{
     console.log(avator,axiosStore.currentAccount,"-----sss",axiosStore.currentAccount,addrNumber)
     el.appendChild(avator)
 }
+
+var copyText = async (data)=> {
+        let oInput = document.createElement('input');
+        oInput.value = data;
+        document.body.appendChild(oInput);
+        oInput.select();
+        document.execCommand("Copy"); 
+        message.success("copy success");
+        oInput.remove();
+}
+
 </script>
 <style lang="less" scoped>
     .assetsHeader{
@@ -98,6 +117,9 @@ var createAvator=()=>{
                    .img{
                      width: 16px;
                      height: 16px;
+                   }
+                   .text-none{
+                    display: none;
                    }
                 }
             }

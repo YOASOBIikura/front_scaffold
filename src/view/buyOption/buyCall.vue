@@ -149,6 +149,7 @@ import {setVaultType} from "@/callData/bundler/vaultManageModule"
 import {getVaultApi} from "@/api/vaultFactory"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import {getSigatureLock,getUnderlyTotal} from "@/callData/multiCall/optionFacet"
+import { getKytData } from "@/apiHandle/others"
 const route=useRoute()
 const router=useRouter()
 const axiosStore=useAxiosStore()
@@ -414,6 +415,13 @@ var getOrder=async ()=>{
 var buyCall=async ()=>{
     data.btnLoading = true;
     //处理边界条件
+    
+    // kyt条件判断
+   if(!await getKytData(axiosStore.currentAccount)){
+        message.warning("kyt error");
+        data.btnLoading = false;
+        return 
+   }
    if(data.signature==""){
        message.warning("order data error")
        data.btnLoading = false;
