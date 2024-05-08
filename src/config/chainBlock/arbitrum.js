@@ -68,7 +68,7 @@ let optionBusiness={
             name:"WBTC",
             img:wbtcPng,
             address:"0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
-            priceInterval:100,//价格区间
+            priceInterval:500,//价格区间
             isGasToken:false,
             decimals:8,
             assetType:1,

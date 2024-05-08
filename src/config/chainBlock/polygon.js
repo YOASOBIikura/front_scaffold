@@ -86,7 +86,7 @@ let optionBusiness={
             name:"WBTC",
             img:wbtcPng,
             address:"0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
-            priceInterval:100,
+            priceInterval:500,
             isGasToken:false,
             decimals:8,
             assetType:1,
