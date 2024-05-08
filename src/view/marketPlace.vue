@@ -235,7 +235,7 @@ var addPriceInterval = async () => {
   data.underlyPrice = await getTokenPrice(data.currentUnderlyingAsset.address);
   data.underlyInterval = setInterval(async () => {
     data.underlyPrice = await getTokenPrice(data.currentUnderlyingAsset.address);
-  },10000);
+  },2000);
 }
 
 var clearPriceInterval = async () => {

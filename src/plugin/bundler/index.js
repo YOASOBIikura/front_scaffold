@@ -147,7 +147,11 @@ async function getBundlerTxResult(hash){
     //获取provider 获得signer
     let provider= toRaw(axiosStore.currentProvider)  
     console.log(hash,"hash")
-    const tx = await provider.waitForTransaction(hash,5)
+    let safeBlock = 1;
+    if(axiosStore.chainId == 42161){
+        safeBlock = 32;
+    }
+    const tx = await provider.waitForTransaction(hash, safeBlock);
     console.log("交易",tx)
     if(tx.status === 1){
       console.log("交易成功: ", tx)
@@ -175,7 +179,7 @@ async function getBundlerTxResult(hash){
 async function getOperationHash(orderId, time, count) { 
     let currentIndex=1
     let orderResponse=  await getOrderR(orderId)
-    if ( orderResponse.data && orderResponse.data.txHash) {
+    if ( orderResponse.data && orderResponse.data.txHash && String(orderResponse.data.status).includes("succ")) {
         return orderResponse.data.txHash
     }
     //循环请求 
