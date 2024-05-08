@@ -320,6 +320,7 @@ var underlyingChange=async ()=>{
      data.underlyingAssetBalance=balance
      await getMarketPrice()
      data.loading=false
+     data.underlyingAmount=BigNumber.from("0")
      console.log("抵押资产余额",data.currentUnderlyingAsset,balance)
 }
 
@@ -454,6 +455,12 @@ var sendTx=async ()=>{
         message.warning("invalid strikePrice")
         return
     }
+
+    if(data.underlyingAssetBalance.eq(BigNumber.from("0"))){
+        message.warning(`please recharge Jvault ${data.currentUnderlyingAsset.name} first`)
+        return
+     }
+
 
     if(data.underlyingAmount.eq(BigNumber.from("0"))){
         message.warning("please input underlyingAmount")
