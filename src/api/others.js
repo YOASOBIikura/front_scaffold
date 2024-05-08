@@ -3,7 +3,7 @@ import { useAxiosStore } from "@/pinia/modules/axios";
 function getKytApi(walletAddress){
     return  useAxiosStore().axios({
         mode:"http", 
-        target:"/kyt/",
+        target:"/kyt",
         loop:5,
         method:"get",
         data:{
