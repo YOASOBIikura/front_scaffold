@@ -134,11 +134,18 @@ async function sendTxToBundler(vault,salt,data,tokenList=[]){
         }
      }
      let orderId=hashResponse.data.id
-     let hash = await getOperationHash(orderId, loopTime, loopCount)
-     return {
-        status:true,
-        hash:hash
-     };
+    try{
+        let hash = await getOperationHash(orderId, loopTime, loopCount)
+        return {
+            status:true,
+            hash:hash
+        };
+    } catch(e) {
+        return {
+            status: false,
+            message: e
+        };
+    }
    
 }
 
@@ -178,18 +185,23 @@ async function getBundlerTxResult(hash){
  */
 async function getOperationHash(orderId, time, count) { 
     let currentIndex=1
-    let orderResponse=  await getOrderR(orderId)
+    let orderResponse=  await getOrderR(orderId);
     if ( orderResponse.data && orderResponse.data.txHash && String(orderResponse.data.status).includes("succ")) {
         return orderResponse.data.txHash
+    } else if(orderResponse.data && (String(orderResponse.data.status).includes("fail") || String(orderResponse.data.status).includes("error"))){
+        throw Error(orderResponse.data.reason);
     }
     //循环请求 
-    return new Promise(resolve=>{
+    return new Promise((resolve,reject)=>{
         let timeId= setInterval(async ()=>{
             let  orderResponse=  await getOrderR(orderId)
             if ( orderResponse.data && orderResponse.data.txHash && String(orderResponse.data.status).includes("succ")) {
                    clearInterval(timeId);
                    resolve(orderResponse.data.txHash)
-            }  
+            }  else if(orderResponse.data && (String(orderResponse.data.status).includes("fail") || String(orderResponse.data.status).includes("error"))){
+                clearInterval(timeId);
+                reject(orderResponse.data.reason);
+            }
             if(count<=currentIndex){
                   clearInterval(timeId)
             }

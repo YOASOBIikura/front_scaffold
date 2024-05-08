@@ -136,7 +136,7 @@ import expiryDateSlider from "@/components/sellOption/expiryDateSlider.vue"
 import refresh from "@/components/utils/refresh.vue"
 import selectCoin from "@/components/utils/selectCoin.vue"
 import multistepLoading from "@/components/utils/multistepLoading.vue";
-import { reactive,onMounted,computed,watch} from "vue";
+import { reactive,onMounted,computed,watch, onBeforeUnmount} from "vue";
 import { useRouter,useRoute} from "vue-router";
 import {getSigatureLock,getUnderlyTotal} from "@/callData/multiCall/optionFacet"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
