@@ -14,7 +14,7 @@
                 </div>
           </div>
           <div class="option" @click="goLogout">
-            <img class="option-icon" src="@/assets/images/arrow_right.png" alt="" >  
+            <!-- <img class="option-icon" src="@/assets/images/arrow_right.png" alt="" >   -->
           </div>
             
          </div>
