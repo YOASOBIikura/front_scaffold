@@ -115,9 +115,9 @@ const data=reactive({
         status: "pending",
         hash: "",
         nextPage: {
-            path: "/protfolio",
+            path: "/asset",
             query: {},
-            name: "my protfolio"
+            name: "my asset"
         },
     transferName: "Transfer in progress"
     }

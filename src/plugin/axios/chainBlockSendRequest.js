@@ -67,14 +67,17 @@ async function sendContractTransition(_this,option,argType,argValue){
      console.log("tx",tx)
      let hash;
      try{
-       if(dataHex=="0x"){
-           hash= await sendEthTx(_this,tx)
-       }else{
-          hash= await _this.chainBlockSendProvider.request({
-            method:"eth_sendTransaction",
-            params:[tx]
-        })
-       }
+      //  if(dataHex=="0x"){
+      //      hash= await sendEthTx(_this,tx)
+      //  }else{
+      //     hash= await _this.chainBlockSendProvider.request({
+      //       method:"eth_sendTransaction",
+      //       params:[tx]
+      //   })
+      //  }
+        let provider= new ethers.providers.Web3Provider(_this.chainBlockSendProvider)
+       let result=await provider.getSigner().sendTransaction(tx)
+       hash=result.hash
 
     }catch(error){
          return {
@@ -106,13 +109,13 @@ async function  estimateGasTx(_this,tx){
   return result
 }
 
-//原生交易发送
-async function sendEthTx(_this,tx){
-   let provider= new ethers.providers.Web3Provider(_this.chainBlockSendProvider)
-   let result=await provider.getSigner().sendTransaction(tx)
-   console.log("hash",result)
-   return result.hash
-}
+// //原生交易发送
+// async function sendEthTx(_this,tx){
+//    let provider= new ethers.providers.Web3Provider(_this.chainBlockSendProvider)
+//    let result=await provider.getSigner().sendTransaction(tx)
+//    console.log("hash",result)
+//    return result.hash
+// }
 
 
 export {chainBlockSendRequest}
