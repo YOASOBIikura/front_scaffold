@@ -171,7 +171,7 @@ const data=reactive({
    underlyingAmount:BigNumber.from("0"),//抵押数量
    currentPremiumFee:BigNumber.from("0"),
    loading:false,
-
+   strikerInterval: null, // 查询行权价的定时任务保存
    // loading信息
     loadingData: {
         open: false,
@@ -232,6 +232,9 @@ var strikePriceChange=async (item)=>{
 //-----------初始化相关-------------------
 onMounted(async ()=>{
    await init()
+})
+onBeforeUnmount(() => {
+    clearStrikerInterval();
 })
 //处理监听事件
 watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
@@ -337,7 +340,7 @@ var balanceOf=async (isGasToken,underlyingAsset,wallet)=> {
 
 
 //获取行权价列表
-var getStrikePrice=async ()=>{
+var getStrikePrice=async (isInterVal = false)=>{
      let marketPrice=data.marketPrice;
      if(marketPrice == "0"){
         data.strikePrice= [];
@@ -383,14 +386,21 @@ var getStrikePrice=async ()=>{
         }
      }
      data.strikePrice=strikePrice
-     data.currentStrikePrice=strikePrice[0]||{}
+     if(isInterVal){
+        let currentStrikePrice = strikePrice.find(item => {
+            return data.currentStrikePrice.price === item.price
+        });
+        data.currentStrikePrice = currentStrikePrice || {};
+     } else {
+        data.currentStrikePrice=strikePrice[0]||{}
+     }
      console.log(data.strikePrice,"----ss",data.currentStrikePrice)
-     await handleDerbitPriceAndExpiryData()
+     await handleDerbitPriceAndExpiryData(isInterVal)
      
 }
 
 //处理derbit价格 和 日期列表
-var handleDerbitPriceAndExpiryData=async ()=>{
+var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
      let currentStrikePrice= data.currentStrikePrice || {}
      //处理日期
      let expiryDataList=[]
@@ -413,7 +423,14 @@ var handleDerbitPriceAndExpiryData=async ()=>{
      })
      //日期组件所需数据
      if(expiryDataList.length>0){
-        data.currentExpiryDataValue=expiryDataList[0]
+        if(isInterVal){
+            let currentExpiryDataValue = expiryDataList.find(item => {
+                return data.currentExpiryDataValue.date === item.date;
+            });
+            data.currentExpiryDataValue = currentExpiryDataValue;
+        } else {
+            data.currentExpiryDataValue=expiryDataList[0];
+        }
         data.currentExpiryData=BigNumber.from(parseInt(data.currentExpiryDataValue.timestamp/1000))
         data.expiryDataList=expiryDataList
     
@@ -431,9 +448,24 @@ var getMarketPrice=async ()=>{
   let underlyingAssetPrice=await getPriceByService()
    data.marketPrice=(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
    console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
-   await getStrikePrice()
+   await getStrikePrice();
+   clearStrikerInterval();
+   addStrikerInterval();
    data.loading=false
 }
+
+var addStrikerInterval = () => {
+    data.strikerInterval = setInterval(() => {
+        getStrikePrice(true);
+    }, 5000)
+}
+
+var clearStrikerInterval = () => {
+    if(data.strikerInterval){
+        clearInterval(data.strikerInterval);
+    }
+}
+
 var getPrice=async ()=>{
     let underlyingAssetPrice=await  getPriceByPriceOracleApi(data.currentUnderlyingAsset.address,axiosStore.remark.usdToken)
     underlyingAssetPrice=underlyingAssetPrice?.message?.price ||BigNumber.from("0")
