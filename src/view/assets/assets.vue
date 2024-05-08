@@ -1,6 +1,6 @@
 <template>
     <div class="assets">
-        <assetHeader :kytStatus="data.kytStatus" :address="axiosStore.currentAccount"></assetHeader>
+        <assetHeader :kytStatus="data.kytStatus" :address="axiosStore.currentAccount" :vaultAddress="data.vaultAddress"></assetHeader>
         <div class="total-info">
               <p class="infop1">
                   <span class="title">Total Asset</span>
@@ -52,6 +52,7 @@ const data=reactive({
      issueMode:0,
      //----
      loading:false,
+     vaultAddress: "",
      kytStatus: false // KYT状态判断
 })
 // 生命周期
@@ -131,6 +132,7 @@ var handleBalance=async ()=>{
    let vault= await getVaultApi(axiosStore.currentAccount,axiosStore.vaultSalt)
    vault=vault?.message?.vault ||  new Error("vault error")
    console.log(vault,"当前vault")
+   data.vaultAddress = vault;
 
    //multicall数据
    let multiCallData=[]

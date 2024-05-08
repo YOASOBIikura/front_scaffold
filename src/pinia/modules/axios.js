@@ -52,7 +52,8 @@ export const useAxiosStore = defineStore('axios', {
       switch(Number(chainId)){
           case 137:
             this.currentContractData=polygon.contractData
-            this.bundlerUrl=polygon.bundlerUrl
+            // this.bundlerUrl=polygon.bundlerUrl
+            this.bundlerUrl = import.meta.env.VITE_POLYGAN_BUNDLER_URL;
             this.currentTokens=polygon.tokens
             this.remark=polygon.remark
             this.optionBusiness=polygon.optionBusiness
@@ -62,7 +63,8 @@ export const useAxiosStore = defineStore('axios', {
             break
           case 42161:
              this.currentContractData=arbitrum.contractData
-             this.bundlerUrl=arbitrum.bundlerUrl
+            //  this.bundlerUrl=arbitrum.bundlerUrl;
+             this.bundlerUrl = import.meta.env.VITE_ARBITRUM_BUNDLER_URL;
              this.currentTokens=arbitrum.tokens
              this.remark=arbitrum.remark
              this.optionBusiness=arbitrum.optionBusiness

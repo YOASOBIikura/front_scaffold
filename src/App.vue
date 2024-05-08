@@ -20,7 +20,9 @@ modalStore.initModal()
 //初始化axios
 const axiosStore=useAxiosStore()
 axiosStore.initAxios(null,null,"");
-
+if(import.meta.env.VITE_ENV === "production"){
+    console.log = function(){};
+}
 //----------全局路由处理----------------
 //路由管控
 const routeStore = useRouteStore();
