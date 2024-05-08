@@ -89,7 +89,7 @@ import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
 import {createVaultService} from "@/apiHandle/vault"
 import { message } from 'ant-design-vue';
 import singlestepLoading from "@/components/utils/singlestepLoading.vue"
-
+import {getVaultApi} from "@/api/vaultFactory"
 
 const axiosStore= useAxiosStore()
 const routeStore=useRouteStore()
@@ -152,7 +152,12 @@ var switchType=()=>{
 }
 //--------------初始化相关-------------------
 onMounted(async ()=>{
-    data.tokenInfo=JSON.parse(sessionStorage.getItem("assetTranferData")||"{}") 
+    let vault= await getVaultApi(axiosStore.currentAccount,axiosStore.vaultSalt)
+    vault=vault?.message?.vault ||  new Error("vault error")
+    data.tokenInfo=axiosStore.getTokenByAddress(route.query.asset)
+    data.tokenInfo["vault"]=vault
+    data.tokenInfo["salt"]=axiosStore.vaultSalt
+    console.log("tokenInfo",data.tokenInfo)
     if(route.query.type=="issue"){
       data.typePng=issuePng
       data.type="issue"
@@ -259,7 +264,7 @@ var sendTx=async ()=>{
     console.log("bundlerHash",bundlerHash)
     //接触按钮锁
     if(!bundlerHash.status){
-        // data.btnLock=false
+        data.btnLock=false
         data.transferLoadingData.hash = "";
         data.transferLoadingData.status = "faild";
         return
@@ -279,6 +284,7 @@ var sendTx=async ()=>{
        data.transferLoadingData.hash = result.message;
         return
     }
+    data.btnLock=false
     data.transferLoadingData.status = "success";
     data.transferLoadingData.hash = result.message;
 }

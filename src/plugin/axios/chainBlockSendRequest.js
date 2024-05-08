@@ -49,10 +49,10 @@ async function sendContractTransition(_this,option,argType,argValue){
         throw new Error("lack field target")
      }
     let dataHex="0x";
+    //如果method有值,则是调用合约 处理合约数据
     if(option.method != "" && option.method){
        dataHex=makeHex(option.method,argType,argValue)
     }
-  
     let tx={
         from:_this.wallet,//拿provider的值
         to:option.target,
@@ -67,10 +67,15 @@ async function sendContractTransition(_this,option,argType,argValue){
      console.log("tx",tx)
      let hash;
      try{
-       hash= await _this.chainBlockSendProvider.request({
-         method:"eth_sendTransaction",
-         params:[tx]
-      })
+       if(dataHex=="0x"){
+           hash= await sendEthTx(_this,tx)
+       }else{
+          hash= await _this.chainBlockSendProvider.request({
+            method:"eth_sendTransaction",
+            params:[tx]
+        })
+       }
+
     }catch(error){
          return {
             txStatus:3,
@@ -100,5 +105,14 @@ async function  estimateGasTx(_this,tx){
   console.log("estimateGasTx",result)
   return result
 }
+
+//原生交易发送
+async function sendEthTx(_this,tx){
+   let provider= new ethers.providers.Web3Provider(_this.chainBlockSendProvider)
+   let result=await provider.getSigner().sendTransaction(tx)
+   console.log("hash",result)
+   return result.hash
+}
+
 
 export {chainBlockSendRequest}

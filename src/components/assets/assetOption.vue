@@ -93,8 +93,8 @@ var goTransfer=(type)=>{
     tokenInfo.vaultBalance=vaultBalance
     tokenInfo.tokenPrice=tokenPrice
     tokenInfo.salt=salt
-    sessionStorage.setItem("assetTranferData",JSON.stringify(tokenInfo))
-    router.push({path:"/assetTransfer",query:{type:type,issueMode:props.issueMode}})
+    // sessionStorage.setItem("assetTranferData",JSON.stringify(tokenInfo))
+    router.push({path:"/assetTransfer",query:{asset:tokenInfo.address, type:type,issueMode:props.issueMode}})
 }
 var goSellOption=(orderType)=>{
   
