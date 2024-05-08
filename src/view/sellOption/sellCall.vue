@@ -201,6 +201,7 @@ var currentPremiumFeeShow = computed(() => {
 
 
 
+
 //----------普通处理方法--------------------
 const changeExpiry = (item) => {;
     data.currentExpiryData=BigNumber.from(parseInt(item.timestamp/1000))
@@ -375,11 +376,15 @@ var handleDerbitPriceAndExpiryData=async ()=>{
      currentStrikePrice?.data?.forEach((item,index)=>{
          let nowTime=parseInt(new Date().getTime() /1000) 
          let day=Math.ceil((item.timestamp-nowTime)/(60*60*24))
+         let premiumPrice = Number(data.marketPrice *item["mark_price"]).toFixed(2);
+         if(premiumPrice !== "0.00" && Number(premiumPrice) < 19.9){
+            premiumPrice = "19.9";
+         }
          let obj={
               key:index,
               day:day,
               timestamp:item.timestamp*1000,
-              premiumPrice:Number(data.marketPrice *item["mark_price"]).toFixed(2),
+              premiumPrice:premiumPrice,
               date:item.date
          }
          expiryDataList.push(obj)

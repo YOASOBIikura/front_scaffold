@@ -104,7 +104,7 @@ var inputValue= (input)=>{
     }else {
         if(value!=""){
             value=ethers.utils.parseUnits(String(value),props.decimals)
-            if(props.isMax && value.mul(ethers.utils.parseUnits("1",3)).div(props.maxValue).gte(BigNumber.from("990"))  && String(data.preValue).length<=String(data.inputShow).length){
+            if(props.isMax && value.mul(ethers.utils.parseUnits("1",3)).div(props.maxValue).gte(BigNumber.from("999"))  && String(data.preValue).length<=String(data.inputShow).length){
                 value=props.maxValue    
                 //触发最大值的情况下修改显示值
                 nextTick(() => {
@@ -122,6 +122,9 @@ var inputValue= (input)=>{
 
 var blurChange=()=>{  
    let value =data.inputShow
+   if(value === ""){
+    return;
+   }
    let lastValue=String(value).substring(String(value).length-1)
    if(lastValue=="."){
        data.inputShow=String(value).substring(0,String(value).length-1)

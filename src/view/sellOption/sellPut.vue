@@ -394,13 +394,18 @@ var handleDerbitPriceAndExpiryData=async ()=>{
      currentStrikePrice?.data?.forEach((item,index)=>{
          let nowTime=parseInt(new Date().getTime() /1000) 
          let day=Math.ceil((item.timestamp-nowTime)/(60*60*24))
+         let premiumPrice = Number(data.marketPrice *item["mark_price"]).toFixed(2);
+         if(premiumPrice !== "0.00" && Number(premiumPrice) < 19.9){
+            premiumPrice = "19.9";
+         }
          let obj={
               key:index,
               day:day,
               timestamp:item.timestamp*1000,
-              premiumPrice:Number(data.marketPrice *item["mark_price"]).toFixed(2),
+              premiumPrice: premiumPrice,
               date:item.date
          }
+         console.log(obj);
          expiryDataList.push(obj)
      })
      //日期组件所需数据
@@ -548,6 +553,8 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
         data.loadingData.stepList[1].status = "current";
         //触发上链签名
        let resetSigature= await  setSigatureLockApi(data.vault,1,underlyingAsset,currentTimestamp)
+       console.log(resetSigature);
+       debugger;
        if(!resetSigature.message.status){
           data.loadingData.stepList[1].status = "faild";
           message.error("cacel old offer fail")
