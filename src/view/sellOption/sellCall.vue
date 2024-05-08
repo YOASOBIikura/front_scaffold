@@ -592,7 +592,7 @@ var  checkUpdateGignature=async (vault,underlyingAsset)=>{
         data.loadingData.stepList[1].status = "current";
         //触发上链签名
        let resetSigature= await  setSigatureLockApi(data.vault,0,underlyingAsset,currentTimestamp)
-       if(!resetSigature.message.status){
+       if(!resetSigature.status){
         //   console.error("取消老订单失败")
            data.loadingData.stepList[1].status = "faild";
            message.error("cacel old offer fail")
