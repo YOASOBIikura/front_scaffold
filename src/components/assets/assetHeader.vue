@@ -1,8 +1,7 @@
 <template>
     <div class="assetsHeader">
          <div class="left">
-                <img class="icon" src="@/assets/images/avatarDemo.png" alt="">
-            
+                <div class="icon" id="avtor" > </div>
                 <div class="info">
                     <p class="top">
                         <span class="text">Joey268</span>
@@ -21,10 +20,13 @@
          </div>
 </template>
 <script setup>
-import { ethers } from 'ethers';
-import { reactive,defineProps } from 'vue';
+import { BigNumber, ethers} from 'ethers';
+import { reactive,defineProps,onMounted,watch,computed } from 'vue';
 import { useRouter,useRoute } from "vue-router";
+import {useAxiosStore} from "@/pinia/modules/axios"
+import  jazzicon from 'jazzicon'
 const router=useRouter()
+const axiosStore=useAxiosStore()
 const props=defineProps({
      address:{
          type:String,
@@ -34,6 +36,24 @@ const props=defineProps({
 })
 var goLogout=()=>{
     //  router.push({path:"/logout"})
+}
+
+onMounted(()=>{
+      createAvator()
+}) 
+
+//处理监听事件
+watch(computed(()=>axiosStore.isWalletChange),(newVal)=>{
+    createAvator()
+})
+
+var createAvator=()=>{
+    let el= document.getElementById("avtor")
+    el.innerHTML=""
+    let addrNumber=BigNumber.from(axiosStore.currentAccount).mod(BigNumber.from("0xffffffff"))
+    let avator=  jazzicon(64,addrNumber)
+    console.log(avator,axiosStore.currentAccount,"-----sss",axiosStore.currentAccount,addrNumber)
+    el.appendChild(avator)
 }
 </script>
 <style lang="less" scoped>

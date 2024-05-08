@@ -14,7 +14,8 @@
             <template v-if="column.key === 'owner'">
                 <div class="owner-item">
                     <div class="img-content">
-                        <img class="owner" src="@/assets/images/test1.png" />
+                        <!-- <img class="owner" src="@/assets/images/test1.png" /> -->
+                        <p class="owner" :id="record.id"></p>
                         <img class="network" :src="record.chainIcon"/>
                     </div>
                     <div class="owner-info">
@@ -97,8 +98,10 @@
 
 </template>
 <script setup>
-import { nextTick, onBeforeUnmount, onMounted, ref } from "vue"
+import { nextTick, onBeforeUnmount, onMounted, ref,watch} from "vue"
 import { useRouter,useRoute} from "vue-router";
+import  jazzicon from 'jazzicon'
+import {BigNumber} from "ethers"
 const router=useRouter()
 const props = defineProps({
   dataSource: {type: Array, default: []},
@@ -130,6 +133,7 @@ var bodyScroll = () => {
 onMounted(() => {
     nextTick(() => {
         let listingTableComponent = listingTableRef;
+        createAvator()
         if(listingTableComponent){
             const tableContainer = listingTableComponent.value.$el.querySelector(".ant-table-body");
             tableContainer.addEventListener("scroll", bodyScroll);
@@ -145,6 +149,22 @@ onBeforeUnmount(() => {
         }
     });
 })
+
+
+
+//制造头像
+var createAvator=()=>{
+    props?.dataSource?.forEach(item=>{
+        let el= document.getElementById(`${item.id}`)
+        el.innerHTML=""
+        console.log(item,"skll")
+        let addrNumber=BigNumber.from(item.ownerValue).mod(BigNumber.from("0xffffffff"))
+        let avator=  jazzicon(24,addrNumber)
+        el.appendChild(avator)  
+    })
+}
+
+
 
 </script>
 <style scoped lang="less">

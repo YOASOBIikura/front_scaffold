@@ -3,8 +3,8 @@
                     <div class="title">Contract Details</div>
                     <div class="account-row">
                         <div class="account">
-                            <img src="@/assets/images/test1.png" class="account-img"/>
-                            {{`${String(props.dataInfo.wallet).substring(0,4)}..${String(props.dataInfo.wallet).substring(38)}`}}
+                            <p class="account-img" id="avtor" > </p>
+                             <span>{{`${String(props.dataInfo.wallet).substring(0,4)}..${String(props.dataInfo.wallet).substring(38)}`}}</span>
                             <img src="@/assets/images/certified.png" class="KYT-img" />
                         </div>
                         <div class="chain">
@@ -50,9 +50,10 @@
 
 </template>
 <script setup>
-import {reactive,defineProps,computed}  from "vue"
+import {reactive,defineProps,computed,watch}  from "vue"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import { BigNumber,ethers } from "ethers";
+import  jazzicon from 'jazzicon'
 const axiosStore=useAxiosStore()
 const props=defineProps({
     dataInfo:{
@@ -70,9 +71,22 @@ var newMarketPrice=computed(()=>{
     if(!BigNumber.isBigNumber(props.marketPrice)){
         return 0
     }
+
     return  BigNumber.from(props.marketPrice).div(ethers.utils.parseUnits("1",axiosStore.remark.priceDecimals-2)).toNumber()/100
 })
+watch(()=>props.dataInfo.wallet,()=>{
+    // 制造头像
+    createAvator()
+})
 const data=reactive({})
+var createAvator=()=>{
+    let el= document.getElementById("avtor")
+    el.innerHTML=""
+    let addrNumber=BigNumber.from(props.dataInfo.wallet).mod(BigNumber.from("0xffffffff"))
+    let avator=  jazzicon(40,addrNumber)
+    el.appendChild(avator)
+}
+
 </script>
 <style scoped lang="less">
 .title{
@@ -91,9 +105,13 @@ const data=reactive({})
                 font-size: 16px;
                 font-weight: bold;
                 line-height: 40px;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
                 .account-img{
                     width: 40px;
-                    vertical-align: top;
+                    // vertical-align: top;
+                    height: 40px;
                     margin-right: 4px;
                 }
                 .KYT-img{

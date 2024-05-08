@@ -408,7 +408,6 @@ var getOrder=async ()=>{
    data.detailsInfoData=detailsInfoData
    data.cuurentStrikeAmount=strikeAmount
   
-   
 }
 //------------上链业务相关------------------
 //买操作上链
@@ -571,6 +570,9 @@ var  getUnderlyAssetTotal=async ()=>{
     data.detailsInfoData.unUsed=BigNumber.from(total).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-2)).toNumber()/100
     return total
 }
+
+
+
 
 
 

@@ -3,13 +3,13 @@ import { useWeb3Modal,useWeb3ModalState } from '@web3modal/ethers5/vue'
 import Axios from "@/plugin/axios/axios"
 import {polygon} from "@/config/chainBlock/polygon"
 import {arbitrum} from "@/config/chainBlock/arbitrum"
-import { BigNumber } from 'ethers'
+import { BigNumber, ethers } from 'ethers'
 
 export const useAxiosStore = defineStore('axios', {
   state:()=>({
     axios:null,
     chainId:-1,
-    currentAccount:"",
+    currentAccount:ethers.constants.AddressZero,
     isConnect:1,//是否链接钱包  1完成未链接  2 只有发交易时才链接  3 完全链接
     currentContractData:{}, //钱包是那条链 这里就是那条链的项目合约
     bundlerUrl:"",//钱包是那条链 这里就是那条链的bundlerUrl
@@ -18,7 +18,6 @@ export const useAxiosStore = defineStore('axios', {
     remark:{},//辅助额外信息
     optionBusiness:{},
     chainInfo: {}, // 当前链的信息相关数据
-
    //--是否触发钱包相关事件--
    isWalletChange:1,
    vaultSalt:BigNumber.from("0"),//vault下标
@@ -103,7 +102,8 @@ export const useAxiosStore = defineStore('axios', {
           }
       })
       return token
-  },
+     },
+
   }
 })
 
