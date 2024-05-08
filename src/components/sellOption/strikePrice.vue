@@ -48,13 +48,15 @@ var select=(item,index)=>{
     flex-wrap: wrap;
     .stikePriceItem{
         display: inline-block;
-        padding: 7px 15px;
+        padding: 7px 0px;
+        text-align: center;
+        width: 80px;
         border-radius:32px ;
         background-color: var(--bg-color-secondarycontainer);
         color: var(--text-color-primary);
         font-size: 14px;
         font-weight: bold;
-        margin-right: 12px;
+        margin-right: 6px;
         margin-bottom: 10px;
     }
     .active{
