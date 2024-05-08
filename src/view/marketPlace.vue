@@ -55,12 +55,13 @@
                 </select-switch>
             </div>
             <!-- 表格显示 -->
-            <!-- 所有订单 -->
+            <!-- 所有订单     -->
              <listing-table  
-                    v-if="data.orderList.length>0"
+                    v-show="data.orderList.length>0"
                     :dataSource="data.orderList" 
                     :columns="data.orderTitle"
                     :listingType="data.currentListing"
+                    :len="data.orderList.length"
                     @scrollBottom="loadMoreOrder"
                 >
                 </listing-table>  

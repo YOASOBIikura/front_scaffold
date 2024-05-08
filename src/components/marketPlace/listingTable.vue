@@ -106,6 +106,11 @@ const router=useRouter()
 const props = defineProps({
   dataSource: {type: Array, default: []},
   columns: Array,
+  len:{
+    type:Number,
+    default:0,
+    require:false
+  }
 });
 const listingTableRef = ref(null);
 const emits=defineEmits(["scrollBottom"])
@@ -120,6 +125,8 @@ var changeItem=(item)=>{
    }
 }
 
+
+
 var bodyScroll = () => {
     let listingTableComponent = listingTableRef;
     const bodyContainer = listingTableComponent.value.$el.querySelector(".ant-table-body");
@@ -130,10 +137,16 @@ var bodyScroll = () => {
     }
 }
 
+watch(()=>props.len,(newVal)=>{
+    if(props.len>0){
+        createAvator()  
+    }
+ 
+})
+
 onMounted(() => {
     nextTick(() => {
         let listingTableComponent = listingTableRef;
-        createAvator()
         if(listingTableComponent){
             const tableContainer = listingTableComponent.value.$el.querySelector(".ant-table-body");
             tableContainer.addEventListener("scroll", bodyScroll);
@@ -154,14 +167,18 @@ onBeforeUnmount(() => {
 
 //制造头像
 var createAvator=()=>{
+   nextTick(()=>{
     props?.dataSource?.forEach(item=>{
         let el= document.getElementById(`${item.id}`)
         el.innerHTML=""
         console.log(item,"skll")
         let addrNumber=BigNumber.from(item.ownerValue).mod(BigNumber.from("0xffffffff"))
         let avator=  jazzicon(24,addrNumber)
+        console.log(avator,"---")
         el.appendChild(avator)  
     })
+   })
+
 }
 
 
