@@ -32,6 +32,7 @@
 
         <inputValue 
         v-model:value="data.underlyingAmount" 
+        :valueChange="data.underlyingAmountChange"
         :isApproximate="true"
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
@@ -121,7 +122,7 @@
         :transferName="data.transferLoadingData.transferName"
      ></singlestepLoading>
      <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
-    
+    <toTransferDeawer v-model:isOpen="data.tranferDrawerOpen" :dataInfo="data.transferDrawer"></toTransferDeawer>
 </template>
 
 <script setup>
@@ -131,6 +132,8 @@ import settlement from "@/components/buyOption/settlement.vue";
 import repayType from "@/components/buyOption/repayType.vue";
 import detailsInfo from "@/components/buyOption/detailsInfo.vue";
 import singlestepLoading from "@/components/utils/singlestepLoading.vue"
+import toTransferDeawer  from "@/components/buyOption/toTransferDrawer.vue"
+
 
 import { BigNumber,ethers } from "ethers";
 import { reactive,onMounted,watch,computed,toRaw} from "vue"
@@ -167,6 +170,7 @@ const data = reactive({
     remarkInfo:{},//补充信息  
     //-----
     underlyingAmount: BigNumber.from("0"), //抵押数量
+    underlyingAmountChange: BigNumber.from("0"), // 数量改变绑定值
     underlyingAssetBalance:BigNumber.from("0"),//
     btnLock:false,//按钮锁
 
@@ -189,6 +193,14 @@ const data = reactive({
         },
         transferName: "buy Call"
     },
+    transferDrawer: {
+        asset: {},
+        amount: BigNumber.from("0"),
+        callBackName: "",
+        callBackId: "",
+        callBackRawAmount: BigNumber.from("0")
+    },
+    tranferDrawerOpen: false,
     loading:false,
     btnLoading: false
 
@@ -282,7 +294,6 @@ var init=async()=>{
 
 
 
-
     //行权资产
     let currentStrikeAsset=data.signatureInfo.strikeAssets ||[]
     data.currentStrikeAsset=JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(currentStrikeAsset[0])))
@@ -318,7 +329,12 @@ var init=async()=>{
 
 
     //处理能够购买的余额
-    await getUnderlyAssetTotal()
+    await getUnderlyAssetTotal();
+    // 获取query里面附带的需要抵押的数量
+    if(route.query.amount){
+        data.underlyingAmountChange = BigNumber.from(route.query.amount);
+        inputChange(data.underlyingAmountChange);
+    }
     data.loading=false
 }
 
@@ -468,7 +484,15 @@ var buyCall=async ()=>{
    //判断买家余额是否足够  
    if(premium.gte(data.currentPremiumAsset.balance)){
        message.warning("premium balance not enough")
-        data.btnLoading = false;
+       data.btnLoading = false;
+       data.tranferDrawerOpen = true;
+       data.transferDrawer = {
+        asset: data.currentPremiumAsset,
+        amount: premium,
+        callBackId: route.query.id,
+        callBackName: "buyCall",
+        callBackRawAmount: data.underlyingAmount
+       }
        return
    }
    let amount=[premium]

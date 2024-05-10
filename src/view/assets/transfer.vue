@@ -31,13 +31,13 @@
             </div>
         </div>
         <inputValue 
-            v-model:value="data.optionNumber" 
+            v-model:value="data.optionNumber"
             :isApproximate="true"
             :maxValue="data.type=='issue'? data.walletBalanceValue : data.vaultBalanceValue"
             :symbol="data.tokenInfo.name" 
             :decimals="data.tokenInfo.decimals"
             :decimalsShow="data.tokenInfo.decimalsShow"
-           
+            :valueChange="data.optionNumberChange"
         >
     </inputValue>
         <!--  -->
@@ -91,6 +91,7 @@ import {createVaultService} from "@/apiHandle/vault"
 import { message } from 'ant-design-vue';
 import singlestepLoading from "@/components/utils/singlestepLoading.vue"
 import {getVaultApi} from "@/api/vaultFactory"
+import {getIssueMode} from "@/callData/multiCall/IssuanceFacet"
 
 const axiosStore= useAxiosStore()
 const routeStore=useRouteStore()
@@ -98,6 +99,7 @@ const router=useRouter()
 const route=useRoute()
 const data=reactive({
     optionNumber:BigNumber.from("0"),
+    optionNumberChange: BigNumber.from("0"),
     isOpen:false,
     tokenInfo:{},
     typePng:issuePng,
@@ -120,7 +122,7 @@ const data=reactive({
             query: {},
             name: "my asset"
         },
-    transferName: "Transfer in progress"
+        transferName: "Transfer in progress"
     }
 })
 // -------------计算属性----------------
@@ -166,7 +168,27 @@ onMounted(async ()=>{
        data.typePng=redeemPng  
        data.type="redeem"
     }
-    data.issueMode=route.query.issueMode
+    if(route.query.amount){
+        data.optionNumberChange = BigNumber.from(route.query.amount);
+    }
+    if(route.query.callBackId && route.query.callBackName && route.query.callBackRawAmount){
+        console.log(route.query);
+        data.transferLoadingData.nextPage.path = `/${route.query.callBackName}`;
+        data.transferLoadingData.nextPage.query = {
+            id: route.query.callBackId,
+            amount: route.query.callBackRawAmount
+        }
+        data.transferLoadingData.nextPage.name = route.query.callBackName;
+
+    }
+    // data.issueMode=route.query.issueMode
+    let multiCallData = [];
+    let issueModeCallData=getIssueMode("getIssueMode",vault);
+    multiCallData.push(issueModeCallData);
+    //请求
+    let multiCallResponse= await multiCallObjR(multiCallData)
+    data.issueMode = multiCallResponse["getIssueMode"]?.issueMode || 0;
+    
     await handleBalance()
 })
 watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
