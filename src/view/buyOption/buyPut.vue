@@ -488,7 +488,7 @@ var buyCall=async ()=>{
    let premiumFee=data.signatureInfo?.premiumFees[data.currentPremiumAsset.signPremiumFeesIndex]
    let premium=data.underlyingAmount.mul(premiumFee).div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals))
     //判断买家余额是否足够   
-   if(premium.gte(data.currentPremiumAsset.balance)){
+   if(premium.gt(data.currentPremiumAsset.balance)){
        message.warning("premium balance not enough")
        data.btnLoading = false;
        data.tranferDrawerOpen = true;

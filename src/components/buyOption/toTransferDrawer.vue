@@ -10,12 +10,12 @@
             <div class="tips">
                 <img src="@/assets/images/loading-faild.png" class="tips-img"/>
                 <div class="tips-title">Premium balance not enough.</div>
+                <a-button class="btn-view"  @click="goToTransfer">Go to Transfer</a-button>
                 <a-button 
                     type="primary" 
                     class="btn-go"
                     @click="closeDrawer"
                 >Close</a-button>
-                <a-button class="btn-view"  @click="goToTransfer">Go to Transfer</a-button>
         </div>
        </div>
       </a-drawer>
@@ -113,13 +113,13 @@ var goToTransfer = () => {
                 margin-top: 40px;
             }
             .btn-go{
-            margin-top: 48px;
+            margin-top: 8px;
             width: 100%;
             font-size: 16px;
             height: 48px;
         }
         .btn-view{
-            margin-top: 8px;
+            margin-top: 48px;
             width: 100%;
             font-size: 16px;
             height: 48px;
