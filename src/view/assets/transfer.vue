@@ -92,6 +92,7 @@ import { message } from 'ant-design-vue';
 import singlestepLoading from "@/components/utils/singlestepLoading.vue"
 import {getVaultApi} from "@/api/vaultFactory"
 import {getIssueMode} from "@/callData/multiCall/IssuanceFacet"
+import { issueApi } from "@/api/issuanceModule";
 
 const axiosStore= useAxiosStore()
 const routeStore=useRouteStore()
@@ -248,23 +249,54 @@ var transferTx=async ()=>{
     await sendTx()
 }
 
-
-
 var sendTx=async ()=>{
     data.transferLoadingData.open = true;
     data.transferLoadingData.status = "pending";
-    let transferAmount=data.optionNumber
-    let token=data.tokenInfo.address
-    let vault=data.tokenInfo.vault
-    let salt=BigNumber.from(data.tokenInfo.salt) 
-    console.log(transferAmount,"transferAmount--") 
     //添加按钮锁
     if(data.btnLock){
         return
     }
-    data.btnLock=true
+     data.btnLock=true
+     
+     if(data.tokenInfo.isGasToken && data.type=="issue"){
+        //申购eth
+        await issueEthTx()
+     }else if(!data.tokenInfo.isGasToken && data.type=="issue"){
+        //申购token
+         txStatus=  await issueTokenTx()
+     }else{
+        //赎回
+        await redeemTx()
+     }
+}
+//------gas币流程----
+//申购eth
+var issueEthTx=async ()=>{
+    let vault=data.tokenInfo.vault
+    let salt=BigNumber.from(data.tokenInfo.salt) 
+    // 组装交易
+    let codeRespose= await getContractCodeApi(vault)
+    //未创建vault  就去创建vault
+    let ops=[]
+    if(codeRespose.message == "0x" ){
+        console.log("进入初始化")
+       let initCallData=createVaultService(vault)
+       ops=ops.concat(initCallData)
+       let bundlerHash= await sendTxToBundler(vault,salt,ops)
+       await bundlerResultTx(bundlerHash)
+    }
+    //申购eth
+    let issueHash=  await issueApi(vault,axiosStore.currentAccount,[data.tokenInfo.address],[data.optionNumber],data.optionNumber)
+    console.log("issueHash",issueHash)
+}
+
+//申购token
+var issueTokenTx=async ()=>{
+    let vault=data.tokenInfo.vault
+    let salt=BigNumber.from(data.tokenInfo.salt) 
     //授权交易
-    let approveStatus= await approveTx(data.tokenInfo.isGasToken,token,vault,transferAmount)
+    let approveStatus= await approveTx(data.tokenInfo.address,vault,data.optionNumber)
+    //起弹窗
     if(!approveStatus){
         message.error("approve fail");
         data.transferLoadingData.status = "faild";
@@ -273,18 +305,58 @@ var sendTx=async ()=>{
     }
     // 组装交易
     let codeRespose= await getContractCodeApi(vault)
-    //未创建vault
+    //未创建vault  就去创建vault
     let ops=[]
     if(codeRespose.message == "0x" ){
         console.log("进入初始化")
        let initCallData=createVaultService(vault)
        ops=ops.concat(initCallData)
     }
-    //申购方法
-    ops=ops.concat(issueAndRedeemCallData(data.tokenInfo.isGasToken,data.type,vault,token,transferAmount,data.tokenInfo.type))  
-    console.log(vault,salt,ops)
+    //申购交易组装
+    let issueCallData= issue(vault,axiosStore.currentAccount,[data.tokenInfo.address],[data.optionNumber])
+    ops.push(issueCallData)
     let bundlerHash= await sendTxToBundler(vault,salt,ops)
-    console.log("bundlerHash",bundlerHash)
+    //处理交易状态
+    await bundlerResultTx(bundlerHash)
+}
+
+//授权20币
+var approveTx=async(token,vault,amount)=>{
+    let allownoceResponse= await allownoceApi(token,axiosStore.currentAccount,vault)
+    allownoceResponse=allownoceResponse?.message?.allowance || BigNumber.from("0")
+    console.log(allownoceResponse,amount,"对比")
+    if(allownoceResponse.lt(amount)){
+      let apprvoeResponse=await  approveApi(token,vault,amount)
+      console.log("apprvoeResponse",apprvoeResponse)
+      return apprvoeResponse.status
+    }
+    return true
+}
+
+//------赎回操作-----------------
+var redeemTx=async ()=>{
+    let vault=data.tokenInfo.vault
+    let salt=BigNumber.from(data.tokenInfo.salt) 
+    // 组装交易
+    let codeRespose= await getContractCodeApi(vault)
+    //未创建vault  就去创建vault
+    let ops=[]
+    if(codeRespose.message == "0x" ){
+        console.log("进入初始化")
+       let initCallData=createVaultService(vault)
+       ops=ops.concat(initCallData)
+       
+    }
+    let redeemCallData= redeem(vault,axiosStore.currentAccount,[data.tokenInfo.type],[data.tokenInfo.address],[data.optionNumber])
+    ops.push(redeemCallData)
+    let bundlerHash= await sendTxToBundler(vault,salt,ops)
+    //处理交易状态
+    await bundlerResultTx(bundlerHash)
+}
+
+
+//bundler交易状态处理
+var bundlerResultTx=async (bundlerHash)=>{
     //接触按钮锁
     if(!bundlerHash.status){
         data.btnLock=false
@@ -312,45 +384,8 @@ var sendTx=async ()=>{
     data.transferLoadingData.hash = result.message;
 }
 
-//授权交易
-var approveTx=async(isGasToken,token,vault,amount)=>{
-    //如果是赎回则不用赎回
-    if(data.type=="redeem"){
-        return true
-    }
-    //如果是gas币的情况下
-    if(isGasToken){
-        let apprvoeResponse=await transferEthApi(vault,amount)
-        console.log("apprvoeResponse",apprvoeResponse)
-        return apprvoeResponse.status
-    }
-    let allownoceResponse= await allownoceApi(token,axiosStore.currentAccount,vault)
-    allownoceResponse=allownoceResponse?.message?.allowance || BigNumber.from("0")
-    console.log(allownoceResponse,amount,"对比")
-    if(allownoceResponse.lt(amount)){
-      let apprvoeResponse=await  approveApi(token,vault,amount)
-      console.log("apprvoeResponse",apprvoeResponse)
-      return apprvoeResponse.status
-    }
 
-    return true
-}
 
-//------------ops拼装--------------
-//申购
-var issueAndRedeemCallData= (isGasToken,type,vault,asset,amount,assetType)=>{
-    if(type=="issue"){
-        //如果是当前币种是gas币 则只做记录仓位使用
-        if(isGasToken){
-            amount=BigNumber.from("0")
-        }
-       let issueCallData= issue(vault,axiosStore.currentAccount,[asset],[amount])
-       return [issueCallData]
-    }else{
-        let redeemCallData= redeem(vault,axiosStore.currentAccount,[assetType],[asset],[amount])
-        return [redeemCallData]
-    }
-} 
 </script>
 <style lang="less" scoped>
 .assetsTransfer{
