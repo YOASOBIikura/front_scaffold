@@ -6,12 +6,13 @@
                     <p class="top">
                         <span class="text" >Wallet: {{`${String(props.address).substring(0,6)}...${String(props.address).substring(38)}`}}</span>
                         <img v-if="kytStatus" class="img" src="@/assets/images/certified.png" alt="">
+                        <img class="img" src="@/assets/images/copy2.png" alt="" @click="copyText(props.address)">
                     </p>
                     <p class="bottom">
                         
                         <span class="text" >Vault: {{`${String(props.vaultAddress).substring(0,6)}...${String(props.vaultAddress).substring(38)}`}}</span>
                         <img class="img" src="@/assets/images/copy2.png" alt="" @click="copyText(props.vaultAddress)">
-                        <span class="text-none" id="copyDom">{{}}</span>
+                     
                     </p>
                 </div>
           </div>
@@ -114,6 +115,7 @@ var copyText = async (data)=> {
                    .img{
                       width: 16px;
                       height: 16px;
+                      margin-left: 4px;
                    }
                 }
                 .bottom{
@@ -123,6 +125,7 @@ var copyText = async (data)=> {
                    .img{
                      width: 16px;
                      height: 16px;
+                           margin-left: 4px;
                    }
                    .text-none{
                     display: none;

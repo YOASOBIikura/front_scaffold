@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 export const useRouteStore = defineStore('route', {
     state: () => ({
         preRoute:null,
+        preQuery: null,
         currentRoute:null,
         showLayout:true,
         //更改路由
@@ -21,10 +22,13 @@ export const useRouteStore = defineStore('route', {
              }
              //对历史路由做缓存处理
              if(preRoute.path!="/"){
-                this.preRoute=preRoute.path
-                localStorage.setItem("preRoute",this.preRoute)
+                this.preRoute = preRoute.path;
+                this.preQuery = preRoute.query;
+                localStorage.setItem("preRoute",this.preRoute);
+                localStorage.setItem("preQuery",this.preQuery);
              }else{
-                 this.preRoute=localStorage.getItem("preRoute")
+                 this.preRoute=localStorage.getItem("preRoute");
+                 this.preQuery = localStorage.getItem("preQuery");
              }           
         },
         setChangeRoute(changeRoute){

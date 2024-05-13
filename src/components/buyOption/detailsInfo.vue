@@ -6,6 +6,7 @@
                             <p class="account-img" id="avtor" > </p>
                              <span>{{`${String(props.dataInfo.wallet).substring(0,4)}..${String(props.dataInfo.wallet).substring(38)}`}}</span>
                             <img src="@/assets/images/certified.png" class="KYT-img" />
+                            <img  class="KYT-img" src="@/assets/images/copy2.png" alt="" @click="copyText(props.dataInfo.wallet)">
                         </div>
                         <div class="chain">
                             <img :src="axiosStore.remark.chainIcon" class="chain-img"/>
@@ -54,6 +55,7 @@ import {reactive,defineProps,computed,watch}  from "vue"
 import {useAxiosStore} from "@/pinia/modules/axios"
 import { BigNumber,ethers } from "ethers";
 import  jazzicon from 'jazzicon'
+import {message} from "ant-design-vue"
 const axiosStore=useAxiosStore()
 const props=defineProps({
     dataInfo:{
@@ -86,6 +88,15 @@ var createAvator=()=>{
     let avator=  jazzicon(40,addrNumber)
     el.appendChild(avator)
 }
+var copyText = async (data)=> {
+        let oInput = document.createElement('input');
+        oInput.value = data;
+        document.body.appendChild(oInput);
+        oInput.select();
+        document.execCommand("Copy"); 
+        message.success("copy success");
+        oInput.remove();
+}
 
 </script>
 <style scoped lang="less">
@@ -116,6 +127,7 @@ var createAvator=()=>{
                 }
                 .KYT-img{
                     width: 12px;
+                    margin-left: 4px;
                 }
             }
             .chain{

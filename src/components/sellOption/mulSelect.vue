@@ -36,7 +36,7 @@ var select=(item)=>{
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: 100%;
     .mul-item{
         border:1px solid var(--border-color);
@@ -47,6 +47,7 @@ var select=(item)=>{
         display: flex;
         flex-direction: row;
         align-items: center;
+        margin-right: 8px;
         .icon{
             width: 16px;
             height: 16px;

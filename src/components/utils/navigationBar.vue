@@ -23,7 +23,12 @@ const props=defineProps({
      }
 })
 var goRoute=()=>{
-    router.push({path:routeStore.preRoute})
+        // if(JSON.stringify(routeStore.preQuery) !== "{}"){
+        //     router.push({path:routeStore.preRoute, query: routeStore.preQuery})
+        // } else {
+        //     router.push({path:routeStore.preRoute})
+        // }
+   router.back();
 }
 </script>
 <style lang="less" scoped>

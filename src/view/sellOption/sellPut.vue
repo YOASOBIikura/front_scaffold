@@ -178,7 +178,7 @@ const data=reactive({
         nextPage: {
             path: "/protfolio",
             query: {},
-            name: "my protfolio"
+            name: "my listings"
         },
         titleName: "sell Put",
         stepList: []
@@ -234,7 +234,7 @@ onMounted(async ()=>{
    await init()
 })
 onBeforeUnmount(() => {
-    clearStrikerInterval();
+    clearPriceInterval();
 })
 //处理监听事件
 watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
@@ -445,22 +445,27 @@ var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
 //获取市场价
 var getMarketPrice=async ()=>{
     data.loading=true
-  let underlyingAssetPrice=await getPriceByService()
-   data.marketPrice=(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
-   console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
+   await getUnderlyAssetPrice();
    await getStrikePrice();
-   clearStrikerInterval();
-   addStrikerInterval();
+   clearPriceInterval();
+   addPriceInterval();
    data.loading=false
 }
 
-var addStrikerInterval = () => {
+var getUnderlyAssetPrice = async () => {
+   let underlyingAssetPrice=await getPriceByService()
+   data.marketPrice =(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
+   console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
+   return data.marketPrice;
+}
+
+var addPriceInterval = () => {
     data.strikerInterval = setInterval(() => {
         getStrikePrice(true);
     }, 5000)
 }
 
-var clearStrikerInterval = () => {
+var clearPriceInterval = () => {
     if(data.strikerInterval){
         clearInterval(data.strikerInterval);
     }

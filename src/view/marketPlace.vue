@@ -37,8 +37,12 @@
                      <div>
                     <swiperSelect         
                         :changeTimeout="500"
-                       :initialSlide="data.currentStrikeValue"
-                        :options="data.strikeParamData" @selectChange="strikeChange"></swiperSelect>
+                        :initialSlide="data.currentStrikeValue"
+                        :options="data.strikeParamData" 
+                        @selectChange="strikeChange"
+                        :hasPriceChange="true"
+                        :currentPrice="data.underlyPrice"
+                        ></swiperSelect>
                     </div>
                 </div>
             </div>

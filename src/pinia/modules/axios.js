@@ -126,26 +126,34 @@ function sleep(ms) {
 function requestInterceptors(axios){
     //判断当前钱包是否登录
     axios.interceptors.request.use(async function(_this,option){
-      // let axiosStore=useAxiosStore()
-      // // console.log("请求拦截器(拦截chainBlockCall 和 chainBlockSend请求)")
-      // if(option.mode == "chainBlockCall" || option.mode == "chainBlockSend" || option.mode== "sign" || option.mode== "sign712" || option.mode== "unSign" || option.mode== "switchChain"){          
-      //    if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || axiosStore.isConnect!=3){
-      //         while(axiosStore.isConnect!=3 && !axiosStore.currentProvider){
-      //             //链接钱包
-      //            var { open, selectedNetworkId } = useWeb3ModalState()
-      //            if(!open){
-      //              var { open, close } = useWeb3Modal()
-      //              open({view: 'Networks'})
-      //            }
-      //            //每2.5秒检测一下是否登录
-      //            await sleep(2500)
-      //          }  
-      //          //    return {
-      //          //       status:false,
-      //          //       message:"not connect wallet"
-      //          // }
-      //    }
-      // }
+      let axiosStore=useAxiosStore()
+      // console.log("请求拦截器(拦截chainBlockCall 和 chainBlockSend请求)")
+      if(
+        // option.mode == "chainBlockCall" || 
+      option.mode == "chainBlockSend" || 
+      option.mode== "sign" || 
+      option.mode== "sign712" ||
+       option.mode== "unSign" || 
+       option.mode== "switchChain" ||
+       option.httpUrl == "bundler"
+       ){          
+         if(!_this.chainBlockCallProvider || !_this.chainBlockSendProvider || axiosStore.isConnect!=3){
+              while(axiosStore.isConnect!=3 && !axiosStore.currentProvider){
+                  //链接钱包
+                 var { open, selectedNetworkId } = useWeb3ModalState()
+                 if(!open){
+                   var { open, close } = useWeb3Modal()
+                   open({view: 'Networks'})
+                 }
+                 //每2.5秒检测一下是否登录
+                 await sleep(2500)
+               }  
+               //    return {
+               //       status:false,
+               //       message:"not connect wallet"
+               // }
+         }
+      }
 
       return true
    })

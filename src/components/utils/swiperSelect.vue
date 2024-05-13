@@ -14,7 +14,7 @@
           depth: 0,
           modifier: 1,
           slideShadows: true,
-          scale: 1.1,
+          scale: 0.92,
         }"
         :pagination="false"
         :modules="modules"
@@ -40,13 +40,19 @@
             <span class="active">
               <span>{{ item.name || item }}</span>
               <span 
-              v-if="hasPriceChange && currentPrice" 
+              v-if="hasPriceChange && currentPrice !== '--'" 
               class="price-change"
-              :class="currentPrice > item.value?'down':'up'"
-                ><img
-                  :src="(currentPrice > item.value)?downIcon:upIcon"
+              :class="currentPrice > item.name?'down':'up'"
+                >
+                <img
+                  src="@/assets/images/price-change-up.png"
                   alt=""
-                />{{ formatMoneyPrecision(Math.abs(item.value/currentPrice - 1) * 100, 1) }}%</span
+                  v-if="currentPrice < item.name"
+                />
+                <img src="@/assets/images/price-change-down.png"
+                  alt=""
+                  v-else
+                /> {{ getPriceChange(item.name) }}%</span
               >
             </span>
           </div>
@@ -60,8 +66,8 @@
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Swiper as SwiperClass } from "swiper/types";
 
-// import upIcon from '@/assets/images/icon/price-up.png'
-// import downIcon from '@/assets/images/icon/price-down.png'
+// import upIcon from '@/assets/images/price-change-up.png'
+// import downIcon from '@/assets/images/icon/price-change-down.png'
 
 // Import Swiper styles
 import "swiper/css";
@@ -93,6 +99,13 @@ const selectChange = Debounce(
   },
   props.changeTimeout === undefined ? 0 : props.changeTimeout
 );
+
+const getPriceChange = (value) => {
+  if(value && props.currentPrice){
+   return (Math.abs((value/props.currentPrice)- 1)* 100).toFixed(1);
+  }  
+  return "";
+}
 
 const initSwiper = (swiper: SwiperClass) => {
   emits("swiper", swiper);
@@ -159,15 +172,16 @@ const initSwiper = (swiper: SwiperClass) => {
         .price-change {
           margin-left: 4px;
           &.up {
-            color: var(--success-color);
+            color: var(--text-color-success);
           }
           &.down {
-            color: var(--error-color);
+            color: var(--text-color-error);
           }
           img {
             position: relative;
-            top: -2px;
-            margin-right: 2px;
+            width: 14px;
+            height: 18px;
+            vertical-align: sub;
           }
         }
       }

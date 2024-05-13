@@ -60,7 +60,7 @@ let optionBusiness={
             priceInterval:100,//价格区间
             isGasToken:true,
             decimals:18,
-            decimalsShow: 4,
+            decimalsShow: 6,
             assetType:0,
             isSellPut:true,
             isSellCall:true,
@@ -72,7 +72,7 @@ let optionBusiness={
             priceInterval:500,//价格区间
             isGasToken:false,
             decimals:8,
-            decimalsShow: 4,
+            decimalsShow: 6,
             assetType:1,
             isSellPut:true,
             isSellCall:true,
@@ -146,7 +146,7 @@ let chainInfo={
     currency:"ETH",
     explorerUrl:"https://arbiscan.io/",
     explorerName: "Arbiscan",
-    rpcUrl:"https://virtual.arbitrum.rpc.tenderly.co/82ef21c2-6919-4edf-9c68-36b67d9ea032"
+    rpcUrl:"https://arbitrum.blockpi.network/v1/rpc/public"
 }
 
 
@@ -158,7 +158,7 @@ let tokens=[
         address:"0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f",
         priceId:"0xc9d8b075a5c69303365ae23633d4e085199bf5c520a3b90fed1322a0342ffc33",
         decimals:8,
-        decimalsShow: 4,
+        decimalsShow: 6,
         img:wbtcPng,
         isGasToken:false,
         isShowAsset:true,
@@ -172,7 +172,7 @@ let tokens=[
     address:"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
     priceId:"0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
     decimals:18,
-    decimalsShow: 4,
+    decimalsShow: 6,
     img:ethPng,
     isGasToken:true,
     isShowAsset:true,

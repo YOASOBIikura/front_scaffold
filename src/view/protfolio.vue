@@ -86,7 +86,9 @@ import {getUnderlyTotal} from "@/callData/multiCall/optionFacet"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import { message } from "ant-design-vue"
 import { useRoute } from "vue-router"
-const axiosStore= useAxiosStore()
+import { useModalStore } from "@/pinia/modules/modal"
+const axiosStore= useAxiosStore();
+const modalStore= useModalStore();
 const route = useRoute();
   let data=reactive({
     activeKey:"listing", // options / listing
@@ -234,7 +236,10 @@ var liquidate=(orderInfo)=>{
 }
 //-------------初始化-----------------
 onMounted(async ()=>{
-   data.activeKey = route.query.type ? route.query.type : "listing";
+  data.activeKey = route.query.type ? route.query.type : "listing";
+  if(axiosStore.isConnect !== 3 ){
+      modalStore.modal.open();
+  }
    await init()
 })
 //处理监听事件
@@ -247,7 +252,7 @@ var init=async()=>{
 }
 
 var initContent=async ()=>{
-  if(axiosStore.isConnect==1){
+  if(axiosStore.isConnect !== 3 ){
       return
   }
   data.loading=true

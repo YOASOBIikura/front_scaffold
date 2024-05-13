@@ -35,7 +35,9 @@ body {
     color: var(--text-color-primary);
     background-color: var(--bg-color-page);
 }
-
+::-webkit-scrollbar {
+    /* display: none; */
+}
 w3m-modal{
     z-index: 1001;
 }

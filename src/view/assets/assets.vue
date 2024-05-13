@@ -43,7 +43,9 @@ import {getPrice} from "@/callData/multiCall/priceOracle"
 import {getIssueMode} from "@/callData/multiCall/IssuanceFacet"
 import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import { getKytData } from "@/apiHandle/others"
+import { useModalStore } from "@/pinia/modules/modal"
 const axiosStore= useAxiosStore()
+const modalStore = useModalStore()
 const data=reactive({
      tokenList:[],
      totalAsset:0,
@@ -57,6 +59,9 @@ const data=reactive({
 })
 // 生命周期
 onMounted(async ()=>{
+   if(axiosStore.isConnect!==3){
+      modalStore.modal.open();
+   }
    await init()
 
 })
@@ -67,7 +72,7 @@ watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
 
 
 var init=async ()=>{
-   if(axiosStore.isConnect==1){
+   if(axiosStore.isConnect!==3){
       return
    }
    data.loading=true

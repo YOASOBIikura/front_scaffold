@@ -1,7 +1,7 @@
 <template>
     <div class="layout-header">
         <div>
-            <img class="logo" src="@/assets/images/jVaultLogo.png"/>
+            <img class="logo" src="@/assets/images/jVaultLogo.png" @click="toHome"/>
         </div>
         <div v-if="!isWalletConnect">
             <a-button 
@@ -24,16 +24,20 @@
 import { useModalStore } from '@/pinia/modules/modal';
 import { useAxiosStore } from "@/pinia/modules/axios";
 import { onMounted,ref,watch,computed,reactive} from "vue";
-
+import { useRouter } from "vue-router";
 //钱包链接
 let modalStore= useModalStore();
 const axiosStore = useAxiosStore();
+const router = useRouter();
 const connectWallet = () => {
     modalStore.modal.open();
 }
 var isWalletConnect = computed(() => {
-    return axiosStore.isConnect !== 1;
-})
+    return axiosStore.isConnect === 3;
+});
+var toHome = () => {
+    router.push({path: "/"})
+}
 </script>
 <style lang="less" scoped>
 .layout-header{

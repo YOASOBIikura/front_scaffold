@@ -14,12 +14,19 @@ import layoutHeader from "@/components/layout/layoutHeader.vue"
 import layoutBottom from "@/components/layout/layoutBottom.vue"
 import { watch,computed} from 'vue';
 import { useRouter} from "vue-router";
+import { ethers } from "ethers";
+
+import {arbitrum} from "@/config/chainBlock/arbitrum"
 //初始化modal
 let modalStore= useModalStore()
 modalStore.initModal()
 //初始化axios
-const axiosStore=useAxiosStore()
-axiosStore.initAxios(null,null,"");
+const axiosStore=useAxiosStore();
+let provider = new ethers.providers.JsonRpcProvider(arbitrum.chainInfo.rpcUrl);
+console.log(provider);
+axiosStore.initAxios(provider,null,"");
+axiosStore.setChainId(arbitrum.chainInfo.chainId)
+axiosStore.setIsConnect(2);
 if(import.meta.env.VITE_ENV === "production"){
     console.log = function(){};
 }

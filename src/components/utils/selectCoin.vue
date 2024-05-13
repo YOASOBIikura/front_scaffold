@@ -52,6 +52,7 @@ var selectChange=(item)=>{
           align-items: center;
           background: var(--bg-color-secondarycontainer);
           border-radius: 52px;
+          width: 100%;
           .item{
                width: 170px;
                height: 32px;
@@ -60,6 +61,7 @@ var selectChange=(item)=>{
                align-items: center;
                justify-content: center;
                border-radius: 52px;
+               flex: 1;
                .selectIcon{
                   width: 16px;
                   height: 16px;

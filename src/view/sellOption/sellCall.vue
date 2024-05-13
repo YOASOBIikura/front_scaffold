@@ -12,6 +12,7 @@
         <div class="title">Amount</div>
         <inputValue 
         v-model:value="data.underlyingAmount" 
+        :valueChange="data.underlyingAmountChange"
         :isApproximate="true"
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
@@ -76,7 +77,7 @@
             :decimalsShow="2"
             :isMax="false"
             v-model:value="data.currentPremiumFee"
-            :valueChange="currentPremiumFeeShow"
+            :valueChange="data.currentPremiumFeeShow"
             ></inputValue>
 
         </div>
@@ -147,6 +148,8 @@ import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getWalletBalanceApi} from "@/api/utils"
 import { message } from 'ant-design-vue';
 import { getKytData } from "@/apiHandle/others"
+import {getOfferApi} from "@/api/protfolio"
+
 const router=useRouter()
 const route=useRoute()
 const axiosStore= useAxiosStore()
@@ -166,7 +169,9 @@ const data=reactive({
    vault:"", //vault地址
    underlyingAssetBalance:BigNumber.from("0"), //真实数量
    underlyingAmount:BigNumber.from("0"),//抵押数量
+   underlyingAmountChange: BigNumber.from("0"), // 抵押数量改变值
    currentPremiumFee:BigNumber.from("0"),//输入框的期权费
+   currentPremiumFeeShow: BigNumber.from("0"), // 当前期权费展示
    premiumPrice:BigNumber.from("0"),//deberit期权费
    //-----------------
    loading:false,
@@ -178,7 +183,7 @@ const data=reactive({
         nextPage: {
             path: "/protfolio",
             query: {},
-            name: "my protfolio"
+            name: "my listings"
         },
         titleName: "sell Call",
         stepList: []
@@ -196,12 +201,7 @@ var underlyingAssetBalance=computed(()=>{
      return (data.underlyingAssetBalance.div(ethers.utils.parseUnits("1",data.currentUnderlyingAsset.decimals-data.currentUnderlyingAsset.decimalsShow)).toNumber()/10 ** data.currentUnderlyingAsset.decimalsShow).toFixed(data.currentUnderlyingAsset.decimalsShow)
 })
 
-var currentPremiumFeeShow = computed(() => {
-   if(axiosStore?.remark?.priceDecimals && data.premiumPrice){
-        return ethers.utils.parseUnits(String(data.premiumPrice), axiosStore.remark.priceDecimals);
-    }
-    return "0"
-});
+
 
 
 
@@ -210,7 +210,7 @@ var currentPremiumFeeShow = computed(() => {
 const changeExpiry = (item) => {;
     data.currentExpiryData=BigNumber.from(parseInt(item.timestamp/1000))
     data.premiumPrice=item.premiumPrice
-    
+    data.currentPremiumFeeShow = ethers.utils.parseUnits(String(data.premiumPrice), axiosStore.remark.priceDecimals) || "0";
 }
 
 var strikePriceChange=async (item)=>{
@@ -226,7 +226,7 @@ onMounted(async ()=>{
    await init()
 });
 onBeforeUnmount(() => {
-    clearStrikerInterval();
+    clearPriceInterval();
 })
 //处理监听事件
 watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
@@ -254,9 +254,13 @@ var init=async () => {
     //处理行权资产
     let strikeAssetData=axiosStore?.optionBusiness?.strikeAssets||[]
     let strikeAssetList=[]
-    strikeAssetData.forEach(item=>{
+    strikeAssetData.forEach((item,index)=>{
         item=JSON.parse(JSON.stringify(item))
-        item.select=false
+        if(index == 0){
+            item.select=true; 
+        } else {
+            item.select=false
+        }
         strikeAssetList.push(item) 
     })
     data.strikeAssetList=strikeAssetList
@@ -264,9 +268,13 @@ var init=async () => {
     //处理权力金资产
     let premiumAssetData=axiosStore?.optionBusiness?.premiumAssets||[]
     let premiumAssetList=[]
-    premiumAssetData.forEach(item=>{
+    premiumAssetData.forEach((item,index)=>{
         item=JSON.parse(JSON.stringify(item))
-        item.select=false
+        if(index == 0){
+            item.select=true
+        } else {
+             item.select=false
+        }
         premiumAssetList.push(item) 
     })
     console.log(premiumAssetList,"----sss")
@@ -276,17 +284,124 @@ var init=async () => {
     let liquidation=axiosStore?.optionBusiness?.liquidation||[]
 
     let liquidationWay=[]
-    liquidation.forEach(item=>{
+    liquidation.forEach((item,index)=>{
           item=JSON.parse(JSON.stringify(item))
-          item.select=false
+          if(index == 0){
+            item.select = true;
+          } else {
+            item.select=false;
+          }
           liquidationWay.push(item)
     })
     data.liquidationWay=liquidationWay
 
     data.vault= await getVault()
     await underlyingChange()
-   
-  
+    offerHasChange();
+}
+
+// 当前订单是否为修改订单，如果为修改订单，则填入默认值
+var offerHasChange = async () => {
+    let currentOfferId = route.query.id;
+    if(currentOfferId){
+        let offerResponse= await getOfferApi(currentOfferId,axiosStore.chainId,"");
+        offerResponse=offerResponse?.data || [];
+        let offerDetail = {};
+        offerResponse.forEach(async (item,index) => {
+            let unUsed=BigNumber.from("0")
+            //处理used
+            let totalList=[]
+            let obj={
+                writerVault:item["writer_vault"],
+                orderType:item["option_type"],
+                underlyingAsset:item["underlying_asset"]
+            }
+            totalList.push(obj)
+            let  underlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.underlying_asset)));
+            let unUsedList= await getUnderlyAssetTotal(totalList)
+            let  total=BigNumber.from(item.total);
+            if(BigNumber.from(unUsedList[index]).eq(BigNumber.from("0"))){
+                unUsed=total
+            }else{    
+                unUsed=BigNumber.from(unUsedList[index]);
+            }
+            // 判断处理 未使用的和钱包的那个余额更多
+            if(unUsed.gt(data.underlyingAssetBalance)){
+                data.underlyingAmountChange = data.underlyingAssetBalance;
+            } else {
+                data.underlyingAmountChange = unUsed;
+            }
+
+            // 处理行权价
+            let currentStrikePrice = data.strikePrice.find(it => {
+                return item.strike_price === it.price
+            });
+            console.log(data.expiryDataList)
+            data.currentStrikePrice = currentStrikePrice || {};
+
+            // 处理行权日期
+            let currentExpiryDataValue = data.expiryDataList.find(it => {
+                return item.expiration_date * 1000  === it.timestamp;
+            });
+            data.currentExpiryDataValue = currentExpiryDataValue;
+
+            // 处理期权价格
+            let premiumFee = item.option_premium ? item.option_premium : item.derbit_price;
+            data.currentPremiumFeeShow = ethers.utils.parseUnits(String(premiumFee), axiosStore.remark.priceDecimals);
+
+            // 处理strike
+            data.strikeAssetList.map(it => {
+                if(item.strike_assets.indexOf(it.address) !== -1){
+                    it.select = true;
+                } else {
+                    it.select = false;
+                }
+            });
+
+            // 处理Premium
+            data.premiumAssetList.map(it => {
+                if(item.premium_assets.indexOf(it.address) !== -1){
+                    it.select = true;
+                } else {
+                    it.select = false;
+                }
+            });
+            console.log(item.liquidate_modes[0]);
+            // 处理Accept
+            switch(item.liquidate_modes[0]){
+                case "0":
+                    data.liquidationWay.map(it => {
+                        it.select = true;
+                    });
+                    break;
+                default:
+                    data.liquidationWay.map(it => {
+                        if(it.value == item.liquidate_modes[0]){
+                            it.select = true;
+                        } else {
+                            it.select = false;
+                        }
+                    });
+                    break;
+            }
+        });
+        // data.underlyingAmountChange = 
+    }
+}
+
+//买单总余额(剩余)
+var  getUnderlyAssetTotal=async (dataList)=>{
+    let multiCallData=[]
+    dataList?.forEach((item,index)=>{
+        multiCallData.push(getUnderlyTotal(`${index}`,item.writerVault,item.orderType,item.underlyingAsset))
+    })
+    let multiCallResponse=await multiCallObjR(multiCallData)
+    console.log("multiCallResponse",multiCallResponse)   
+    let result=[]
+    for(let key in multiCallResponse){
+        result.push(multiCallResponse[key]?.total)
+    }
+    return result
 }
 
 
@@ -427,24 +542,29 @@ var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
 
 //获取市场价
 var getMarketPrice=async ()=>{
-    data.loading=true
-   let underlyingAssetPrice=await getPriceByService()
-  
-   data.marketPrice=(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
-   console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
+   data.loading=true
+   await getUnderlyAssetPrice();
    await getStrikePrice();
-   clearStrikerInterval();
-   addStrikerInterval();
+   clearPriceInterval();
+   addPriceInterval();
    data.loading=false
 }
+ 
+var getUnderlyAssetPrice = async () => {
+   let underlyingAssetPrice=await getPriceByService()
+   data.marketPrice =(underlyingAssetPrice.div(ethers.utils.parseUnits("1",Number(axiosStore.remark.priceDecimals)-2)).toNumber()/100).toFixed(2)
+   console.log(underlyingAssetPrice,"underlyingAssetPrice", data.marketPrice)
+   return data.marketPrice;
+}
 
-var addStrikerInterval = () => {
-    data.strikerInterval = setInterval(() => {
+var addPriceInterval = () => {
+    data.strikerInterval = setInterval(async () => {
+        await getUnderlyAssetPrice();
         getStrikePrice(true);
     }, 5000)
 }
 
-var clearStrikerInterval = () => {
+var clearPriceInterval = () => {
     if(data.strikerInterval){
         clearInterval(data.strikerInterval);
     }

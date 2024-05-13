@@ -9,7 +9,7 @@
                 :scroll="{ x: 1100,y: 'calc(100vh - 570px)'}"
         >
         <template #bodyCell="{ column, record }" >
-            <div @click="changeItem(record)">
+            <div @click="changeItem(record)" class="row">
             <!-- owner -->
             <template v-if="column.key === 'owner'">
                 <div class="owner-item">
@@ -102,7 +102,12 @@ import { nextTick, onBeforeUnmount, onMounted, ref,watch} from "vue"
 import { useRouter,useRoute} from "vue-router";
 import  jazzicon from 'jazzicon'
 import {BigNumber} from "ethers"
+import { useAxiosStore } from "@/pinia/modules/axios"
+import { useModalStore } from "@/pinia/modules/modal"
+import { message } from 'ant-design-vue';
 const router=useRouter()
+const axiosStore= useAxiosStore()
+const modalStore = useModalStore()
 const props = defineProps({
   dataSource: {type: Array, default: []},
   columns: Array,
@@ -114,9 +119,18 @@ const props = defineProps({
 });
 const listingTableRef = ref(null);
 const emits=defineEmits(["scrollBottom"])
-
 var changeItem=(item)=>{
-   console.log(item,"----sss")
+    if(axiosStore.isConnect !== 3){
+        modalStore.modal.open();
+    }
+    if(axiosStore.isConnect !== 3){
+        return;
+    }
+    if(item.ownerValue === axiosStore.currentAccount){
+        message.warning("this is your own order");
+        return;
+    }
+   console.log(item,"----sss");
    if(item.orderType=="call"){
     router.push({path:"buyCall",query:{id:item.id}})
    }else{
@@ -211,6 +225,9 @@ var createAvator=()=>{
         }
     }
 }
+.row{
+    cursor: pointer;
+}
 .owner-item{
     display: flex;
     justify-content: flex-start;
@@ -218,6 +235,7 @@ var createAvator=()=>{
     align-items: center;
     .img-content{
         position: relative;
+        margin-right: 4px;
         .owner{
             width: 24px;
         }
