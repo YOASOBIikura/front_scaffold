@@ -303,7 +303,112 @@ var init=async () => {
          return
     }
     await underlyingChange()
+    offerHasChange();
     data.loading=false
+}
+
+// 当前订单是否为修改订单，如果为修改订单，则填入默认值
+var offerHasChange = async () => {
+    let currentOfferId = route.query.id;
+    if(currentOfferId){
+        let offerResponse= await getOfferApi(currentOfferId,axiosStore.chainId,"");
+        offerResponse=offerResponse?.data || [];
+        let offerDetail = {};
+        offerResponse.forEach(async (item,index) => {
+            let unUsed=BigNumber.from("0")
+            //处理used
+            let totalList=[]
+            let obj={
+                writerVault:item["writer_vault"],
+                orderType:item["option_type"],
+                underlyingAsset:item["underlying_asset"]
+            }
+            totalList.push(obj)
+            let  underlyingAsset= JSON.parse(JSON.stringify(axiosStore.getTokenByAddress(item.underlying_asset)));
+            let unUsedList= await getUnderlyAssetTotal(totalList)
+            let  total=BigNumber.from(item.total);
+            if(BigNumber.from(unUsedList[index]).eq(BigNumber.from("0"))){
+                unUsed=total
+            }else{    
+                unUsed=BigNumber.from(unUsedList[index]);
+            }
+            // 判断处理 未使用的和钱包的那个余额更多
+            if(unUsed.gt(data.underlyingAssetBalance)){
+                data.underlyingAmountChange = data.underlyingAssetBalance;
+            } else {
+                data.underlyingAmountChange = unUsed;
+            }
+
+            // 处理行权价
+            let currentStrikePrice = data.strikePrice.find(it => {
+                return item.strike_price === it.price
+            });
+            console.log(data.expiryDataList)
+            data.currentStrikePrice = currentStrikePrice || {};
+
+            // 处理行权日期
+            let currentExpiryDataValue = data.expiryDataList.find(it => {
+                return item.expiration_date * 1000  === it.timestamp;
+            });
+            data.currentExpiryDataValue = currentExpiryDataValue;
+
+            // 处理期权价格
+            let premiumFee = item.option_premium ? item.option_premium : item.derbit_price;
+            data.currentPremiumFeeShow = ethers.utils.parseUnits(String(premiumFee), axiosStore.remark.priceDecimals);
+
+            // 处理strike
+            data.strikeAssetList.map(it => {
+                if(item.strike_assets.indexOf(it.address) !== -1){
+                    it.select = true;
+                } else {
+                    it.select = false;
+                }
+            });
+
+            // 处理Premium
+            data.premiumAssetList.map(it => {
+                if(item.premium_assets.indexOf(it.address) !== -1){
+                    it.select = true;
+                } else {
+                    it.select = false;
+                }
+            });
+            console.log(item.liquidate_modes[0]);
+            // 处理Accept
+            switch(item.liquidate_modes[0]){
+                case "0":
+                    data.liquidationWay.map(it => {
+                        it.select = true;
+                    });
+                    break;
+                default:
+                    data.liquidationWay.map(it => {
+                        if(it.value == item.liquidate_modes[0]){
+                            it.select = true;
+                        } else {
+                            it.select = false;
+                        }
+                    });
+                    break;
+            }
+        });
+        // data.underlyingAmountChange = 
+    }
+}
+
+//买单总余额(剩余)
+var  getUnderlyAssetTotal=async (dataList)=>{
+    let multiCallData=[]
+    dataList?.forEach((item,index)=>{
+        multiCallData.push(getUnderlyTotal(`${index}`,item.writerVault,item.orderType,item.underlyingAsset))
+    })
+    let multiCallResponse=await multiCallObjR(multiCallData)
+    console.log("multiCallResponse",multiCallResponse)   
+    let result=[]
+    for(let key in multiCallResponse){
+        result.push(multiCallResponse[key]?.total)
+    }
+    return result
 }
 
 

@@ -67,6 +67,12 @@
             :nextPage="data.transferLoadingData.nextPage"
             :transferName="data.transferLoadingData.transferName"
         ></singlestepLoading>
+        <multistepLoading
+        v-model:isOpen="data.mulLoadingData.open"
+        :titleName="data.mulLoadingData.titleName"
+        :nextPage="data.mulLoadingData.nextPage"
+        :stepList="data.mulLoadingData.stepList"
+    ></multistepLoading>
     </div>
     <a-spin v-if="data.loading" class="aSpin" tip="Loading..."  :delay="50"> </a-spin>
 </template>
@@ -74,6 +80,8 @@
 import navigationBar from "@/components/utils/navigationBar.vue"
 import assetTranfer from "@/components/assets/assetTranfer.vue"
 import inputValue from "@/components/utils/inputValue.vue"
+import multistepLoading from "@/components/utils/multistepLoading.vue";
+
 import {reactive,onMounted,computed,watch,nextTick} from "vue"
 import { useRouter,useRoute} from "vue-router";
 import {useRouteStore} from "@/pinia/modules/route";
@@ -123,8 +131,20 @@ const data=reactive({
             query: {},
             name: "my asset"
         },
-        transferName: "Transfer in progress"
+        transferName: "Redeem"
+    },
+    // loading信息
+    mulLoadingData: {
+        open: false,
+        nextPage: {
+            path: "/asset",
+            query: {},
+            name: "my asset"
+        },
+        titleName: "Transfer in progress",
+        stepList: [] // {name: "Signature Offer Info", status: "current", hash: ""}
     }
+
 })
 // -------------计算属性----------------
 var walletBalance=computed(()=>{
@@ -250,8 +270,7 @@ var transferTx=async ()=>{
 }
 
 var sendTx=async ()=>{
-    data.transferLoadingData.open = true;
-    data.transferLoadingData.status = "pending";
+    
     //添加按钮锁
     if(data.btnLock){
         return
@@ -263,7 +282,7 @@ var sendTx=async ()=>{
         await issueEthTx()
      }else if(!data.tokenInfo.isGasToken && data.type=="issue"){
         //申购token
-         txStatus=  await issueTokenTx()
+        await issueTokenTx()
      }else{
         //赎回
         await redeemTx()
@@ -272,26 +291,52 @@ var sendTx=async ()=>{
 //------gas币流程----
 //申购eth
 var issueEthTx=async ()=>{
+    data.mulLoadingData.open = true;
+    data.mulLoadingData.stepList = [
+        {name: "Authorise to create jVault", status: "current", hash: ""},
+        {name: "Transfer in progress", status: "pending", hash: ""}
+    ]
     let vault=data.tokenInfo.vault
     let salt=BigNumber.from(data.tokenInfo.salt) 
     // 组装交易
     let codeRespose= await getContractCodeApi(vault)
     //未创建vault  就去创建vault
     let ops=[]
-    if(codeRespose.message == "0x" ){
+    if(codeRespose.message == "0x"){
         console.log("进入初始化")
        let initCallData=createVaultService(vault)
        ops=ops.concat(initCallData)
        let bundlerHash= await sendTxToBundler(vault,salt,ops)
-       await bundlerResultTx(bundlerHash)
+       let bundlerStatus = await bundlerResultTx(bundlerHash);
+       if(bundlerStatus.status){
+            data.mulLoadingData.stepList[0].status = "success";
+       } else {
+            data.mulLoadingData.stepList[0].status = "faild";
+            data.btnLock = false;
+            return;
+       }
     }
+    data.mulLoadingData.stepList[0].status = "success";
+    data.mulLoadingData.stepList[1].status = "current";
     //申购eth
     let issueHash=  await issueApi(vault,axiosStore.currentAccount,[data.tokenInfo.address],[data.optionNumber],data.optionNumber)
-    console.log("issueHash",issueHash)
+    console.log(issueHash);
+    if(issueHash.status){
+        data.btnLock = false;
+        data.mulLoadingData.stepList[1].status = "success";
+    } else {
+        data.btnLock = false;
+        data.mulLoadingData.stepList[1].status = "faild";
+    }
 }
 
 //申购token
 var issueTokenTx=async ()=>{
+    data.mulLoadingData.open = true;
+    data.mulLoadingData.stepList = [
+        {name: "Approve Token", status: "current", hash: ""},
+        {name: "Transfer in progress", status: "pending", hash: ""}
+    ]
     let vault=data.tokenInfo.vault
     let salt=BigNumber.from(data.tokenInfo.salt) 
     //授权交易
@@ -299,10 +344,12 @@ var issueTokenTx=async ()=>{
     //起弹窗
     if(!approveStatus){
         message.error("approve fail");
-        data.transferLoadingData.status = "faild";
+        data.mulLoadingData.stepList[0].status = "faild";
         data.btnLock=false
         return
     }
+    data.mulLoadingData.stepList[0].status = "success";
+    data.mulLoadingData.stepList[1].status = "current";
     // 组装交易
     let codeRespose= await getContractCodeApi(vault)
     //未创建vault  就去创建vault
@@ -317,7 +364,13 @@ var issueTokenTx=async ()=>{
     ops.push(issueCallData)
     let bundlerHash= await sendTxToBundler(vault,salt,ops)
     //处理交易状态
-    await bundlerResultTx(bundlerHash)
+    let bundlerStatus = await bundlerResultTx(bundlerHash);
+    if(bundlerStatus.status){
+        data.mulLoadingData.stepList[1].status = "success";
+    } else {
+        data.mulLoadingData.stepList[1].status = "faild";
+    }
+    data.btnLock = false;
 }
 
 //授权20币
@@ -335,6 +388,8 @@ var approveTx=async(token,vault,amount)=>{
 
 //------赎回操作-----------------
 var redeemTx=async ()=>{
+    data.transferLoadingData.open = true;
+    data.transferLoadingData.status = "pending";
     let vault=data.tokenInfo.vault
     let salt=BigNumber.from(data.tokenInfo.salt) 
     // 组装交易
@@ -351,7 +406,15 @@ var redeemTx=async ()=>{
     ops.push(redeemCallData)
     let bundlerHash= await sendTxToBundler(vault,salt,ops)
     //处理交易状态
-    await bundlerResultTx(bundlerHash)
+    let bundlerStatus = await bundlerResultTx(bundlerHash);
+    if(bundlerStatus.status){
+        data.transferLoadingData.status = "success";
+        data.transferLoadingData.hash = bundlerStatus.hash;
+    } else {
+        data.transferLoadingData.status = "faild";
+        data.transferLoadingData.hash = bundlerStatus.hash;
+    }
+    data.btnLock = false;
 }
 
 
@@ -360,28 +423,32 @@ var bundlerResultTx=async (bundlerHash)=>{
     //接触按钮锁
     if(!bundlerHash.status){
         data.btnLock=false
-        data.transferLoadingData.hash = "";
-        data.transferLoadingData.status = "faild";
-        return
+        return {
+            status: false,
+            hash: bundlerHash.hash
+        }
     }
     //起弹窗
     data.txHash=bundlerHash.hash
     // data.isOpen=true
-    data.transferLoadingData.open = true
-    data.transferLoadingData.status = "pending";
+    // data.transferLoadingData.open = true
+    // data.transferLoadingData.status = "pending";
     //等待交易结果
     let result=  await getBundlerTxResult(bundlerHash.hash);
     // data.txResult=result
    
     if(!result.status){
         data.btnLock=false;
-        data.transferLoadingData.status = "faild";
-       data.transferLoadingData.hash = result.message;
-        return
+        return {
+            status: false,
+            hash: result.message
+        }
     }
     data.btnLock=false
-    data.transferLoadingData.status = "success";
-    data.transferLoadingData.hash = result.message;
+    return {
+        status: true,
+        hash: result.message
+    }
 }
 
 
