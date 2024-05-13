@@ -23,6 +23,7 @@
         <div class="title">Amount</div>
         <inputValue 
         v-model:value="data.underlyingAmount" 
+        :valueChange="data.underlyingAmountChange"
         :isApproximate="true"
         :maxValue="data.underlyingAssetBalance"
         :symbol="data.currentUnderlyingAsset.name" 
@@ -45,11 +46,12 @@
                         <span>Market Price</span>
                         <span style="font-weight: bold;"> ${{data.marketPrice}}</span>
                     </div>
-                    <refresh @change="strikePriceChange"></refresh>
+                    <refresh @change="getMarketPrice"></refresh>
                 </div>
             </div>
             <div class="strike">
-                <strike-price :dataList="data.strikePrice" v-model:value="data.currentStrikePrice" > </strike-price>          
+                <strike-price :dataList="data.strikePrice" v-model:value="data.currentStrikePrice" 
+                @change="strikePriceChange"> </strike-price>          
             </div>
 
         </div>
@@ -149,6 +151,7 @@ import {getPriceByPriceOracleApi,getPriceByServiceApi} from "@/api/priceOracle"
 import {getWalletBalanceApi} from "@/api/utils"
 import { message } from 'ant-design-vue';
 import { getKytData } from "@/apiHandle/others"
+import {getOfferApi} from "@/api/protfolio"
 const router=useRouter()
 const route=useRoute()
 const axiosStore= useAxiosStore()
@@ -169,6 +172,7 @@ const data=reactive({
    vault:"", //vault地址
    underlyingAssetBalance:BigNumber.from("0"), //真实数量
    underlyingAmount:BigNumber.from("0"),//抵押数量
+   underlyingAmountChange: BigNumber.from("0"),// 抵押数量改变值
    currentPremiumFee:BigNumber.from("0"),
    loading:false,
    strikerInterval: null, // 查询行权价的定时任务保存
@@ -229,6 +233,7 @@ var strikePriceChange=async (item)=>{
 
 
 
+
 //-----------初始化相关-------------------
 onMounted(async ()=>{
    await init()
@@ -252,7 +257,11 @@ var init=async () => {
     let underlyingAssetList=[]
     underlyingAssetData.forEach((item,index)=>{
         item=JSON.parse(JSON.stringify(item))
-        if(index==0){
+        if((route.query?.underlyingSymbol).toLocaleLowerCase() == item.name.toLocaleLowerCase()){
+            item.select=true
+            data.currentUnderlyingAsset=item
+        }
+        if(!route.query?.underlyingSymbol && index == 0){
             item.select=true
             data.currentUnderlyingAsset=item
         }
@@ -346,11 +355,16 @@ var offerHasChange = async () => {
             console.log(data.expiryDataList)
             data.currentStrikePrice = currentStrikePrice || {};
 
-            // 处理行权日期
+            // // 处理行权日期
             let currentExpiryDataValue = data.expiryDataList.find(it => {
                 return item.expiration_date * 1000  === it.timestamp;
             });
-            data.currentExpiryDataValue = currentExpiryDataValue;
+            if(!currentExpiryDataValue){
+              data.currentExpiryDataValue = data.expiryDataList[0];
+            } else {
+              data.currentExpiryDataValue = currentExpiryDataValue;
+            }
+            strikePriceChange();
 
             // 处理期权价格
             let premiumFee = item.option_premium ? item.option_premium : item.derbit_price;
@@ -504,6 +518,11 @@ var getStrikePrice=async (isInterVal = false)=>{
      
 }
 
+// 行权价更新后 更新日期列表和derbit价格
+var strikePriceChange = () => {
+    handleDerbitPriceAndExpiryData();
+}
+
 //处理derbit价格 和 日期列表
 var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
      let currentStrikePrice= data.currentStrikePrice || {}
@@ -525,7 +544,7 @@ var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
          }
          console.log(obj);
          expiryDataList.push(obj)
-     })
+     });
      //日期组件所需数据
      if(expiryDataList.length>0){
         if(isInterVal){

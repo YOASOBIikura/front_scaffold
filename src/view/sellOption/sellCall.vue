@@ -343,7 +343,12 @@ var offerHasChange = async () => {
             let currentExpiryDataValue = data.expiryDataList.find(it => {
                 return item.expiration_date * 1000  === it.timestamp;
             });
-            data.currentExpiryDataValue = currentExpiryDataValue;
+            if(!currentExpiryDataValue){
+              data.currentExpiryDataValue =   data.expiryDataList[0];
+            } else {
+                data.currentExpiryDataValue = currentExpiryDataValue;
+            }
+            strikePriceChange();
 
             // 处理期权价格
             let premiumFee = item.option_premium ? item.option_premium : item.derbit_price;

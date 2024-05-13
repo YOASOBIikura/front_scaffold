@@ -89,7 +89,8 @@ function handleChange({provider, providerType, address, error, chainId, isConnec
         axiosStore.setIsWalletChange(1)
         return
      }
-     clearChain()
+     clearChain();
+     window.location.reload();
 }
 //检查是否链接正确
 function checkChain(chainId){      
@@ -118,7 +119,7 @@ function clearChain(){
   axiosStore.setCurrentAccount(ethers.constants.AddressZero)   
   axiosStore.setIsConnect(1)
   axiosStore.setCurrentProvider(null)
-  axiosStore.setIsWalletChange(1)
+  axiosStore.setIsWalletChange(1);
 }
 
   

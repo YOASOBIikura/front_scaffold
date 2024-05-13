@@ -135,7 +135,8 @@ var editOption = () => {
     path: routerName,
     query: {
         asset:asset,
-        id: props.orderData.id
+        id: props.orderData.id,
+        underlyingSymbol: props.orderData.underlyingAsset.name
     }
    });
 };
