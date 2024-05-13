@@ -226,9 +226,9 @@ const changeExpiry = (item) => {;
 
 var strikePriceChange=async (item)=>{
    console.log(item,"ppp")
-   data.loading=true
-   await handleDerbitPriceAndExpiryData()
-   data.loading=false
+//    data.loading=true
+   await handleDerbitPriceAndExpiryData(true);
+//    data.loading=false
 }
 
 
@@ -257,7 +257,7 @@ var init=async () => {
     let underlyingAssetList=[]
     underlyingAssetData.forEach((item,index)=>{
         item=JSON.parse(JSON.stringify(item))
-        if((route.query?.underlyingSymbol).toLocaleLowerCase() == item.name.toLocaleLowerCase()){
+        if(String(route.query?.underlyingSymbol).toLocaleLowerCase() == String(item.name).toLocaleLowerCase()){
             item.select=true
             data.currentUnderlyingAsset=item
         }
@@ -359,6 +359,7 @@ var offerHasChange = async () => {
             let currentExpiryDataValue = data.expiryDataList.find(it => {
                 return item.expiration_date * 1000  === it.timestamp;
             });
+            console.log("currentExpiryDataValue---000",currentExpiryDataValue);
             if(!currentExpiryDataValue){
               data.currentExpiryDataValue = data.expiryDataList[0];
             } else {
@@ -518,10 +519,6 @@ var getStrikePrice=async (isInterVal = false)=>{
      
 }
 
-// 行权价更新后 更新日期列表和derbit价格
-var strikePriceChange = () => {
-    handleDerbitPriceAndExpiryData();
-}
 
 //处理derbit价格 和 日期列表
 var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
@@ -551,7 +548,11 @@ var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
             let currentExpiryDataValue = expiryDataList.find(item => {
                 return data.currentExpiryDataValue.date === item.date;
             });
-            data.currentExpiryDataValue = currentExpiryDataValue;
+           if(currentExpiryDataValue){
+                data.currentExpiryDataValue = currentExpiryDataValue;
+            } else {
+                data.currentExpiryDataValue=expiryDataList[0];
+            }
         } else {
             data.currentExpiryDataValue=expiryDataList[0];
         }

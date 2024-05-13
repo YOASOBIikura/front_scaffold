@@ -215,9 +215,9 @@ const changeExpiry = (item) => {;
 
 var strikePriceChange=async (item)=>{
    console.log(item,"ppp")
-   data.loading=true
-   await handleDerbitPriceAndExpiryData()
-   data.loading=false
+//    data.loading=true
+   await handleDerbitPriceAndExpiryData(true);
+//    data.loading=false
 }
 //-----------初始化相关-------------------
 onMounted(async ()=>{
@@ -343,8 +343,9 @@ var offerHasChange = async () => {
             let currentExpiryDataValue = data.expiryDataList.find(it => {
                 return item.expiration_date * 1000  === it.timestamp;
             });
+            
             if(!currentExpiryDataValue){
-              data.currentExpiryDataValue =   data.expiryDataList[0];
+              data.currentExpiryDataValue = data.expiryDataList[0];
             } else {
                 data.currentExpiryDataValue = currentExpiryDataValue;
             }
@@ -531,7 +532,11 @@ var handleDerbitPriceAndExpiryData=async (isInterVal)=>{
             let currentExpiryDataValue = expiryDataList.find(item => {
                 return data.currentExpiryDataValue.date === item.date;
             });
-            data.currentExpiryDataValue = currentExpiryDataValue;
+            if(currentExpiryDataValue){
+                data.currentExpiryDataValue = currentExpiryDataValue;
+            } else {
+                data.currentExpiryDataValue=expiryDataList[0];
+            }
         } else {
             data.currentExpiryDataValue=expiryDataList[0];
         }
