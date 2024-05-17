@@ -253,6 +253,7 @@ var init=async()=>{
 
 var initContent=async ()=>{
   if(axiosStore.isConnect !== 3 ){
+      clearPageData();
       return
   }
   data.loading=true
@@ -263,6 +264,34 @@ var initContent=async ()=>{
     }
     data.loading=false
 }
+
+/**
+ * 清空页面数据
+ */
+var clearPageData = () => {
+    data.activeKey = "listing"; // options / listing
+    data.isOpenSelect = false;
+    data.isOpenSort = false;
+    data.isOpenLiquidation = false;
+    data.offerList = [];
+    data.btnLock = false;//按钮锁
+    data.orderPage =  1;
+    data.offerPage = 1;
+    data.scrollOfferLoadLock = false; // 滚动加载锁
+    data.scrollOrderLoadLock= false; // order订单的滚动加载锁
+    data.orderList=[];//订单列表 
+    data.orderTotal = 0; // 所有订单总数
+    data.priceList = {};//价格列表
+    data.priceAddressList = [];//价格地址列表,
+    data.currentOrder = {};
+    //筛选条件
+    data.filterType = [];
+    data.filterStatus = [];
+    data.filterSort = 0;
+    //---
+    data.loading = false;
+}
+
 var exerciseLiquidate=async (orderInfo,liquidateType,incomeAmount)=>{
   await liquidationTx(orderInfo,liquidateType,incomeAmount)
 }

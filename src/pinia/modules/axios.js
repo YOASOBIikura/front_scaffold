@@ -20,7 +20,7 @@ export const useAxiosStore = defineStore('axios', {
     chainInfo: {}, // 当前链的信息相关数据
    //--是否触发钱包相关事件--
    isWalletChange:1,
-   vaultSalt:BigNumber.from("0"),//vault下标
+   vaultSalt:BigNumber.from("1"),//vault下标
   }),
   getters: {
  

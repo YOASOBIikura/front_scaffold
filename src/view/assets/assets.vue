@@ -73,6 +73,7 @@ watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
 
 var init=async ()=>{
    if(axiosStore.isConnect!==3){
+      clearPageData();
       return
    }
    data.loading=true
@@ -90,6 +91,18 @@ var init=async ()=>{
    data.kytStatus = await getKytData(axiosStore.currentAccount);
    data.loading=false
    console.log("tokenList",data.tokenList)
+}
+
+var clearPageData = () => {
+     data.tokenList = [];
+     data.totalAsset = 0;
+     data.totalWallet = 0;
+     data.totalVault = 0;
+     data.issueMode = 0;
+     //----
+     data.loading = false;
+     data.vaultAddress = "";
+     data.kytStatus = false // KYT状态判断
 }
 
 

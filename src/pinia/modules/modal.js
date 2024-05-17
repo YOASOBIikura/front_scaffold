@@ -64,7 +64,7 @@ export const useModalStore = defineStore('modal', {
             ]
         })
         this.modal=modal
-        this.modal.subscribeProvider(handleChange)      
+        this.modal.subscribeProvider(handleChange);
      }  
   }
 })
@@ -72,8 +72,6 @@ export const useModalStore = defineStore('modal', {
 // 定义订阅事件
 function handleChange({provider, providerType, address, error, chainId, isConnected }) { 
      console.log("事件触发",provider, providerType, address, error, chainId, isConnected)
-    
-    
      //重新初始化axios
      if(isConnected){
         if(checkChain(chainId))return true;      
@@ -90,7 +88,6 @@ function handleChange({provider, providerType, address, error, chainId, isConnec
         return
      }
      clearChain();
-     window.location.reload();
 }
 //检查是否链接正确
 function checkChain(chainId){      

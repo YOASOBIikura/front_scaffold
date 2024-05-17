@@ -97,6 +97,7 @@ import { BigNumber, ethers } from "ethers"
 import {getUnderlyTotal} from "@/callData/multiCall/optionFacet"
 import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import { getPriceByServiceApi } from "@/api/priceOracle"
+import {arbitrum} from "@/config/chainBlock/arbitrum"
 const axiosStore= useAxiosStore()
 const data=reactive({
      loading:false,
@@ -166,11 +167,15 @@ onBeforeUnmount(() => {
 
 //处理监听事件
 watch(computed(()=>axiosStore.isWalletChange),async (newVal)=>{
-   await  init()
+   await  init();
 })
 var  init=async ()=>{
     if(axiosStore.isConnect==1){
-      return
+        let provider = new ethers.providers.JsonRpcProvider(arbitrum.chainInfo.rpcUrl);
+        axiosStore.initAxios(provider,null,"");
+        axiosStore.setChainId(arbitrum.chainInfo.chainId)
+        axiosStore.setIsConnect(2);
+    //   return
     }
     //处理抵押资产列表
     let underlyingAssetData=axiosStore?.optionBusiness?.underlyingAssets||[]
