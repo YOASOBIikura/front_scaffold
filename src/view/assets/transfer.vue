@@ -95,7 +95,7 @@ import {multiCallArrR,multiCallObjR} from "@/apiHandle/multiCall"
 import {issue,redeem} from "@/callData/bundler/issuanceModule"
 import {sendTxToBundler,getBundlerTxResult} from "@/plugin/bundler"
 import {allownoceApi,approveApi,transferEthApi} from "@/api/token"
-import {createVaultService} from "@/apiHandle/vault"
+import {createVaultService, upgradeOldVaultService} from "@/apiHandle/vault"
 import { message } from 'ant-design-vue';
 import singlestepLoading from "@/components/utils/singlestepLoading.vue"
 import {getVaultApi} from "@/api/vaultFactory"
@@ -315,6 +315,21 @@ var issueEthTx=async ()=>{
             data.btnLock = false;
             return;
        }
+    } 
+    else {
+        let initCallData = await upgradeOldVaultService(vault);
+        ops=ops.concat(initCallData);
+        if(ops.length > 0){
+            let bundlerHash= await sendTxToBundler(vault,salt,ops)
+            let bundlerStatus = await bundlerResultTx(bundlerHash);
+            if(bundlerStatus.status){
+                    data.mulLoadingData.stepList[0].status = "success";
+            } else {
+                    data.mulLoadingData.stepList[0].status = "faild";
+                    data.btnLock = false;
+                    return;
+            }
+        }
     }
     data.mulLoadingData.stepList[0].status = "success";
     data.mulLoadingData.stepList[1].status = "current";
@@ -357,7 +372,10 @@ var issueTokenTx=async ()=>{
     if(codeRespose.message == "0x" ){
         console.log("进入初始化")
        let initCallData=createVaultService(vault)
-       ops=ops.concat(initCallData)
+       ops=ops.concat(initCallData);
+    } else {
+        let initCallData = await upgradeOldVaultService(vault);
+        ops=ops.concat(initCallData);
     }
     //申购交易组装
     let issueCallData= issue(vault,axiosStore.currentAccount,[data.tokenInfo.address],[data.optionNumber])

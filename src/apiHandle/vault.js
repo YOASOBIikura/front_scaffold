@@ -32,6 +32,28 @@ var createVaultService=(vault) =>{
     return [moduleCallData,tokenCallData,masterTokenCallData]
 }
 
+// 判断是否需要更新旧vault
+var upgradeOldVaultService = async (vault) => {
+    let axiosStore=useAxiosStore();
+    let multiCallData=[];
+    // 查询旧vault上的module
+    let vaultModuleCallData= getVaultAllModules("getVaultAllModules",vault);
+    multiCallData.push(vaultModuleCallData);
+    let multiCallResponse = await multiCallObjR(multiCallData)
+    let oldModuleList = multiCallResponse.getVaultAllModules.module || [];
+    let needUpgrade = false;
+    if(oldModuleList.indexOf( axiosStore.currentContractData["VaultManageModule"]) == -1){
+        needUpgrade = true;
+    }
+    if(needUpgrade){
+        // let upgradeCallData = upgradeTo(vault);
+        let createVaultCallData = createVaultService(vault);
+        return [].concat(createVaultCallData);
+    } else {
+        return [];
+    }
+} 
+
 
 
 
@@ -65,4 +87,4 @@ var getVaultToSaltR=async (vault)=>{
 
 
 
-export {createVaultService,getMulVaultR,getVaultToSaltR}
+export {createVaultService,upgradeOldVaultService,getMulVaultR,getVaultToSaltR}
