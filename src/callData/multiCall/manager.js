@@ -22,4 +22,18 @@ function getVaultAllPosition(_key,_vault,_positionTypes){
     }
 }
 
-export {getVaultAllPosition}    
+function getVaultAllModules(_key, _valut){
+    let funcHex = new ethers.utils.Interface(["function getVaultAllModules(address _vault) external view"]);
+    let callData = funcHex.encodeFunctionData("getVaultAllModules", [_valut]);
+    let returnType = {
+        "address[]": "module"
+    }
+    return {
+        key: _key,
+        contract:"@Manager",
+        param: callData,
+        returnType:returnType
+    }
+}
+
+export {getVaultAllPosition, getVaultAllModules}    

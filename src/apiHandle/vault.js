@@ -4,6 +4,7 @@ import {getAddress,getVaultMaxSalt,getVaultMaxSaltAddress} from "@/callData/mult
 import {getVaultToSalt} from "@/callData/multiCall/platformFacet" 
 import { BigNumber } from "ethers"
 import {multiCallObjR} from "@/apiHandle/multiCall"
+import { getVaultAllModules } from "@/callData/multiCall/manager"
 var createVaultService=(vault) =>{
     let axiosStore=useAxiosStore()
     //组装白名单module
