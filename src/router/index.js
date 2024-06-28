@@ -100,6 +100,14 @@ const routes = [{
     meta:{
       showLayout: true
     }
+  },
+  {
+    path:"/degen",
+    name: "degen",
+    component: () => import('@/view/degen.vue'),
+    meta:{
+      showLayout: true
+    }
   }
 ]
 
