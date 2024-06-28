@@ -7,14 +7,16 @@
           <span id="name">Solana</span>
           <span id="sym">SOL</span>
         </div>
-        <div class="price">
-          <span class="pri">Price (2h%)</span>
-          <div class="money">
-            <span>$3,847.99</span>
-            <span>(-0.90%)</span>
+        <div class="all_p">
+          <div class="price">
+            <span class="pri">Price (2h%)</span>
+            <div class="money">
+              <span>$3,847.99</span>
+              <span>(-0.90%)</span>
+            </div>
           </div>
+          <img src="../../assets/images/chevron-down.png" alt="To down"/>
         </div>
-        <img src="../../assets/images/chevron-down.png" alt="To down"/>
       </div>
       <div class="option">
         <img src="../../assets/images/Kline.png" alt="K line"/>
@@ -100,6 +102,11 @@ function handleTime(index){
     margin-left: 12px;
     margin-bottom: 8px;
   }
+  .all_p{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
   .symbol{
     display: flex;
     flex-direction: column;
@@ -155,9 +162,11 @@ function handleTime(index){
   }
 }
 .option{
+  display: flex;
   border-radius: 18px;
   margin-left: 8px;
   background-color: var(--bg-color-unActive);
+  align-items: center;
   img{
     width: 24px;
     height: 24px;

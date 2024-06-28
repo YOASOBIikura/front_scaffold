@@ -11,11 +11,11 @@
     </div>
     <div class="mark">
       <span>LP Vault</span>
-      <div>
+      <div class="m_t">
         <span>Time</span>
         <img src="../../assets/images/caret-up-small.png" alt="up and down"/>
       </div>
-      <div>
+      <div class="m_p">
         <span>Premium</span>
         <img src="../../assets/images/caret-up-small.png" alt="up and down"/>
       </div>
@@ -121,6 +121,7 @@ function handleBtn(sign){
   border-bottom: 1px solid var(--component-border);
   margin-left: 8px;
   margin-right: 8px;
+  justify-content: space-between;
   img{
     width: 16px;
     height: 16px;
@@ -131,25 +132,35 @@ function handleBtn(sign){
     line-height: 16px;
     color: var(--text-color-tabs-unActive);
     &:first-child{
-      flex: 2.3 1 0;
       margin-left: 12px;
+      width: 31%;
     }
     &:last-child{
-      flex: 2 1 0;
       display: flex;
       justify-content: flex-end;
       box-sizing: border-box;
       margin-right: 12px;
+      width: 23%;
+      min-width: 90px;
     }
   }
   div{
     display: flex;
-    align-items: center;
-    &:first-child{
-      flex: 1 1 0;
+    justify-content: center;
+    align-content: center;
+  }
+  .m_t{
+    width: 13%;
+    min-width: 46px;
+    span{
+      min-width: 30px;
     }
-    &:last-child{
-      flex: 2 1 0;
+  }
+  .m_p{
+    width: 18%;
+    min-width: 66px;
+    span{
+      min-width: 50px;
     }
   }
 }
