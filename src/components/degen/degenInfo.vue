@@ -72,20 +72,27 @@ function handleTime(index){
 </script>
 
 <style scoped lang="less">
+.box_size{
+  box-sizing: border-box;
+  padding-left: 8px;
+  padding-right: 8px;
+}
 .info{
   display: flex;
+  width: 100%;
   flex-direction: column;
   border-radius: 24px;
   gap: 8px;
 }
 .inter{
+  .box_size();
   display: flex;
 }
 .token{
   display: flex;
   background-color: var(--bg-color-unActive);
   border-radius: 18px;
-  width: 86%;
+  flex: 1;
   img{
     width: 28px;
     height: 28px;
@@ -162,9 +169,13 @@ function handleTime(index){
   border-radius: 24px;
   gap: 4px;
   background-color: var(--bg-color-unActive);
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-left: 8px;
+  margin-right: 8px;
   button{
     border: none;
-    width: 47.5%;
+    width: 50%;
     height: 32px;
     background-color: transparent;
     font-size: 14px;
@@ -174,7 +185,6 @@ function handleTime(index){
     border-radius: 24px;
     margin-top: 4px;
     margin-bottom: 4px;
-    margin-left: 4px;
   }
 }
 .time{
@@ -182,10 +192,12 @@ function handleTime(index){
   border-radius: 24px;
   gap: 4px;
   background-color: rgba(247, 247, 247, 1);
+  margin-left: 8px;
+  margin-right: 8px;
   button{
     border: none;
-    width: 31.5%;
     height: 32px;
+    flex: 1;
     background-color: transparent;
     font-size: 14px;
     font-weight: 600;
@@ -198,7 +210,7 @@ function handleTime(index){
       margin-left: 4px;
     }
     &:last-child{
-      margin-left: 3px;
+      margin-right: 4px;
     }
   }
 }

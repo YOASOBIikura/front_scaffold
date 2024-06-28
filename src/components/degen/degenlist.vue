@@ -11,10 +11,14 @@
     </div>
     <div class="mark">
       <span>LP Vault</span>
-      <span>Time</span>
-      <img src="../../assets/images/caret-up-small.png" alt="up and down"/>
-      <span>Premium</span>
-      <img src="../../assets/images/caret-up-small.png" alt="up and down"/>
+      <div>
+        <span>Time</span>
+        <img src="../../assets/images/caret-up-small.png" alt="up and down"/>
+      </div>
+      <div>
+        <span>Premium</span>
+        <img src="../../assets/images/caret-up-small.png" alt="up and down"/>
+      </div>
       <span>Available(SOL)</span>
     </div>
     <div class="list">
@@ -65,13 +69,13 @@ function handleBtn(sign){
 .list_page{
   display: flex;
   flex-direction: column;
-  align-items: center;
-  overflow-y: auto;
+  width: 100%;
 }
 .option{
   display: flex;
   margin-top: 16px;
   margin-left: 8px;
+  width: 100%;
   .btn{
     display: flex;
     border-radius: 24px;
@@ -98,12 +102,16 @@ function handleBtn(sign){
   }
 }
 .search{
+  width: 100%;
+  display: flex;
   border: none;
   background-color: transparent;
+  align-items: center;
+  justify-content: flex-end;
+  margin-right: 8px;
   img{
     width: 24px;
     height: 24px;
-    margin-left: 85px;
   }
 }
 .mark{
@@ -111,6 +119,8 @@ function handleBtn(sign){
   height: 48px;
   align-items: center;
   border-bottom: 1px solid var(--component-border);
+  margin-left: 8px;
+  margin-right: 8px;
   img{
     width: 16px;
     height: 16px;
@@ -121,27 +131,36 @@ function handleBtn(sign){
     line-height: 16px;
     color: var(--text-color-tabs-unActive);
     &:first-child{
-      padding-left: 12px;
-      padding-right: 53px;
-    };
-    &:nth-child(2){
-      margin-left: 10px;
-      padding-left: 10px;
-    };
-    &:nth-child(4){
-      margin-left: 9.67px;
-    };
+      flex: 2.3 1 0;
+      margin-left: 12px;
+    }
     &:last-child{
-      margin-left: 9.67px;
-      padding-right: 12px;
+      flex: 2 1 0;
+      display: flex;
+      justify-content: flex-end;
+      box-sizing: border-box;
+      margin-right: 12px;
+    }
+  }
+  div{
+    display: flex;
+    align-items: center;
+    &:first-child{
+      flex: 1 1 0;
+    }
+    &:last-child{
+      flex: 2 1 0;
     }
   }
 }
 .list{
-  width: 100%;
   height: 60%;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding-bottom: 23%;
+  &::-webkit-scrollbar{
+    width: 1px;
+  }
 }
 </style>

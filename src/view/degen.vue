@@ -42,6 +42,7 @@ import Degenlist from "@/components/degen/degenlist.vue";
 }
 .down{
   .common();
+  justify-content: center;
   margin-top: 8px;
   height: 100%;
 }
@@ -53,10 +54,11 @@ import Degenlist from "@/components/degen/degenlist.vue";
   background-color: var(--bg-color-container-active);
   width: 204px;
   height: 40px;
-  left: 24%;
-  top: 88%;
+  bottom: 4%;
   align-items: center;
   gap: 4px;
+  left: 50%;
+  transform: translate(-50%, -50%);
   img{
     width: 24px;
     height: 24px;
